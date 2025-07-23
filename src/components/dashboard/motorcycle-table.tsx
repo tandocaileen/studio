@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -43,6 +44,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { CalendarIcon } from 'lucide-react';
 import { Calendar } from '../ui/calendar';
 import { cn } from '@/lib/utils';
+import { ScrollArea } from '../ui/scroll-area';
 
 type MotorcycleTableProps = {
   motorcycles: Motorcycle[];
@@ -243,123 +245,125 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
           <div className="flex gap-2">
             <Button size="sm" className="gap-1" onClick={handleGenerateCashAdvance} disabled={selectedMotorcycles.length === 0}>
                 <DollarSign className="h-4 w-4" />
-                Generate CA
+                <span className="hidden sm:inline">Generate CA</span>
             </Button>
             <Dialog>
               <DialogTrigger asChild>
                 <Button size="sm" className="gap-1">
                   <PlusCircle className="h-4 w-4" />
-                  Add Motorcycle
+                  <span className="hidden sm:inline">Add Motorcycle</span>
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-[80vw]">
+              <DialogContent className="sm:max-w-4xl max-w-[90vw] max-h-[90vh]">
                 <DialogHeader>
                   <DialogTitle>Add New Motorcycle</DialogTitle>
                   <DialogDescription>
                     Fill in the details for the new unit.
                   </DialogDescription>
                 </DialogHeader>
-                <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto pr-4">
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="plate" className="text-right">Plate No.</Label>
-                    <Input id="plate" placeholder="ABC 1234" className="col-span-3" />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="make" className="text-right">Make</Label>
-                    <Input id="make" placeholder="e.g., Honda" className="col-span-3" />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="model" className="text-right">Model</Label>
-                    <Input id="model" placeholder="e.g., Click 125i" className="col-span-3" />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="engineNumber" className="text-right">Engine No.</Label>
-                    <Input id="engineNumber" placeholder="e.g., E12345678" className="col-span-3" />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="chassisNumber" className="text-right">Chassis No.</Label>
-                    <Input id="chassisNumber" placeholder="e.g., C12345678" className="col-span-3" />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="branch" className="text-right">Branch</Label>
-                    <Select>
-                      <SelectTrigger className="col-span-3">
-                        <SelectValue placeholder="Select a branch" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {branches.map(branch => <SelectItem key={branch} value={branch}>{branch}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                <ScrollArea className="max-h-[70vh]">
+                  <div className="grid gap-4 py-4 pr-6">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="plate" className="text-right">Plate No.</Label>
+                      <Input id="plate" placeholder="ABC 1234" className="col-span-3" />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="make" className="text-right">Make</Label>
+                      <Input id="make" placeholder="e.g., Honda" className="col-span-3" />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="model" className="text-right">Model</Label>
+                      <Input id="model" placeholder="e.g., Click 125i" className="col-span-3" />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="engineNumber" className="text-right">Engine No.</Label>
+                      <Input id="engineNumber" placeholder="e.g., E12345678" className="col-span-3" />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="chassisNumber" className="text-right">Chassis No.</Label>
+                      <Input id="chassisNumber" placeholder="e.g., C12345678" className="col-span-3" />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="branch" className="text-right">Branch</Label>
+                      <Select>
+                        <SelectTrigger className="col-span-3">
+                          <SelectValue placeholder="Select a branch" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {branches.map(branch => <SelectItem key={branch} value={branch}>{branch}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                  <div className="col-span-4">
-                    <Label className="text-base font-semibold">Documents</Label>
-                    <div className="space-y-4 mt-2">
-                      {newDocuments.map((doc, index) => (
-                        <div key={doc.id} className="grid grid-cols-1 gap-4 p-4 border rounded-lg relative">
-                           <Button
-                            variant="ghost"
-                            size="icon"
-                            className="absolute top-1 right-1 h-6 w-6"
-                            onClick={() => handleRemoveDocument(doc.id, true)}
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                          <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor={`doc-type-${index}`} className="text-right">Type</Label>
-                            <Select
-                              value={doc.type}
-                              onValueChange={(value: 'OR/CR' | 'COC' | 'Insurance') => handleDocumentChange(doc.id, 'type', value, true)}
+                    <div className="col-span-4">
+                      <Label className="text-base font-semibold">Documents</Label>
+                      <div className="space-y-4 mt-2">
+                        {newDocuments.map((doc, index) => (
+                          <div key={doc.id} className="grid grid-cols-1 gap-4 p-4 border rounded-lg relative">
+                             <Button
+                              variant="ghost"
+                              size="icon"
+                              className="absolute top-1 right-1 h-6 w-6"
+                              onClick={() => handleRemoveDocument(doc.id, true)}
                             >
-                              <SelectTrigger id={`doc-type-${index}`} className="col-span-3">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="OR/CR">OR/CR</SelectItem>
-                                <SelectItem value="COC">COC</SelectItem>
-                                <SelectItem value="Insurance">Insurance</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor={`doc-file-${index}`} className="text-right">File</Label>
-                            <Input id={`doc-file-${index}`} type="file" className="col-span-3" onChange={(e) => handleFileChange(doc.id, e, true)} />
-                          </div>
-                          {doc.type === 'Insurance' || doc.type === 'OR/CR' ? (
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
                             <div className="grid grid-cols-4 items-center gap-4">
-                              <Label htmlFor={`doc-expiry-${index}`} className="text-right">Expiry</Label>
-                                <Popover>
-                                  <PopoverTrigger asChild>
-                                    <Button
-                                      variant={"outline"}
-                                      className={cn(
-                                        "col-span-3 justify-start text-left font-normal",
-                                        !doc.expiresAt && "text-muted-foreground"
-                                      )}
-                                    >
-                                      <CalendarIcon className="mr-2 h-4 w-4" />
-                                      {doc.expiresAt ? format(doc.expiresAt, "PPP") : <span>Pick a date</span>}
-                                    </Button>
-                                  </PopoverTrigger>
-                                  <PopoverContent className="w-auto p-0">
-                                    <Calendar
-                                      mode="single"
-                                      selected={doc.expiresAt}
-                                      onSelect={(date) => handleDocumentChange(doc.id, 'expiresAt', date, true)}
-                                      initialFocus
-                                    />
-                                  </PopoverContent>
-                                </Popover>
+                              <Label htmlFor={`doc-type-${index}`} className="text-right">Type</Label>
+                              <Select
+                                value={doc.type}
+                                onValueChange={(value: 'OR/CR' | 'COC' | 'Insurance') => handleDocumentChange(doc.id, 'type', value, true)}
+                              >
+                                <SelectTrigger id={`doc-type-${index}`} className="col-span-3">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="OR/CR">OR/CR</SelectItem>
+                                  <SelectItem value="COC">COC</SelectItem>
+                                  <SelectItem value="Insurance">Insurance</SelectItem>
+                                </SelectContent>
+                              </Select>
                             </div>
-                          ) : null}
-                        </div>
-                      ))}
-                      <Button variant="outline" size="sm" onClick={handleAddNewDocument}>
-                        <PlusCircle className="mr-2 h-4 w-4" /> Add Document
-                      </Button>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                              <Label htmlFor={`doc-file-${index}`} className="text-right">File</Label>
+                              <Input id={`doc-file-${index}`} type="file" className="col-span-3" onChange={(e) => handleFileChange(doc.id, e, true)} />
+                            </div>
+                            {doc.type === 'Insurance' || doc.type === 'OR/CR' ? (
+                              <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor={`doc-expiry-${index}`} className="text-right">Expiry</Label>
+                                  <Popover>
+                                    <PopoverTrigger asChild>
+                                      <Button
+                                        variant={"outline"}
+                                        className={cn(
+                                          "col-span-3 justify-start text-left font-normal",
+                                          !doc.expiresAt && "text-muted-foreground"
+                                        )}
+                                      >
+                                        <CalendarIcon className="mr-2 h-4 w-4" />
+                                        {doc.expiresAt ? format(doc.expiresAt, "PPP") : <span>Pick a date</span>}
+                                      </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0">
+                                      <Calendar
+                                        mode="single"
+                                        selected={doc.expiresAt}
+                                        onSelect={(date) => handleDocumentChange(doc.id, 'expiresAt', date, true)}
+                                        initialFocus
+                                      />
+                                    </PopoverContent>
+                                  </Popover>
+                              </div>
+                            ) : null}
+                          </div>
+                        ))}
+                        <Button variant="outline" size="sm" onClick={handleAddNewDocument}>
+                          <PlusCircle className="mr-2 h-4 w-4" /> Add Document
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
+                </ScrollArea>
                 <DialogFooter>
                   <Button type="submit" onClick={() => handleAction('New motorcycle saved.')}>Save Motorcycle</Button>
                 </DialogFooter>
@@ -371,7 +375,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>
+                <TableHead className="w-[40px]">
                   <Checkbox
                     checked={selectedMotorcycles.length === motorcycles.length && motorcycles.length > 0}
                     onCheckedChange={(checked) => handleSelectAll(checked)}
@@ -379,11 +383,11 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                   />
                 </TableHead>
                 <TableHead>Plate No.</TableHead>
-                <TableHead>Make & Model</TableHead>
-                <TableHead>Engine No.</TableHead>
-                <TableHead>Chassis No.</TableHead>
+                <TableHead className="hidden sm:table-cell">Make & Model</TableHead>
+                <TableHead className="hidden md:table-cell">Engine No.</TableHead>
+                <TableHead className="hidden lg:table-cell">Chassis No.</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>
+                <TableHead className="w-[100px]">
                   <span className="sr-only">Actions</span>
                 </TableHead>
               </TableRow>
@@ -398,10 +402,13 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                         aria-label={`Select motorcycle ${motorcycle.plateNumber}`}
                       />
                     </TableCell>
-                    <TableCell className="font-medium">{motorcycle.plateNumber}</TableCell>
-                    <TableCell>{`${motorcycle.make} ${motorcycle.model}`}</TableCell>
-                    <TableCell>{motorcycle.engineNumber}</TableCell>
-                    <TableCell>{motorcycle.chassisNumber}</TableCell>
+                    <TableCell className="font-medium">
+                        <div>{motorcycle.plateNumber}</div>
+                        <div className="text-muted-foreground sm:hidden">{`${motorcycle.make} ${motorcycle.model}`}</div>
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell">{`${motorcycle.make} ${motorcycle.model}`}</TableCell>
+                    <TableCell className="hidden md:table-cell">{motorcycle.engineNumber}</TableCell>
+                    <TableCell className="hidden lg:table-cell">{motorcycle.chassisNumber}</TableCell>
                     <TableCell>
                       <Badge variant={statusVariant(motorcycle.status)}>{motorcycle.status}</Badge>
                     </TableCell>
@@ -441,123 +448,125 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
       
       {/* Edit Motorcycle Dialog */}
       <Dialog open={!!editingMotorcycle} onOpenChange={(open) => !open && handleCancelEdit()}>
-          <DialogContent className="max-w-[80vw]">
+          <DialogContent className="sm:max-w-4xl max-w-[90vw] max-h-[90vh]">
               <DialogHeader>
                   <DialogTitle>Edit Motorcycle - {editingMotorcycle?.plateNumber}</DialogTitle>
                   <DialogDescription>
                       Update the details and documents for this unit.
                   </DialogDescription>
               </DialogHeader>
-              <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto pr-4">
-                  {/* Basic Details */}
-                  <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="plateNumber" className="text-right">Plate No.</Label>
-                      <Input id="plateNumber" name="plateNumber" value={editedData.plateNumber || ''} onChange={handleInputChange} className="col-span-3" />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="make" className="text-right">Make</Label>
-                      <Input id="make" name="make" value={editedData.make || ''} onChange={handleInputChange} className="col-span-3" />
-                  </div>
-                   <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="model" className="text-right">Model</Label>
-                      <Input id="model" name="model" value={editedData.model || ''} onChange={handleInputChange} className="col-span-3" />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="engineNumber" className="text-right">Engine No.</Label>
-                    <Input id="engineNumber" name="engineNumber" value={editedData.engineNumber || ''} onChange={handleInputChange} className="col-span-3" />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="chassisNumber" className="text-right">Chassis No.</Label>
-                    <Input id="chassisNumber" name="chassisNumber" value={editedData.chassisNumber || ''} onChange={handleInputChange} className="col-span-3" />
-                  </div>
-                   <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="status" className="text-right">Status</Label>
-                      <Select value={editedData.status} onValueChange={(value) => handleSelectChange('status', value)}>
-                        <SelectTrigger className="col-span-3">
-                          <SelectValue/>
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Incomplete">Incomplete</SelectItem>
-                          <SelectItem value="Ready to Register">Ready to Register</SelectItem>
-                          <SelectItem value="Registered">Registered</SelectItem>
-                          <SelectItem value="For Renewal">For Renewal</SelectItem>
-                        </SelectContent>
-                      </Select>
-                  </div>
-                  {/* Document Management */}
-                   <div className="col-span-4">
-                    <Label className="text-base font-semibold">Documents</Label>
-                    <div className="space-y-4 mt-2">
-                      {editedDocuments.map((doc, index) => (
-                        <div key={doc.id} className="grid grid-cols-1 gap-4 p-4 border rounded-lg relative">
-                           <Button
-                            variant="ghost"
-                            size="icon"
-                            className="absolute top-1 right-1 h-6 w-6"
-                            onClick={() => handleRemoveDocument(doc.id, false)}
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                          <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor={`edit-doc-type-${index}`} className="text-right">Type</Label>
-                            <Select
-                              value={doc.type}
-                              onValueChange={(value: 'OR/CR' | 'COC' | 'Insurance') => handleDocumentChange(doc.id, 'type', value, false)}
-                            >
-                              <SelectTrigger id={`edit-doc-type-${index}`} className="col-span-3">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="OR/CR">OR/CR</SelectItem>
-                                <SelectItem value="COC">COC</SelectItem>
-                                <SelectItem value="Insurance">Insurance</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div className="grid grid-cols-4 items-center gap-4">
-                              <Label htmlFor={`edit-doc-file-${index}`} className="text-right">File</Label>
-                              <div className="col-span-3 flex items-center gap-2">
-                                  <Input id={`edit-doc-file-${index}`} type="file" className="flex-grow" onChange={(e) => handleFileChange(doc.id, e, false)} />
-                                  <Button variant="outline" size="sm" asChild>
-                                      <a href={doc.url} target="_blank" rel="noopener noreferrer">
-                                          View Current <ExternalLink className="ml-2 h-3 w-3" />
-                                      </a>
-                                  </Button>
-                              </div>
-                          </div>
-                          {doc.type === 'Insurance' || doc.type === 'OR/CR' ? (
-                            <div className="grid grid-cols-4 items-center gap-4">
-                              <Label htmlFor={`edit-doc-expiry-${index}`} className="text-right">Expiry</Label>
-                                <Popover>
-                                  <PopoverTrigger asChild>
-                                    <Button
-                                      variant={"outline"}
-                                      className={cn(
-                                        "col-span-3 justify-start text-left font-normal",
-                                        !doc.expiresAt && "text-muted-foreground"
-                                      )}
-                                    >
-                                      <CalendarIcon className="mr-2 h-4 w-4" />
-                                      {doc.expiresAt ? format(doc.expiresAt, "PPP") : <span>Pick a date</span>}
-                                    </Button>
-                                  </PopoverTrigger>
-                                  <PopoverContent className="w-auto p-0">
-                                    <Calendar
-                                      mode="single"
-                                      selected={doc.expiresAt}
-                                      onSelect={(date) => handleDocumentChange(doc.id, 'expiresAt', date, false)}
-                                      initialFocus
-                                    />
-                                  </PopoverContent>
-                                </Popover>
-                            </div>
-                          ) : null}
-                        </div>
-                      ))}
-                       {/* This is where you might add a button to add NEW documents during an edit */}
+              <ScrollArea className="max-h-[70vh]">
+                <div className="grid gap-4 py-4 pr-6">
+                    {/* Basic Details */}
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="plateNumber" className="text-right">Plate No.</Label>
+                        <Input id="plateNumber" name="plateNumber" value={editedData.plateNumber || ''} onChange={handleInputChange} className="col-span-3" />
                     </div>
-                  </div>
-              </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="make" className="text-right">Make</Label>
+                        <Input id="make" name="make" value={editedData.make || ''} onChange={handleInputChange} className="col-span-3" />
+                    </div>
+                     <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="model" className="text-right">Model</Label>
+                        <Input id="model" name="model" value={editedData.model || ''} onChange={handleInputChange} className="col-span-3" />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="engineNumber" className="text-right">Engine No.</Label>
+                      <Input id="engineNumber" name="engineNumber" value={editedData.engineNumber || ''} onChange={handleInputChange} className="col-span-3" />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="chassisNumber" className="text-right">Chassis No.</Label>
+                      <Input id="chassisNumber" name="chassisNumber" value={editedData.chassisNumber || ''} onChange={handleInputChange} className="col-span-3" />
+                    </div>
+                     <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="status" className="text-right">Status</Label>
+                        <Select value={editedData.status} onValueChange={(value) => handleSelectChange('status', value)}>
+                          <SelectTrigger className="col-span-3">
+                            <SelectValue/>
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Incomplete">Incomplete</SelectItem>
+                            <SelectItem value="Ready to Register">Ready to Register</SelectItem>
+                            <SelectItem value="Registered">Registered</SelectItem>
+                            <SelectItem value="For Renewal">For Renewal</SelectItem>
+                          </SelectContent>
+                        </Select>
+                    </div>
+                    {/* Document Management */}
+                     <div className="col-span-4">
+                      <Label className="text-base font-semibold">Documents</Label>
+                      <div className="space-y-4 mt-2">
+                        {editedDocuments.map((doc, index) => (
+                          <div key={doc.id} className="grid grid-cols-1 gap-4 p-4 border rounded-lg relative">
+                             <Button
+                              variant="ghost"
+                              size="icon"
+                              className="absolute top-1 right-1 h-6 w-6"
+                              onClick={() => handleRemoveDocument(doc.id, false)}
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                              <Label htmlFor={`edit-doc-type-${index}`} className="text-right">Type</Label>
+                              <Select
+                                value={doc.type}
+                                onValueChange={(value: 'OR/CR' | 'COC' | 'Insurance') => handleDocumentChange(doc.id, 'type', value, false)}
+                              >
+                                <SelectTrigger id={`edit-doc-type-${index}`} className="col-span-3">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="OR/CR">OR/CR</SelectItem>
+                                  <SelectItem value="COC">COC</SelectItem>
+                                  <SelectItem value="Insurance">Insurance</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor={`edit-doc-file-${index}`} className="text-right">File</Label>
+                                <div className="col-span-3 flex items-center gap-2">
+                                    <Input id={`edit-doc-file-${index}`} type="file" className="flex-grow" onChange={(e) => handleFileChange(doc.id, e, false)} />
+                                    <Button variant="outline" size="sm" asChild>
+                                        <a href={doc.url} target="_blank" rel="noopener noreferrer">
+                                            View Current <ExternalLink className="ml-2 h-3 w-3" />
+                                        </a>
+                                    </Button>
+                                </div>
+                            </div>
+                            {doc.type === 'Insurance' || doc.type === 'OR/CR' ? (
+                              <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor={`edit-doc-expiry-${index}`} className="text-right">Expiry</Label>
+                                  <Popover>
+                                    <PopoverTrigger asChild>
+                                      <Button
+                                        variant={"outline"}
+                                        className={cn(
+                                          "col-span-3 justify-start text-left font-normal",
+                                          !doc.expiresAt && "text-muted-foreground"
+                                        )}
+                                      >
+                                        <CalendarIcon className="mr-2 h-4 w-4" />
+                                        {doc.expiresAt ? format(doc.expiresAt, "PPP") : <span>Pick a date</span>}
+                                      </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0">
+                                      <Calendar
+                                        mode="single"
+                                        selected={doc.expiresAt}
+                                        onSelect={(date) => handleDocumentChange(doc.id, 'expiresAt', date, false)}
+                                        initialFocus
+                                      />
+                                    </PopoverContent>
+                                  </Popover>
+                              </div>
+                            ) : null}
+                          </div>
+                        ))}
+                         {/* This is where you might add a button to add NEW documents during an edit */}
+                      </div>
+                    </div>
+                </div>
+              </ScrollArea>
               <DialogFooter>
                   <Button variant="outline" onClick={handleCancelEdit}>Cancel</Button>
                   <Button onClick={handleSaveEdit}>Save Changes</Button>

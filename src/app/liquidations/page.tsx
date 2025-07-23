@@ -21,11 +21,21 @@ function LiquidationsContent({ searchQuery }: { searchQuery: string }) {
     useEffect(() => {
         Promise.all([getCashAdvances(), getMotorcycles()]).then(([cashAdvances, motorcycles]) => {
             const liquidationItems: LiquidationItem[] = cashAdvances.map(ca => {
+                // Improved logic to find motorcycle by plate number, engine, or chassis from purpose
                 const plateNumberMatch = ca.purpose.match(/([A-Z0-9]{3}\s[A-Z0-9]{3,4})/);
+                const engineNumberMatch = ca.purpose.match(/Engine No\.?\s*([A-Z0-9]+)/i);
+                const chassisNumberMatch = ca.purpose.match(/Chassis No\.?\s*([A-Z0-9]+)/i);
+                
                 let motorcycle: Motorcycle | undefined;
+
                 if (plateNumberMatch) {
                     motorcycle = motorcycles.find(m => m.plateNumber === plateNumberMatch[0]);
+                } else if (engineNumberMatch) {
+                    motorcycle = motorcycles.find(m => m.engineNumber === engineNumberMatch[1]);
+                } else if (chassisNumberMatch) {
+                    motorcycle = motorcycles.find(m => m.chassisNumber === chassisNumberMatch[1]);
                 }
+                
                 return { cashAdvance: ca, motorcycle };
             });
             setItems(liquidationItems);
@@ -44,7 +54,9 @@ function LiquidationsContent({ searchQuery }: { searchQuery: string }) {
         if (motorcycle?.engineNumber.toLowerCase().includes(query)) return true;
         if (motorcycle?.chassisNumber.toLowerCase().includes(query)) return true;
         if (motorcycle?.model.toLowerCase().includes(query)) return true;
+        if (motorcycle?.plateNumber.toLowerCase().includes(query)) return true;
         if (cashAdvance.purpose.toLowerCase().includes(query)) return true;
+        if (cashAdvance.personnel.toLowerCase().includes(query)) return true;
 
         return false;
     });
@@ -61,7 +73,7 @@ export default function LiquidationsPage() {
         <ProtectedPage>
             <div className="flex min-h-screen w-full flex-col bg-muted/40">
                 <AppSidebar />
-                <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
+                <div className="flex flex-col pt-14 sm:gap-4 sm:py-4 sm:pl-14">
                     <Header title="Liquidations" onSearch={setSearchQuery} />
                     <main className="flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
                        <LiquidationsContent searchQuery={searchQuery} />

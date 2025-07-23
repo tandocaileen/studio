@@ -4,8 +4,6 @@
 import Link from 'next/link';
 import {
   Home,
-  Users,
-  Package,
   Settings,
   DollarSign,
   PanelLeft,
@@ -103,7 +101,7 @@ export function AppSidebar() {
 
   return (
     <>
-      <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
+      <aside className="fixed inset-y-0 left-0 z-20 hidden w-14 flex-col border-r bg-background sm:flex">
         {mainNav}
         <nav className="mt-auto flex flex-col items-center gap-4 px-2 sm:py-5">
             <TooltipProvider>
@@ -122,7 +120,7 @@ export function AppSidebar() {
             </TooltipProvider>
         </nav>
       </aside>
-      <div className="sm:hidden absolute top-4 left-4">
+      <div className="sm:hidden fixed top-3 left-3 z-50">
         <Sheet>
           <SheetTrigger asChild>
             <Button size="icon" variant="outline" className="sm:hidden">
