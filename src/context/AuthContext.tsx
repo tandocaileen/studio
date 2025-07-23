@@ -28,32 +28,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // In a real app, you would verify the user's session token with a backend.
         // For this demo, we'll check localStorage.
         try {
-            const storedUser = localStorage.getItem('mototrack-user');
+            const storedUser = localStorage.getItem('ltoportal-user');
             if (storedUser) {
                 const parsedUser = JSON.parse(storedUser);
                 // Basic validation to ensure the stored user has a role
                 if (parsedUser.role) {
                     setUser(parsedUser);
                 } else {
-                     localStorage.removeItem('mototrack-user');
+                     localStorage.removeItem('ltoportal-user');
                 }
             }
         } catch (error) {
             console.error("Failed to parse user from localStorage", error);
             // If parsing fails, ensure user is logged out
-            localStorage.removeItem('mototrack-user');
+            localStorage.removeItem('ltoportal-user');
         }
         setLoading(false);
     }, []);
 
     const login = (userData: User) => {
         setUser(userData);
-        localStorage.setItem('mototrack-user', JSON.stringify(userData));
+        localStorage.setItem('ltoportal-user', JSON.stringify(userData));
     };
 
     const logout = () => {
         setUser(null);
-        localStorage.removeItem('mototrack-user');
+        localStorage.removeItem('ltoportal-user');
          // Redirect to login page
         window.location.href = '/login';
     };

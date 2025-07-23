@@ -18,7 +18,7 @@ export const CashAdvanceDocument = React.forwardRef<HTMLDivElement, CashAdvanceD
                     <p className="text-sm">Control No: <span className="font-mono">{advance.id}</span></p>
                 </div>
                 <div className="text-right">
-                    <h2 className="text-2xl font-bold">MotoTrack Financials Inc.</h2>
+                    <h2 className="text-2xl font-bold">LTO Portal Inc.</h2>
                     <p className="text-xs">123 Business Rd, Finance City, PH</p>
                 </div>
             </header>
@@ -61,7 +61,7 @@ export const CashAdvanceDocument = React.forwardRef<HTMLDivElement, CashAdvanceD
 
             <section className="mt-8">
                 <p className="text-sm leading-relaxed">
-                    Received from MotoTrack Financials Inc. the sum of <span className="font-bold">________________</span> PESOS (₱{advance.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}) as Cash Advance for the purpose stated above. I agree to liquidate this amount within five (5) working days from the completion of the task.
+                    Received from LTO Portal Inc. the sum of <span className="font-bold">________________</span> PESOS (₱{advance.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}) as Cash Advance for the purpose stated above. I agree to liquidate this amount within five (5) working days from the completion of the task.
                 </p>
             </section>
 

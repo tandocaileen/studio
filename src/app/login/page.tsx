@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 const ALL_ROLES: UserRole[] = ['Store Supervisor', 'Liaison', 'Cashier'];
 
 export default function LoginPage() {
-    const [email, setEmail] = useState('demo@mototrack.com');
+    const [email, setEmail] = useState('demo@ltoportal.com');
     const [password, setPassword] = useState('password');
     const [role, setRole] = useState<UserRole>('Store Supervisor');
     const { login } = useAuth();
