@@ -16,7 +16,7 @@ export function SummaryCards({ motorcycles, cashAdvances }: SummaryCardsProps) {
   const expiringSoonCount = motorcycles.filter(m => {
     const soon = new Date();
     soon.setDate(soon.getDate() + 30);
-    return m.documents.some(d => d.expiresAt && d.expiresAt < soon && d.expiresAt > new Date());
+    return m.documents.some(d => d.expiresAt && new Date(d.expiresAt) < soon && new Date(d.expiresAt) > new Date());
   }).length;
   
   const pendingAdvances = cashAdvances.filter(ca => ca.status === 'Pending').length;

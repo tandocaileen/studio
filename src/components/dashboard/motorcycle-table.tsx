@@ -20,8 +20,8 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Motorcycle } from '@/types';
-import { MoreHorizontal, PlusCircle, FileText, Truck, Wrench, DollarSign, ExternalLink, Save, XCircle } from 'lucide-react';
+import { Document, Motorcycle } from '@/types';
+import { MoreHorizontal, PlusCircle, FileText, Truck, Wrench, DollarSign, ExternalLink, Save, XCircle, Trash2 } from 'lucide-react';
 import { getBranches } from '@/lib/data';
 import {
   Dialog,
@@ -39,9 +39,20 @@ import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { Checkbox } from '../ui/checkbox';
 import { generateCashAdvance, GenerateCashAdvanceInput } from '@/ai/flows/cash-advance-flow';
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
+import { CalendarIcon } from 'lucide-react';
+import { Calendar } from '../ui/calendar';
+import { cn } from '@/lib/utils';
 
 type MotorcycleTableProps = {
   motorcycles: Motorcycle[];
+};
+
+type NewDocument = {
+  id: number;
+  type: 'OR/CR' | 'COC' | 'Insurance';
+  file: File | null;
+  expiresAt?: Date;
 };
 
 export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleTableProps) {
@@ -50,6 +61,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
   const [editingMotorcycleId, setEditingMotorcycleId] = React.useState<string | null>(null);
   const [editedData, setEditedData] = React.useState<Partial<Motorcycle>>({});
   const [viewingDocumentsMotorcycle, setViewingDocumentsMotorcycle] = React.useState<Motorcycle | null>(null);
+  const [newDocuments, setNewDocuments] = React.useState<NewDocument[]>([]);
 
   const { toast } = useToast();
 
@@ -78,11 +90,12 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
     try {
       const motorcyclesForAI: GenerateCashAdvanceInput['motorcycles'] = selectedMotorcycles.map(m => ({
         ...m,
-        purchaseDate: m.purchaseDate.toISOString(),
+        purchaseDate: new Date(m.purchaseDate).toISOString(),
         documents: m.documents.map(d => ({
             ...d,
-            uploadedAt: d.uploadedAt.toISOString(),
-            expiresAt: d.expiresAt ? d.expiresAt.toISOString() : undefined
+            uploadedAt: new Date(d.uploadedAt).toISOString(),
+            expiresAt: d.expiresAt ? new Date(d.expiresAt).toISOString() : undefined,
+            type: d.type
         }))
       }));
 
@@ -114,7 +127,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
 
   const handleSelectAll = (checked: boolean | 'indeterminate') => {
     if (checked) {
-      setMotorcycles(motorcycles);
+      setSelectedMotorcycles(motorcycles);
     } else {
       setSelectedMotorcycles([]);
     }
@@ -149,13 +162,11 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
   const handleSaveEdit = () => {
     if (!editingMotorcycleId) return;
 
-    // Here you would typically make an API call to save the data
-    // For this example, we'll just update the local state
     setMotorcycles(motorcycles.map(m => 
       m.id === editingMotorcycleId ? { ...m, ...editedData } as Motorcycle : m
     ));
 
-    handleAction(`Motorcycle ${editedData.plateNumber} updated.`);
+    handleAction(`Motorcycle ${editedData.plateNumber || 'details'} updated.`);
     setEditingMotorcycleId(null);
     setEditedData({});
   };
@@ -168,7 +179,24 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
   const handleSelectChange = (name: string, value: string) => {
     setEditedData(prev => ({ ...prev, [name]: value }));
   };
+  
+  const handleAddNewDocument = () => {
+    setNewDocuments(prev => [...prev, { id: Date.now(), type: 'OR/CR', file: null }]);
+  }
 
+  const handleRemoveDocument = (id: number) => {
+    setNewDocuments(prev => prev.filter(doc => doc.id !== id));
+  }
+
+  const handleDocumentChange = (id: number, field: keyof NewDocument, value: any) => {
+    setNewDocuments(prev => prev.map(doc => doc.id === id ? { ...doc, [field]: value } : doc));
+  }
+
+  const handleFileChange = (id: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      handleDocumentChange(id, 'file', e.target.files[0]);
+    }
+  };
 
   return (
     <>
@@ -192,14 +220,14 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                   Add Motorcycle
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
+              <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                   <DialogTitle>Add New Motorcycle</DialogTitle>
                   <DialogDescription>
                     Fill in the details for the new unit.
                   </DialogDescription>
                 </DialogHeader>
-                <div className="grid gap-4 py-4">
+                <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto pr-4">
                   <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="plate" className="text-right">Plate No.</Label>
                     <Input id="plate" placeholder="ABC 1234" className="col-span-3" />
@@ -222,6 +250,74 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                         {branches.map(branch => <SelectItem key={branch} value={branch}>{branch}</SelectItem>)}
                       </SelectContent>
                     </Select>
+                  </div>
+
+                  <div className="col-span-4">
+                    <Label className="text-base font-semibold">Documents</Label>
+                    <div className="space-y-4 mt-2">
+                      {newDocuments.map((doc, index) => (
+                        <div key={doc.id} className="grid grid-cols-1 gap-4 p-4 border rounded-lg relative">
+                           <Button
+                            variant="ghost"
+                            size="icon"
+                            className="absolute top-1 right-1 h-6 w-6"
+                            onClick={() => handleRemoveDocument(doc.id)}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor={`doc-type-${index}`} className="text-right">Type</Label>
+                            <Select
+                              value={doc.type}
+                              onValueChange={(value: 'OR/CR' | 'COC' | 'Insurance') => handleDocumentChange(doc.id, 'type', value)}
+                            >
+                              <SelectTrigger id={`doc-type-${index}`} className="col-span-3">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="OR/CR">OR/CR</SelectItem>
+                                <SelectItem value="COC">COC</SelectItem>
+                                <SelectItem value="Insurance">Insurance</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor={`doc-file-${index}`} className="text-right">File</Label>
+                            <Input id={`doc-file-${index}`} type="file" className="col-span-3" onChange={(e) => handleFileChange(doc.id, e)} />
+                          </div>
+                          {doc.type === 'Insurance' || doc.type === 'OR/CR' ? (
+                            <div className="grid grid-cols-4 items-center gap-4">
+                              <Label htmlFor={`doc-expiry-${index}`} className="text-right">Expiry</Label>
+                                <Popover>
+                                  <PopoverTrigger asChild>
+                                    <Button
+                                      variant={"outline"}
+                                      className={cn(
+                                        "col-span-3 justify-start text-left font-normal",
+                                        !doc.expiresAt && "text-muted-foreground"
+                                      )}
+                                    >
+                                      <CalendarIcon className="mr-2 h-4 w-4" />
+                                      {doc.expiresAt ? format(doc.expiresAt, "PPP") : <span>Pick a date</span>}
+                                    </Button>
+                                  </PopoverTrigger>
+                                  <PopoverContent className="w-auto p-0">
+                                    <Calendar
+                                      mode="single"
+                                      selected={doc.expiresAt}
+                                      onSelect={(date) => handleDocumentChange(doc.id, 'expiresAt', date)}
+                                      initialFocus
+                                    />
+                                  </PopoverContent>
+                                </Popover>
+                            </div>
+                          ) : null}
+                        </div>
+                      ))}
+                      <Button variant="outline" size="sm" onClick={handleAddNewDocument}>
+                        <PlusCircle className="mr-2 h-4 w-4" /> Add Document
+                      </Button>
+                    </div>
                   </div>
                 </div>
                 <DialogFooter>
@@ -298,7 +394,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                     </TableCell>
                     <TableCell>
                        {isEditing ? (
-                        <Select value={editedData.status} onValueChange={(value) => handleSelectChange('status', value)}>
+                        <Select value={editedData.status} onValueChange={(value) => handleSelectChange('status', value as Motorcycle['status'])}>
                           <SelectTrigger className="h-8">
                             <SelectValue/>
                           </SelectTrigger>
@@ -313,7 +409,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                       )}
                     </TableCell>
                     <TableCell>
-                      {insurance?.expiresAt ? format(insurance.expiresAt, 'MMM dd, yyyy') : 'N/A'}
+                      {insurance?.expiresAt ? format(new Date(insurance.expiresAt), 'MMM dd, yyyy') : 'N/A'}
                     </TableCell>
                     <TableCell>
                       {isEditing ? (
@@ -382,8 +478,8 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                 {viewingDocumentsMotorcycle.documents.map((doc, index) => (
                     <TableRow key={index}>
                         <TableCell>{doc.type}</TableCell>
-                        <TableCell>{format(doc.uploadedAt, 'MMM dd, yyyy')}</TableCell>
-                        <TableCell>{doc.expiresAt ? format(doc.expiresAt, 'MMM dd, yyyy') : 'N/A'}</TableCell>
+                        <TableCell>{format(new Date(doc.uploadedAt), 'MMM dd, yyyy')}</TableCell>
+                        <TableCell>{doc.expiresAt ? format(new Date(doc.expiresAt), 'MMM dd, yyyy') : 'N/A'}</TableCell>
                         <TableCell>
                             <Button variant="outline" size="sm" asChild>
                                 <a href={doc.url} target="_blank" rel="noopener noreferrer">

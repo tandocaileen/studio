@@ -133,7 +133,7 @@ export function CashAdvanceTable({ cashAdvances: initialCashAdvances }: CashAdva
                 <TableCell className="font-medium">{ca.personnel}</TableCell>
                 <TableCell className="max-w-[300px] truncate">{ca.purpose}</TableCell>
                 <TableCell className="text-right">₱{ca.amount.toLocaleString()}</TableCell>
-                <TableCell>{format(ca.date, 'MMM dd, yyyy')}</TableCell>
+                <TableCell>{format(new Date(ca.date), 'MMM dd, yyyy')}</TableCell>
                 <TableCell>
                   <Badge variant={statusVariant(ca.status)} className="capitalize">
                      <span className={`mr-2 inline-block h-2 w-2 rounded-full ${getStatusColor(ca.status)}`}></span>
