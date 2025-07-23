@@ -33,7 +33,7 @@ export default function CashAdvancesPage() {
     const [searchQuery, setSearchQuery] = useState('');
 
     return (
-        <ProtectedPage>
+        <ProtectedPage allowedRoles={['Liaison', 'Cashier']}>
             <div className="flex min-h-screen w-full flex-col bg-muted/40">
                 <AppSidebar />
                 <div className="flex flex-col pt-14 sm:gap-4 sm:py-4 sm:pl-14">

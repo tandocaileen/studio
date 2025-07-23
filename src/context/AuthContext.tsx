@@ -3,9 +3,12 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-type User = {
+export type UserRole = 'Store Supervisor' | 'Liaison' | 'Cashier';
+
+export type User = {
     email: string;
     name: string;
+    role: UserRole;
 };
 
 type AuthContextType = {
@@ -27,7 +30,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         try {
             const storedUser = localStorage.getItem('mototrack-user');
             if (storedUser) {
-                setUser(JSON.parse(storedUser));
+                const parsedUser = JSON.parse(storedUser);
+                // Basic validation to ensure the stored user has a role
+                if (parsedUser.role) {
+                    setUser(parsedUser);
+                } else {
+                     localStorage.removeItem('mototrack-user');
+                }
             }
         } catch (error) {
             console.error("Failed to parse user from localStorage", error);

@@ -22,19 +22,30 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Sheet, SheetContent, SheetTrigger } from '../ui/sheet';
 import { Button } from '../ui/button';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth, UserRole } from '@/context/AuthContext';
 
-const navItems = [
-  { href: '/', icon: Home, label: 'Dashboard' },
-  { href: '/cash-advances', icon: DollarSign, label: 'Cash Advances' },
-  { href: '/liquidations', icon: Receipt, label: 'Liquidations' },
-  { href: '/settings', icon: Settings, label: 'Settings' },
-  { href: '/support', icon: LifeBuoy, label: 'Support' },
+type NavItem = {
+  href: string;
+  icon: React.ElementType;
+  label: string;
+  allowedRoles: UserRole[];
+}
+
+const navItems: NavItem[] = [
+  { href: '/', icon: Home, label: 'Dashboard', allowedRoles: ['Store Supervisor'] },
+  { href: '/cash-advances', icon: DollarSign, label: 'Cash Advances', allowedRoles: ['Liaison', 'Cashier'] },
+  { href: '/liquidations', icon: Receipt, label: 'Liquidations', allowedRoles: ['Liaison'] },
+  { href: '/settings', icon: Settings, label: 'Settings', allowedRoles: ['Store Supervisor', 'Liaison', 'Cashier'] },
+  { href: '/support', icon: LifeBuoy, label: 'Support', allowedRoles: ['Store Supervisor', 'Liaison', 'Cashier'] },
 ];
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
+
+  if (!user) return null;
+
+  const accessibleNavItems = navItems.filter(item => item.allowedRoles.includes(user.role));
 
   const mainNav = (
     <nav className="flex flex-col items-center gap-4 px-2 sm:py-5">
@@ -46,7 +57,7 @@ export function AppSidebar() {
         <span className="sr-only">MotoTrack Financials</span>
       </Link>
       <TooltipProvider>
-        {navItems.map((item) => (
+        {accessibleNavItems.map((item) => (
           <Tooltip key={item.label}>
             <TooltipTrigger asChild>
               <Link
@@ -76,7 +87,7 @@ export function AppSidebar() {
           <Logo className="h-5 w-5 transition-all group-hover:scale-110" />
           <span className="sr-only">MotoTrack Financials</span>
         </Link>
-        {navItems.map((item) => (
+        {accessibleNavItems.map((item) => (
            <Link
               key={item.label}
               href={item.href}

@@ -46,7 +46,7 @@ function DashboardContent({ searchQuery }: { searchQuery: string }) {
                   {user?.name}
               </h2>
               <p className="text-sm text-muted-foreground font-medium">
-                  {userBranch}
+                  {userBranch} - {user?.role}
               </p>
           </div>
       </div>
@@ -63,7 +63,7 @@ export default function DashboardPage() {
   const [searchQuery, setSearchQuery] = useState('');
 
   return (
-    <ProtectedPage>
+    <ProtectedPage allowedRoles={['Store Supervisor']}>
       <div className="flex min-h-screen w-full flex-col bg-muted/40">
         <AppSidebar />
         <div className="flex flex-col pt-14 sm:gap-4 sm:py-4 sm:pl-14">

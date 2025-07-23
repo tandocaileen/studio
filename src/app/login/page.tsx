@@ -5,21 +5,25 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth, UserRole } from "@/context/AuthContext";
 import { Logo } from "@/components/icons";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+const ALL_ROLES: UserRole[] = ['Store Supervisor', 'Liaison', 'Cashier'];
 
 export default function LoginPage() {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const [email, setEmail] = useState('demo@mototrack.com');
+    const [password, setPassword] = useState('password');
+    const [role, setRole] = useState<UserRole>('Store Supervisor');
     const { login } = useAuth();
     const router = useRouter();
 
     const handleLogin = () => {
         // In a real app, you'd validate credentials against a backend.
-        // For this demo, we'll just log the user in.
-        login({ email, name: 'Demo User' });
+        // For this demo, we'll just log the user in with the selected role.
+        login({ email, name: `Demo ${role}`, role });
         router.push('/');
     };
 
@@ -31,7 +35,7 @@ export default function LoginPage() {
                         <Logo className="h-12 w-12 text-primary" />
                     </div>
                     <CardTitle className="text-2xl">Welcome Back</CardTitle>
-                    <CardDescription>Enter your credentials to access your account.</CardDescription>
+                    <CardDescription>Select a role to log in to your account.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="grid gap-4">
@@ -56,8 +60,19 @@ export default function LoginPage() {
                                 onChange={(e) => setPassword(e.target.value)}
                             />
                         </div>
+                         <div className="grid gap-2">
+                            <Label htmlFor="role">Role</Label>
+                            <Select value={role} onValueChange={(value: UserRole) => setRole(value)}>
+                                <SelectTrigger id="role">
+                                    <SelectValue placeholder="Select a role" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {ALL_ROLES.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </div>
                         <Button onClick={handleLogin} className="w-full mt-2">
-                            Login
+                            Login as {role}
                         </Button>
                     </div>
                 </CardContent>
