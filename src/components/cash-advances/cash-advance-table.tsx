@@ -103,41 +103,6 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
             Track and manage all cash advance requests and liquidations.
           </CardDescription>
         </div>
-        {user?.role === 'Liaison' && (
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button size="sm" className="gap-1">
-              <PlusCircle className="h-4 w-4" />
-              New Request
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>New Cash Advance Request</DialogTitle>
-              <DialogDescription>
-                Fill in the details for the request.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="personnel" className="text-right">Personnel</Label>
-                <Input id="personnel" placeholder="e.g., John Doe" className="col-span-3" />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="amount" className="text-right">Amount</Label>
-                <Input id="amount" type="number" placeholder="e.g., 2500" className="col-span-3" />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="purpose" className="text-right">Purpose</Label>
-                <Textarea id="purpose" placeholder="Describe the purpose of the advance..." className="col-span-3" />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button type="submit" onClick={() => handleAction('New cash advance request submitted.')}>Submit Request</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-        )}
       </CardHeader>
       <CardContent>
         <Table>
