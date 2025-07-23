@@ -452,6 +452,14 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                       <Label htmlFor="model" className="text-right">Model</Label>
                       <Input id="model" name="model" value={editedData.model || ''} onChange={handleInputChange} className="col-span-3" />
                   </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="engineNumber" className="text-right">Engine No.</Label>
+                    <Input id="engineNumber" name="engineNumber" value={editedData.engineNumber || ''} onChange={handleInputChange} className="col-span-3" />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="chassisNumber" className="text-right">Chassis No.</Label>
+                    <Input id="chassisNumber" name="chassisNumber" value={editedData.chassisNumber || ''} onChange={handleInputChange} className="col-span-3" />
+                  </div>
                    <div className="grid grid-cols-4 items-center gap-4">
                       <Label htmlFor="status" className="text-right">Status</Label>
                       <Select value={editedData.status} onValueChange={(value) => handleSelectChange('status', value)}>
