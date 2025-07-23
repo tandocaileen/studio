@@ -10,6 +10,8 @@ import { Logo } from "@/components/icons";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useTheme } from "next-themes";
+import { Moon, Sun } from "lucide-react";
 
 const ALL_ROLES: UserRole[] = ['Store Supervisor', 'Liaison', 'Cashier'];
 
@@ -19,6 +21,8 @@ export default function LoginPage() {
     const [role, setRole] = useState<UserRole>('Store Supervisor');
     const { login } = useAuth();
     const router = useRouter();
+    const { setTheme } = useTheme();
+
 
     const handleLogin = () => {
         // In a real app, you'd validate credentials against a backend.
@@ -28,7 +32,17 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-muted/40">
+        <div className="flex items-center justify-center min-h-screen bg-muted/40 relative">
+             <div className="absolute top-4 right-4 flex items-center gap-2">
+                <Button variant="outline" size="icon" onClick={() => setTheme('light')}>
+                    <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                    <span className="sr-only">Set light theme</span>
+                </Button>
+                 <Button variant="outline" size="icon" onClick={() => setTheme('dark')}>
+                    <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                    <span className="sr-only">Set dark theme</span>
+                </Button>
+            </div>
             <Card className="w-full max-w-sm">
                 <CardHeader className="text-center">
                     <div className="flex justify-center mb-4">
