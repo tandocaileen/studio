@@ -1,9 +1,12 @@
+
+'use client';
+
 import { Header } from "@/components/layout/header";
 import { AppSidebar } from "@/components/layout/sidebar";
 import { LiquidationTable } from "@/components/liquidations/liquidation-table";
 import { getCashAdvances, getMotorcycles } from "@/lib/data";
 import { CashAdvance, Motorcycle } from "@/types";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { AppLoader } from "@/components/layout/loader";
 import { ProtectedPage } from "@/components/auth/protected-page";
 
@@ -12,35 +15,56 @@ export type LiquidationItem = {
     motorcycle?: Motorcycle;
 }
 
-async function LiquidationsContent() {
-    const cashAdvances = await getCashAdvances();
-    const motorcycles = await getMotorcycles();
+function LiquidationsContent({ searchQuery }: { searchQuery: string }) {
+    const [items, setItems] = useState<LiquidationItem[] | null>(null);
 
-    // Naive association based on plate number in purpose string
-    const liquidationItems: LiquidationItem[] = cashAdvances.map(ca => {
-        const plateNumberMatch = ca.purpose.match(/([A-Z0-9]{3}\s[A-Z0-9]{3,4})/);
-        let motorcycle: Motorcycle | undefined;
-        if (plateNumberMatch) {
-            motorcycle = motorcycles.find(m => m.plateNumber === plateNumberMatch[0]);
-        }
-        return { cashAdvance: ca, motorcycle };
+    useEffect(() => {
+        Promise.all([getCashAdvances(), getMotorcycles()]).then(([cashAdvances, motorcycles]) => {
+            const liquidationItems: LiquidationItem[] = cashAdvances.map(ca => {
+                const plateNumberMatch = ca.purpose.match(/([A-Z0-9]{3}\s[A-Z0-9]{3,4})/);
+                let motorcycle: Motorcycle | undefined;
+                if (plateNumberMatch) {
+                    motorcycle = motorcycles.find(m => m.plateNumber === plateNumberMatch[0]);
+                }
+                return { cashAdvance: ca, motorcycle };
+            });
+            setItems(liquidationItems);
+        });
+    }, []);
+
+    if (!items) {
+        return <AppLoader />;
+    }
+
+    const filteredItems = items.filter(item => {
+        const motorcycle = item.motorcycle;
+        const cashAdvance = item.cashAdvance;
+        const query = searchQuery.toLowerCase();
+
+        if (motorcycle?.engineNumber.toLowerCase().includes(query)) return true;
+        if (motorcycle?.chassisNumber.toLowerCase().includes(query)) return true;
+        if (motorcycle?.model.toLowerCase().includes(query)) return true;
+        if (cashAdvance.purpose.toLowerCase().includes(query)) return true;
+
+        return false;
     });
 
-    return <LiquidationTable items={liquidationItems} />
+
+    return <LiquidationTable items={filteredItems} />
 }
 
 
 export default function LiquidationsPage() {
+    const [searchQuery, setSearchQuery] = useState('');
+
     return (
         <ProtectedPage>
             <div className="flex min-h-screen w-full flex-col bg-muted/40">
                 <AppSidebar />
                 <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
-                    <Header title="Liquidations" />
+                    <Header title="Liquidations" onSearch={setSearchQuery} />
                     <main className="flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-                       <React.Suspense fallback={<AppLoader />}>
-                            <LiquidationsContent />
-                       </React.Suspense>
+                       <LiquidationsContent searchQuery={searchQuery} />
                     </main>
                 </div>
             </div>

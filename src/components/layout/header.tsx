@@ -38,9 +38,10 @@ import { cn } from '@/lib/utils';
 
 type HeaderProps = {
   title: string;
+  onSearch?: (query: string) => void;
 };
 
-export function Header({ title }: HeaderProps) {
+export function Header({ title, onSearch }: HeaderProps) {
   const { setTheme } = useTheme();
   const { user, logout } = useAuth();
 
@@ -71,6 +72,7 @@ export function Header({ title }: HeaderProps) {
           type="search"
           placeholder="Search..."
           className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[320px]"
+          onChange={(e) => onSearch?.(e.target.value)}
         />
       </div>
        <DropdownMenu>
