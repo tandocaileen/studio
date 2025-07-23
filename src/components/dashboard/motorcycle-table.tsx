@@ -271,6 +271,14 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                     <Input id="model" placeholder="e.g., Click 125i" className="col-span-3" />
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="engineNumber" className="text-right">Engine No.</Label>
+                    <Input id="engineNumber" placeholder="e.g., E12345678" className="col-span-3" />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="chassisNumber" className="text-right">Chassis No.</Label>
+                    <Input id="chassisNumber" placeholder="e.g., C12345678" className="col-span-3" />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="branch" className="text-right">Branch</Label>
                     <Select>
                       <SelectTrigger className="col-span-3">
