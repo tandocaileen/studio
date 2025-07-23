@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -41,7 +42,7 @@ export function AppSidebar() {
         <span className="sr-only">MotoTrack Financials</span>
       </Link>
       {navItems.map((item) => (
-        <Tooltip key={item.href}>
+        <Tooltip key={item.label}>
           <TooltipTrigger asChild>
             <Link
               href={item.disabled ? '#' : item.href}
@@ -101,7 +102,7 @@ export function AppSidebar() {
               </Link>
               {navItems.map((item) => (
                  <Link
-                    key={item.href}
+                    key={item.label}
                     href={item.disabled ? '#' : item.href}
                     className={cn(
                       'flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground',
