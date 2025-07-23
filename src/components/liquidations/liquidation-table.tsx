@@ -28,11 +28,28 @@ type LiquidationTableProps = {
 
 export function LiquidationTable({ items }: LiquidationTableProps) {
   const [selectedItem, setSelectedItem] = React.useState<LiquidationItem | null>(null);
+  const [ltoOrAmount, setLtoOrAmount] = React.useState(0);
+  const [ltoProcessFee, setLtoProcessFee] = React.useState(0);
+  const [totalLiquidation, setTotalLiquidation] = React.useState(0);
+  const [shortageOverage, setShortageOverage] = React.useState(0);
   const { toast } = useToast();
 
   const handleLiquidate = (item: LiquidationItem) => {
     setSelectedItem(item);
+    setLtoOrAmount(0);
+    setLtoProcessFee(0);
   }
+
+  React.useEffect(() => {
+    const totalLiq = ltoOrAmount + ltoProcessFee;
+    setTotalLiquidation(totalLiq);
+
+    if (selectedItem) {
+        const shortage = selectedItem.cashAdvance.amount - totalLiq;
+        setShortageOverage(shortage);
+    }
+  }, [ltoOrAmount, ltoProcessFee, selectedItem]);
+
 
   const handleFinalSubmit = () => {
      if (!selectedItem) return;
@@ -134,19 +151,19 @@ export function LiquidationTable({ items }: LiquidationTableProps) {
                             </div>
                             <div className="grid gap-2">
                                 <Label htmlFor="lto-or-amount">LTO OR Amount</Label>
-                                <Input id="lto-or-amount" type="number" placeholder="0.00" />
+                                <Input id="lto-or-amount" type="number" placeholder="0.00" value={ltoOrAmount || ''} onChange={(e) => setLtoOrAmount(parseFloat(e.target.value) || 0)} />
                             </div>
                              <div className="grid gap-2">
                                 <Label htmlFor="lto-process-fee">LTO Process Fee</Label>
-                                <Input id="lto-process-fee" type="number" placeholder="0.00" />
+                                <Input id="lto-process-fee" type="number" placeholder="0.00" value={ltoProcessFee || ''} onChange={(e) => setLtoProcessFee(parseFloat(e.target.value) || 0)} />
                             </div>
                             <div className="grid gap-2">
                                 <Label htmlFor="total-liquidation">Total Liquidation</Label>
-                                <Input id="total-liquidation" type="number" placeholder="0.00" disabled />
+                                <Input id="total-liquidation" type="number" placeholder="0.00" disabled value={totalLiquidation.toFixed(2)} />
                             </div>
                             <div className="grid gap-2">
                                 <Label htmlFor="shortage-overage">Shortage / Overage</Label>
-                                <Input id="shortage-overage" type="number" placeholder="0.00" disabled />
+                                <Input id="shortage-overage" type="number" placeholder="0.00" disabled value={shortageOverage.toFixed(2)} className={shortageOverage < 0 ? 'text-destructive' : ''} />
                             </div>
                              <div className="col-span-full grid gap-2">
                                 <Label htmlFor="remarks">Remarks</Label>
