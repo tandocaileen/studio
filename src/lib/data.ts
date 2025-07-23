@@ -28,7 +28,7 @@ const motorcycles: Motorcycle[] = [
       { type: 'Insurance', url: '#', uploadedAt: new Date('2023-01-20'), expiresAt: addDays(today, 25) },
     ],
     customerName: 'Juan Dela Cruz',
-    assignedLiaison: 'John Doe',
+    assignedLiaison: 'Demo Liaison',
     processingFee: 1500,
     orFee: 1000,
   },
@@ -51,7 +51,7 @@ const motorcycles: Motorcycle[] = [
       { type: 'Insurance', url: '#', uploadedAt: new Date('2022-05-25'), expiresAt: addDays(today, 5) },
     ],
     customerName: 'Maria Clara',
-    assignedLiaison: 'John Doe',
+    assignedLiaison: 'Demo Liaison',
     processingFee: 1500,
     orFee: 1000,
   },
@@ -74,7 +74,7 @@ const motorcycles: Motorcycle[] = [
       { type: 'Insurance', url: '#', uploadedAt: new Date('2023-03-15'), expiresAt: addDays(today, 150) },
     ],
     customerName: 'Jose Rizal',
-    assignedLiaison: 'Peter Jones',
+    assignedLiaison: 'Demo Liaison',
     processingFee: 1600,
     orFee: 1100,
   },
@@ -93,7 +93,7 @@ const motorcycles: Motorcycle[] = [
     status: 'Incomplete',
     documents: [],
     customerName: 'Andres Bonifacio',
-    assignedLiaison: 'Jane Smith',
+    assignedLiaison: 'Demo Liaison',
     processingFee: 1500,
     orFee: 1000,
   },
@@ -115,9 +115,51 @@ const motorcycles: Motorcycle[] = [
         { type: 'Insurance', url: '#', uploadedAt: new Date('2023-08-05'), expiresAt: addDays(today, 360) },
     ],
     customerName: 'Gabriela Silang',
-    assignedLiaison: 'Jane Smith',
+    assignedLiaison: 'Demo Liaison',
     processingFee: 1550,
     orFee: 1050,
+  },
+   {
+    id: '6',
+    make: 'Yamaha',
+    model: 'Mio Aerox',
+    year: 2024,
+    color: 'Matte Grey',
+    plateNumber: '345 PQR',
+    engineNumber: 'E65432198',
+    chassisNumber: 'C65432198',
+    assignedBranch: 'Main Office',
+    purchaseDate: new Date('2024-05-10'),
+    supplier: 'Yamaha Motors',
+    status: 'Ready to Register',
+    documents: [
+      { type: 'COC', url: '#', uploadedAt: new Date('2024-05-15') },
+      { type: 'Insurance', url: '#', uploadedAt: new Date('2024-05-15'), expiresAt: addDays(today, 365) },
+      { type: 'CSR', url: '#', uploadedAt: new Date('2024-05-15') },
+    ],
+    customerName: 'Apolinario Mabini',
+    assignedLiaison: 'Demo Liaison',
+    processingFee: 1500,
+    orFee: 1000,
+  },
+  {
+    id: '7',
+    make: 'Honda',
+    model: 'ADV 160',
+    year: 2024,
+    color: 'Red',
+    plateNumber: '678 STU',
+    engineNumber: 'E78901234',
+    chassisNumber: 'C78901234',
+    assignedBranch: 'East Branch',
+    purchaseDate: new Date('2024-06-01'),
+    supplier: 'Honda Prestige',
+    status: 'Incomplete',
+    documents: [],
+    customerName: 'Emilio Aguinaldo',
+    assignedLiaison: 'Demo Liaison',
+    processingFee: 1500,
+    orFee: 1000,
   }
 ];
 
@@ -125,7 +167,7 @@ const cashAdvances: CashAdvance[] = [
   {
     id: 'ca1',
     motorcycleId: '2', // NMAX For Renewal
-    personnel: 'John Doe',
+    personnel: 'Demo Liaison',
     purpose: 'OR/CR Renewal for 456 DEF',
     amount: 2500,
     date: addDays(today, -40),
@@ -134,7 +176,7 @@ const cashAdvances: CashAdvance[] = [
   {
     id: 'ca2',
     motorcycleId: '1', // Click 125i
-    personnel: 'Jane Smith',
+    personnel: 'Demo Liaison',
     purpose: 'Minor Repair for 123 ABC',
     amount: 1200,
     date: new Date('2024-03-01'),
@@ -146,7 +188,7 @@ const cashAdvances: CashAdvance[] = [
   {
     id: 'ca3',
     motorcycleId: '5', // PCX160 Ready to Register
-    personnel: 'Peter Jones',
+    personnel: 'Demo Liaison',
     purpose: 'New motorcycle registration for 212 MNO',
     amount: 5000,
     date: new Date('2024-02-15'),
@@ -155,7 +197,7 @@ const cashAdvances: CashAdvance[] = [
   {
     id: 'ca4',
     motorcycleId: '3', // Burgman
-    personnel: 'John Doe',
+    personnel: 'Demo Liaison',
     purpose: 'Insurance payment for 789 GHI',
     amount: 3500,
     date: addDays(today, -5),
@@ -166,7 +208,7 @@ const cashAdvances: CashAdvance[] = [
     {
     id: 'ca5',
     motorcycleId: '2', // NMAX For Renewal
-    personnel: 'Jane Smith',
+    personnel: 'Demo Liaison',
     purpose: 'Renewal for AAA 111',
     amount: 2800,
     date: addDays(today, -2),
