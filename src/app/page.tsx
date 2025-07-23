@@ -4,28 +4,24 @@
 import { Header } from "@/components/layout/header";
 import { AppSidebar } from "@/components/layout/sidebar";
 import { MotorcycleTable } from "@/components/dashboard/motorcycle-table";
-import { SummaryCards } from "@/components/dashboard/summary-cards";
-import { getMotorcycles, getCashAdvances } from "@/lib/data";
+import { getMotorcycles } from "@/lib/data";
 import React, { useState, useEffect } from "react";
 import { AppLoader } from "@/components/layout/loader";
 import { ProtectedPage } from "@/components/auth/protected-page";
 import { useAuth } from "@/context/AuthContext";
-import { Motorcycle, CashAdvance } from "@/types";
+import { Motorcycle } from "@/types";
 
 function DashboardContent({ searchQuery }: { searchQuery: string }) {
   const [motorcycles, setMotorcycles] = useState<Motorcycle[] | null>(null);
-  const [cashAdvances, setCashAdvances] = useState<CashAdvance[] | null>(null);
   
   useEffect(() => {
     getMotorcycles().then(setMotorcycles);
-    getCashAdvances().then(setCashAdvances);
   }, []);
 
   const { user } = useAuth();
-  // In a real app, user's branch would come from their profile data.
   const userBranch = "Main Office"; 
 
-  if (!motorcycles || !cashAdvances) {
+  if (!motorcycles) {
     return <AppLoader />;
   }
 
@@ -50,10 +46,6 @@ function DashboardContent({ searchQuery }: { searchQuery: string }) {
               </p>
           </div>
       </div>
-      <SummaryCards
-        motorcycles={motorcycles}
-        cashAdvances={cashAdvances}
-      />
       <MotorcycleTable motorcycles={filteredMotorcycles} />
     </>
   );
