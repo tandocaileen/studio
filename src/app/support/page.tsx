@@ -13,6 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LifeBuoy, Send } from 'lucide-react';
+import { ProtectedPage } from '@/components/auth/protected-page';
 
 const faqs = [
     {
@@ -45,86 +46,88 @@ export default function SupportPage() {
     }
 
     return (
-        <div className="flex min-h-screen w-full flex-col bg-muted/40">
-            <AppSidebar />
-            <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
-                <Header title="Support" />
-                <main className="flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-                    <div className="grid gap-8">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Frequently Asked Questions</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <Accordion type="single" collapsible className="w-full">
-                                    {faqs.map((faq, index) => (
-                                        <AccordionItem value={`item-${index}`} key={index}>
-                                            <AccordionTrigger>{faq.question}</AccordionTrigger>
-                                            <AccordionContent>
-                                                {faq.answer}
-                                            </AccordionContent>
-                                        </AccordionItem>
-                                    ))}
-                                </Accordion>
-                            </CardContent>
-                        </Card>
+        <ProtectedPage>
+            <div className="flex min-h-screen w-full flex-col bg-muted/40">
+                <AppSidebar />
+                <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
+                    <Header title="Support" />
+                    <main className="flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
+                        <div className="grid gap-8">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Frequently Asked Questions</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <Accordion type="single" collapsible className="w-full">
+                                        {faqs.map((faq, index) => (
+                                            <AccordionItem value={`item-${index}`} key={index}>
+                                                <AccordionTrigger>{faq.question}</AccordionTrigger>
+                                                <AccordionContent>
+                                                    {faq.answer}
+                                                </AccordionContent>
+                                            </AccordionItem>
+                                        ))}
+                                    </Accordion>
+                                </CardContent>
+                            </Card>
 
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Contact Support</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="flex flex-col items-center justify-center text-center gap-4">
-                                     <LifeBuoy className="w-16 h-16 text-primary" />
-                                    <p className="text-muted-foreground">
-                                        Can't find the answer you're looking for? <br />
-                                        Our support team is here to help.
-                                    </p>
-                                    <Dialog>
-                                        <DialogTrigger asChild>
-                                            <Button>
-                                                <Send className="mr-2 h-4 w-4" />
-                                                Escalate to Personnel
-                                            </Button>
-                                        </DialogTrigger>
-                                        <DialogContent className="sm:max-w-[425px]">
-                                             <DialogHeader>
-                                                <DialogTitle>Contact Support</DialogTitle>
-                                                <DialogDescription>
-                                                    Please describe your issue below. A support team member will respond to you via email.
-                                                </DialogDescription>
-                                            </DialogHeader>
-                                            <div className="grid gap-4 py-4">
-                                                <div className="grid grid-cols-4 items-center gap-4">
-                                                    <Label htmlFor="email" className="text-right">
-                                                        Email
-                                                    </Label>
-                                                    <Input id="email" type="email" placeholder="your.email@example.com" className="col-span-3" />
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Contact Support</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="flex flex-col items-center justify-center text-center gap-4">
+                                         <LifeBuoy className="w-16 h-16 text-primary" />
+                                        <p className="text-muted-foreground">
+                                            Can't find the answer you're looking for? <br />
+                                            Our support team is here to help.
+                                        </p>
+                                        <Dialog>
+                                            <DialogTrigger asChild>
+                                                <Button>
+                                                    <Send className="mr-2 h-4 w-4" />
+                                                    Escalate to Personnel
+                                                </Button>
+                                            </DialogTrigger>
+                                            <DialogContent className="sm:max-w-[425px]">
+                                                 <DialogHeader>
+                                                    <DialogTitle>Contact Support</DialogTitle>
+                                                    <DialogDescription>
+                                                        Please describe your issue below. A support team member will respond to you via email.
+                                                    </DialogDescription>
+                                                </DialogHeader>
+                                                <div className="grid gap-4 py-4">
+                                                    <div className="grid grid-cols-4 items-center gap-4">
+                                                        <Label htmlFor="email" className="text-right">
+                                                            Email
+                                                        </Label>
+                                                        <Input id="email" type="email" placeholder="your.email@example.com" className="col-span-3" />
+                                                    </div>
+                                                    <div className="grid grid-cols-4 items-center gap-4">
+                                                        <Label htmlFor="subject" className="text-right">
+                                                            Subject
+                                                        </Label>
+                                                        <Input id="subject" placeholder="e.g., Issue with CA generation" className="col-span-3" />
+                                                    </div>
+                                                    <div className="grid grid-cols-4 items-center gap-4">
+                                                        <Label htmlFor="message" className="text-right">
+                                                            Message
+                                                        </Label>
+                                                        <Textarea id="message" placeholder="Describe your issue in detail..." className="col-span-3" />
+                                                    </div>
                                                 </div>
-                                                <div className="grid grid-cols-4 items-center gap-4">
-                                                    <Label htmlFor="subject" className="text-right">
-                                                        Subject
-                                                    </Label>
-                                                    <Input id="subject" placeholder="e.g., Issue with CA generation" className="col-span-3" />
-                                                </div>
-                                                <div className="grid grid-cols-4 items-center gap-4">
-                                                    <Label htmlFor="message" className="text-right">
-                                                        Message
-                                                    </Label>
-                                                    <Textarea id="message" placeholder="Describe your issue in detail..." className="col-span-3" />
-                                                </div>
-                                            </div>
-                                            <DialogFooter>
-                                                <Button type="submit" onClick={handleSendMessage}>Send Message</Button>
-                                            </DialogFooter>
-                                        </DialogContent>
-                                    </Dialog>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
-                </main>
+                                                <DialogFooter>
+                                                    <Button type="submit" onClick={handleSendMessage}>Send Message</Button>
+                                                </DialogFooter>
+                                            </DialogContent>
+                                        </Dialog>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </main>
+                </div>
             </div>
-        </div>
+        </ProtectedPage>
     );
 }

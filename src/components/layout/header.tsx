@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -5,6 +6,7 @@ import {
   PanelLeft,
   Moon,
   Sun,
+  LogOut,
 } from 'lucide-react';
 
 import {
@@ -27,6 +29,12 @@ import {
 import { Input } from '@/components/ui/input';
 import Image from 'next/image';
 import { useTheme } from 'next-themes';
+import { useAuth } from '@/context/AuthContext';
+import Link from 'next/link';
+import { Sheet, SheetContent, SheetTrigger } from '../ui/sheet';
+import { usePathname } from 'next/navigation';
+import { Logo } from '../icons';
+import { cn } from '@/lib/utils';
 
 type HeaderProps = {
   title: string;
@@ -34,13 +42,15 @@ type HeaderProps = {
 
 export function Header({ title }: HeaderProps) {
   const { setTheme } = useTheme();
-  // Hardcoded for now, will be replaced with actual user data
+  const { user, logout } = useAuth();
+
+  // Hardcoded for now, will be replaced with actual user data from session
   const userPosition = "Liaison Supervisor";
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
-      <div className="sm:hidden">
-        {/* Mobile sidebar is rendered inside the main sidebar component now */}
+       <div className="sm:hidden">
+        {/* Mobile sidebar trigger is in the sidebar component */}
       </div>
       <Breadcrumb className="hidden md:flex">
         <BreadcrumbList>
@@ -86,7 +96,7 @@ export function Header({ title }: HeaderProps) {
 
       <div className="flex items-center gap-2">
          <div className="text-right hidden sm:block">
-            <p className="text-sm font-medium">Logged in as</p>
+            <p className="text-sm font-medium">{user?.name}</p>
             <p className="text-xs text-muted-foreground">{userPosition}</p>
         </div>
         <DropdownMenu>
@@ -109,10 +119,17 @@ export function Header({ title }: HeaderProps) {
             <DropdownMenuContent align="end">
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Settings</DropdownMenuItem>
-            <DropdownMenuItem>Support</DropdownMenuItem>
+            <Link href="/settings">
+                <DropdownMenuItem>Settings</DropdownMenuItem>
+            </Link>
+            <Link href="/support">
+                <DropdownMenuItem>Support</DropdownMenuItem>
+            </Link>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Logout</DropdownMenuItem>
+            <DropdownMenuItem onClick={logout}>
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Logout</span>
+            </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
       </div>
