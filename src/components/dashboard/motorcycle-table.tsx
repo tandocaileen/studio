@@ -220,7 +220,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                   Add Motorcycle
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-2xl">
+              <DialogContent className="max-w-[80vw]">
                 <DialogHeader>
                   <DialogTitle>Add New Motorcycle</DialogTitle>
                   <DialogDescription>
@@ -500,5 +500,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
     </>
   );
 }
+
+    
 
     
