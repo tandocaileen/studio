@@ -21,8 +21,8 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Document, Motorcycle } from '@/types';
-import { MoreHorizontal, PlusCircle, FileText, Truck, Wrench, DollarSign, ExternalLink, Save, XCircle, Trash2 } from 'lucide-react';
+import { Document, Motorcycle, DocumentType } from '@/types';
+import { MoreHorizontal, PlusCircle, FileText, Truck, Wrench, DollarSign, ExternalLink, Save, XCircle, Trash2, CalendarIcon } from 'lucide-react';
 import { getBranches } from '@/lib/data';
 import {
   Dialog,
@@ -41,7 +41,6 @@ import { useToast } from '@/hooks/use-toast';
 import { Checkbox } from '../ui/checkbox';
 import { generateCashAdvance, GenerateCashAdvanceInput } from '@/ai/flows/cash-advance-flow';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
-import { CalendarIcon } from 'lucide-react';
 import { Calendar } from '../ui/calendar';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '../ui/scroll-area';
@@ -52,12 +51,14 @@ type MotorcycleTableProps = {
 
 type NewDocument = {
   id: number;
-  type: 'OR/CR' | 'COC' | 'Insurance';
+  type: DocumentType;
   file: File | null;
   url?: string;
   uploadedAt?: Date;
   expiresAt?: Date;
 };
+
+const ALL_DOC_TYPES: DocumentType[] = ['OR/CR', 'COC', 'Insurance', 'CSR', 'HPG Control Form'];
 
 export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleTableProps) {
   const [motorcycles, setMotorcycles] = React.useState(initialMotorcycles);
@@ -201,8 +202,8 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setEditedData(prev => ({ ...prev, [name]: value }));
+    const { name, value, type } = e.target;
+    setEditedData(prev => ({ ...prev, [name]: type === 'number' ? parseFloat(value) : value }));
   };
   
   const handleSelectChange = (name: string, value: string) => {
@@ -263,40 +264,97 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                 </DialogHeader>
                 <ScrollArea className="max-h-[70vh]">
                   <div className="grid gap-4 py-4 pr-6">
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="plate" className="text-right">Plate No.</Label>
-                      <Input id="plate" placeholder="ABC 1234" className="col-span-3" />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="make" className="text-right">Make</Label>
-                      <Input id="make" placeholder="e.g., Honda" className="col-span-3" />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="model" className="text-right">Model</Label>
-                      <Input id="model" placeholder="e.g., Click 125i" className="col-span-3" />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="engineNumber" className="text-right">Engine No.</Label>
-                      <Input id="engineNumber" placeholder="e.g., E12345678" className="col-span-3" />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="chassisNumber" className="text-right">Chassis No.</Label>
-                      <Input id="chassisNumber" placeholder="e.g., C12345678" className="col-span-3" />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="branch" className="text-right">Branch</Label>
-                      <Select>
-                        <SelectTrigger className="col-span-3">
-                          <SelectValue placeholder="Select a branch" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {branches.map(branch => <SelectItem key={branch} value={branch}>{branch}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
+                    <h3 className="font-semibold text-lg border-b pb-2 mb-2">Motorcycle Details</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="grid gap-2">
+                          <Label htmlFor="plate">Plate No.</Label>
+                          <Input id="plate" placeholder="ABC 1234" />
+                      </div>
+                      <div className="grid gap-2">
+                          <Label htmlFor="customerName">Customer Name</Label>
+                          <Input id="customerName" placeholder="e.g., John Doe" />
+                      </div>
+                      <div className="grid gap-2">
+                          <Label htmlFor="make">Make</Label>
+                          <Input id="make" placeholder="e.g., Honda" />
+                      </div>
+                      <div className="grid gap-2">
+                          <Label htmlFor="model">Model</Label>
+                          <Input id="model" placeholder="e.g., Click 125i" />
+                      </div>
+                      <div className="grid gap-2">
+                          <Label htmlFor="engineNumber">Engine No.</Label>
+                          <Input id="engineNumber" placeholder="e.g., E12345678" />
+                      </div>
+                      <div className="grid gap-2">
+                          <Label htmlFor="chassisNumber">Chassis No.</Label>
+                          <Input id="chassisNumber" placeholder="e.g., C12345678" />
+                      </div>
+                       <div className="grid gap-2">
+                          <Label htmlFor="branch">Branch</Label>
+                          <Select>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a branch" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {branches.map(branch => <SelectItem key={branch} value={branch}>{branch}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                      </div>
+                       <div className="grid gap-2">
+                          <Label htmlFor="assignedLiaison">Assign Liaison</Label>
+                          <Select>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a liaison" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {/* TODO: Populate with actual liaison users */}
+                              <SelectItem value="John Doe">John Doe</SelectItem>
+                              <SelectItem value="Jane Smith">Jane Smith</SelectItem>
+                              <SelectItem value="Peter Jones">Peter Jones</SelectItem>
+                            </SelectContent>
+                          </Select>
+                      </div>
                     </div>
 
-                    <div className="col-span-4">
-                      <Label className="text-base font-semibold">Documents</Label>
+                    <h3 className="font-semibold text-lg border-b pb-2 mt-4 mb-2">Insurance & Control</h3>
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="cocNumber">COC No.</Label>
+                            <Input id="cocNumber" placeholder="Enter COC number" />
+                        </div>
+                         <div className="grid gap-2">
+                            <Label htmlFor="policyNumber">Policy No.</Label>
+                            <Input id="policyNumber" placeholder="Enter policy number" />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="insuranceType">Insurance Type</Label>
+                            <Input id="insuranceType" placeholder="e.g., Comprehensive" />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="hpgControlNumber">HPG Control No.</Label>
+                            <Input id="hpgControlNumber" placeholder="Enter HPG Control number" />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="sarCode">SAR Code</Label>
+                            <Input id="sarCode" placeholder="Enter SAR code" />
+                        </div>
+                     </div>
+                     
+                    <h3 className="font-semibold text-lg border-b pb-2 mt-4 mb-2">Fees</h3>
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="processingFee">Processing Fee</Label>
+                            <Input id="processingFee" type="number" defaultValue="1500" disabled />
+                        </div>
+                         <div className="grid gap-2">
+                            <Label htmlFor="orFee">OR Fee</Label>
+                            <Input id="orFee" type="number" defaultValue="1000" disabled />
+                        </div>
+                     </div>
+
+                    <div className="col-span-full mt-4">
+                      <Label className="text-lg font-semibold">Documents</Label>
                       <div className="space-y-4 mt-2">
                         {newDocuments.map((doc, index) => (
                           <div key={doc.id} className="grid grid-cols-1 gap-4 p-4 border rounded-lg relative">
@@ -312,15 +370,15 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                               <Label htmlFor={`doc-type-${index}`} className="text-right">Type</Label>
                               <Select
                                 value={doc.type}
-                                onValueChange={(value: 'OR/CR' | 'COC' | 'Insurance') => handleDocumentChange(doc.id, 'type', value, true)}
+                                onValueChange={(value: DocumentType) => handleDocumentChange(doc.id, 'type', value, true)}
                               >
                                 <SelectTrigger id={`doc-type-${index}`} className="col-span-3">
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="OR/CR">OR/CR</SelectItem>
-                                  <SelectItem value="COC">COC</SelectItem>
-                                  <SelectItem value="Insurance">Insurance</SelectItem>
+                                  {ALL_DOC_TYPES.map(type => (
+                                      <SelectItem key={type} value={type}>{type}</SelectItem>
+                                  ))}
                                 </SelectContent>
                               </Select>
                             </div>
@@ -330,7 +388,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                             </div>
                             {doc.type === 'Insurance' || doc.type === 'OR/CR' ? (
                               <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor={`doc-expiry-${index}`} className="text-right">Expiry</Label>
+                                <Label htmlFor={`doc-expiry-${index}`} className="text-right">Expiry / Effectivity</Label>
                                   <Popover>
                                     <PopoverTrigger asChild>
                                       <Button
@@ -365,6 +423,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                   </div>
                 </ScrollArea>
                 <DialogFooter>
+                   <Button variant="outline" onClick={() => (document.querySelector('[aria-label="Close"]') as HTMLElement)?.click()}>Cancel</Button>
                   <Button type="submit" onClick={() => handleAction('New motorcycle saved.')}>Save Motorcycle</Button>
                 </DialogFooter>
               </DialogContent>
@@ -457,31 +516,61 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
               </DialogHeader>
               <ScrollArea className="max-h-[70vh]">
                 <div className="grid gap-4 py-4 pr-6">
-                    {/* Basic Details */}
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="plateNumber" className="text-right">Plate No.</Label>
-                        <Input id="plateNumber" name="plateNumber" value={editedData.plateNumber || ''} onChange={handleInputChange} className="col-span-3" />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="make" className="text-right">Make</Label>
-                        <Input id="make" name="make" value={editedData.make || ''} onChange={handleInputChange} className="col-span-3" />
-                    </div>
-                     <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="model" className="text-right">Model</Label>
-                        <Input id="model" name="model" value={editedData.model || ''} onChange={handleInputChange} className="col-span-3" />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="engineNumber" className="text-right">Engine No.</Label>
-                      <Input id="engineNumber" name="engineNumber" value={editedData.engineNumber || ''} onChange={handleInputChange} className="col-span-3" />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="chassisNumber" className="text-right">Chassis No.</Label>
-                      <Input id="chassisNumber" name="chassisNumber" value={editedData.chassisNumber || ''} onChange={handleInputChange} className="col-span-3" />
-                    </div>
-                     <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="status" className="text-right">Status</Label>
+                    <h3 className="font-semibold text-lg border-b pb-2 mb-2">Motorcycle Details</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="grid gap-2">
+                          <Label htmlFor="edit-plateNumber">Plate No.</Label>
+                          <Input id="edit-plateNumber" name="plateNumber" value={editedData.plateNumber || ''} onChange={handleInputChange} />
+                      </div>
+                      <div className="grid gap-2">
+                          <Label htmlFor="edit-customerName">Customer Name</Label>
+                          <Input id="edit-customerName" name="customerName" value={editedData.customerName || ''} onChange={handleInputChange} />
+                      </div>
+                      <div className="grid gap-2">
+                          <Label htmlFor="edit-make">Make</Label>
+                          <Input id="edit-make" name="make" value={editedData.make || ''} onChange={handleInputChange} />
+                      </div>
+                      <div className="grid gap-2">
+                          <Label htmlFor="edit-model">Model</Label>
+                          <Input id="edit-model" name="model" value={editedData.model || ''} onChange={handleInputChange} />
+                      </div>
+                       <div className="grid gap-2">
+                          <Label htmlFor="edit-engineNumber">Engine No.</Label>
+                          <Input id="edit-engineNumber" name="engineNumber" value={editedData.engineNumber || ''} onChange={handleInputChange} />
+                      </div>
+                      <div className="grid gap-2">
+                          <Label htmlFor="edit-chassisNumber">Chassis No.</Label>
+                          <Input id="edit-chassisNumber" name="chassisNumber" value={editedData.chassisNumber || ''} onChange={handleInputChange} />
+                      </div>
+                       <div className="grid gap-2">
+                          <Label htmlFor="edit-branch">Branch</Label>
+                           <Select value={editedData.assignedBranch} onValueChange={(value) => handleSelectChange('assignedBranch', value)}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {branches.map(branch => <SelectItem key={branch} value={branch}>{branch}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                      </div>
+                       <div className="grid gap-2">
+                          <Label htmlFor="edit-assignedLiaison">Assign Liaison</Label>
+                           <Select value={editedData.assignedLiaison} onValueChange={(value) => handleSelectChange('assignedLiaison', value)}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a liaison" />
+                            </SelectTrigger>
+                            <SelectContent>
+                               {/* TODO: Populate with actual liaison users */}
+                              <SelectItem value="John Doe">John Doe</SelectItem>
+                              <SelectItem value="Jane Smith">Jane Smith</SelectItem>
+                              <SelectItem value="Peter Jones">Peter Jones</SelectItem>
+                            </SelectContent>
+                          </Select>
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="status">Status</Label>
                         <Select value={editedData.status} onValueChange={(value) => handleSelectChange('status', value)}>
-                          <SelectTrigger className="col-span-3">
+                          <SelectTrigger>
                             <SelectValue/>
                           </SelectTrigger>
                           <SelectContent>
@@ -491,10 +580,48 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                             <SelectItem value="For Renewal">For Renewal</SelectItem>
                           </SelectContent>
                         </Select>
+                      </div>
                     </div>
+
+                    <h3 className="font-semibold text-lg border-b pb-2 mt-4 mb-2">Insurance & Control</h3>
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="edit-cocNumber">COC No.</Label>
+                            <Input id="edit-cocNumber" name="cocNumber" value={editedData.cocNumber || ''} onChange={handleInputChange} />
+                        </div>
+                         <div className="grid gap-2">
+                            <Label htmlFor="edit-policyNumber">Policy No.</Label>
+                            <Input id="edit-policyNumber" name="policyNumber" value={editedData.policyNumber || ''} onChange={handleInputChange} />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="edit-insuranceType">Insurance Type</Label>
+                            <Input id="edit-insuranceType" name="insuranceType" value={editedData.insuranceType || ''} onChange={handleInputChange} />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="edit-hpgControlNumber">HPG Control No.</Label>
+                            <Input id="edit-hpgControlNumber" name="hpgControlNumber" value={editedData.hpgControlNumber || ''} onChange={handleInputChange} />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="edit-sarCode">SAR Code</Label>
+                            <Input id="edit-sarCode" name="sarCode" value={editedData.sarCode || ''} onChange={handleInputChange} />
+                        </div>
+                     </div>
+
+                     <h3 className="font-semibold text-lg border-b pb-2 mt-4 mb-2">Fees</h3>
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="edit-processingFee">Processing Fee</Label>
+                            <Input id="edit-processingFee" name="processingFee" value={editedData.processingFee || 1500} type="number" disabled />
+                        </div>
+                         <div className="grid gap-2">
+                            <Label htmlFor="edit-orFee">OR Fee</Label>
+                            <Input id="edit-orFee" name="orFee" value={editedData.orFee || 1000} type="number" disabled />
+                        </div>
+                     </div>
+
                     {/* Document Management */}
-                     <div className="col-span-4">
-                      <Label className="text-base font-semibold">Documents</Label>
+                     <div className="col-span-full mt-4">
+                      <Label className="text-lg font-semibold">Documents</Label>
                       <div className="space-y-4 mt-2">
                         {editedDocuments.map((doc, index) => (
                           <div key={doc.id} className="grid grid-cols-1 gap-4 p-4 border rounded-lg relative">
@@ -510,15 +637,15 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                               <Label htmlFor={`edit-doc-type-${index}`} className="text-right">Type</Label>
                               <Select
                                 value={doc.type}
-                                onValueChange={(value: 'OR/CR' | 'COC' | 'Insurance') => handleDocumentChange(doc.id, 'type', value, false)}
+                                onValueChange={(value: DocumentType) => handleDocumentChange(doc.id, 'type', value, false)}
                               >
                                 <SelectTrigger id={`edit-doc-type-${index}`} className="col-span-3">
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="OR/CR">OR/CR</SelectItem>
-                                  <SelectItem value="COC">COC</SelectItem>
-                                  <SelectItem value="Insurance">Insurance</SelectItem>
+                                   {ALL_DOC_TYPES.map(type => (
+                                      <SelectItem key={type} value={type}>{type}</SelectItem>
+                                  ))}
                                 </SelectContent>
                               </Select>
                             </div>
@@ -535,7 +662,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                             </div>
                             {doc.type === 'Insurance' || doc.type === 'OR/CR' ? (
                               <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor={`edit-doc-expiry-${index}`} className="text-right">Expiry</Label>
+                                <Label htmlFor={`edit-doc-expiry-${index}`} className="text-right">Expiry / Effectivity</Label>
                                   <Popover>
                                     <PopoverTrigger asChild>
                                       <Button
@@ -546,13 +673,13 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                                         )}
                                       >
                                         <CalendarIcon className="mr-2 h-4 w-4" />
-                                        {doc.expiresAt ? format(doc.expiresAt, "PPP") : <span>Pick a date</span>}
+                                        {doc.expiresAt ? format(new Date(doc.expiresAt), "PPP") : <span>Pick a date</span>}
                                       </Button>
                                     </PopoverTrigger>
                                     <PopoverContent className="w-auto p-0">
                                       <Calendar
                                         mode="single"
-                                        selected={doc.expiresAt}
+                                        selected={doc.expiresAt ? new Date(doc.expiresAt) : undefined}
                                         onSelect={(date) => handleDocumentChange(doc.id, 'expiresAt', date, false)}
                                         initialFocus
                                       />

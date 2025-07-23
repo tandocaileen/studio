@@ -1,5 +1,8 @@
+
+export type DocumentType = 'OR/CR' | 'COC' | 'Insurance' | 'CSR' | 'HPG Control Form';
+
 export type Document = {
-  type: 'OR/CR' | 'COC' | 'Insurance';
+  type: DocumentType;
   url: string;
   uploadedAt: Date;
   expiresAt?: Date;
@@ -19,14 +22,34 @@ export type Motorcycle = {
   supplier: string;
   documents: Document[];
   status: 'Incomplete' | 'Ready to Register' | 'Registered' | 'For Renewal';
+  // New fields for Store Supervisor
+  customerName?: string;
+  cocNumber?: string;
+  policyNumber?: string;
+  insuranceType?: string;
+  hpgControlNumber?: string;
+  sarCode?: string;
+  processingFee?: number;
+  orFee?: number;
+  assignedLiaison?: string;
 };
 
 export type CashAdvance = {
   id: string;
-  personnel: string;
+  personnel: string; // This will be the Liaison's name
   purpose: string;
   amount: number;
   date: Date;
-  status: 'Pending' | 'Approved' | 'Liquidated' | 'Rejected';
+  status: 'Pending' | 'Approved' | 'Liquidated' | 'Rejected' | 'Check Voucher Released' | 'Encashed';
   receipts?: string[];
+  // New fields for Cashier & Liaison
+  motorcycleId?: string;
+  checkVoucherNumber?: string;
+  checkVoucherReleaseDate?: Date;
+  ltoOrNumber?: string;
+  ltoOrAmount?: number;
+  ltoProcessFee?: number;
+  totalLiquidation?: number;
+  shortageOverage?: number;
+  liquidationRemarks?: string;
 };
