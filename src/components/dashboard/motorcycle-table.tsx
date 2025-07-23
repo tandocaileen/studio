@@ -36,6 +36,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format } from 'date-fns';
+import { useToast } from '@/hooks/use-toast';
 
 type MotorcycleTableProps = {
   motorcycles: Motorcycle[];
@@ -43,7 +44,15 @@ type MotorcycleTableProps = {
 
 export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleTableProps) {
   const [motorcycles, setMotorcycles] = React.useState(initialMotorcycles);
-  
+  const { toast } = useToast();
+
+  const handleAction = (message: string) => {
+    toast({
+      title: 'Action Triggered',
+      description: message,
+    })
+  }
+
   const statusVariant = (status: Motorcycle['status']): 'default' | 'secondary' | 'destructive' => {
     switch (status) {
       case 'Registered':
@@ -108,7 +117,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
               </div>
             </div>
             <DialogFooter>
-              <Button type="submit">Save Motorcycle</Button>
+              <Button type="submit" onClick={() => handleAction('New motorcycle saved.')}>Save Motorcycle</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -151,20 +160,20 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleAction(`Editing details for ${motorcycle.plateNumber}.`)}>
                           <Truck className="mr-2 h-4 w-4" />
                           <span>Edit Details</span>
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleAction(`Managing documents for ${motorcycle.plateNumber}.`)}>
                           <FileText className="mr-2 h-4 w-4" />
                           <span>Manage Documents</span>
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleAction(`Logging maintenance for ${motorcycle.plateNumber}.`)}>
                           <Wrench className="mr-2 h-4 w-4" />
                           <span>Log Maintenance</span>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
+                        <DropdownMenuItem className="text-destructive" onClick={() => handleAction(`Deleting ${motorcycle.plateNumber}.`)}>Delete</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>

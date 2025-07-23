@@ -27,6 +27,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from '../ui/label';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
+import { useToast } from '@/hooks/use-toast';
 
 type CashAdvanceTableProps = {
   cashAdvances: CashAdvance[];
@@ -34,6 +35,14 @@ type CashAdvanceTableProps = {
 
 export function CashAdvanceTable({ cashAdvances: initialCashAdvances }: CashAdvanceTableProps) {
   const [cashAdvances, setCashAdvances] = React.useState(initialCashAdvances);
+  const { toast } = useToast();
+
+  const handleAction = (message: string) => {
+    toast({
+      title: 'Action Triggered',
+      description: message,
+    })
+  }
 
   const statusVariant = (status: CashAdvance['status']): 'default' | 'secondary' | 'destructive' | 'outline' => {
     switch (status) {
@@ -99,7 +108,7 @@ export function CashAdvanceTable({ cashAdvances: initialCashAdvances }: CashAdva
               </div>
             </div>
             <DialogFooter>
-              <Button type="submit">Submit Request</Button>
+              <Button type="submit" onClick={() => handleAction('New cash advance request submitted.')}>Submit Request</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -141,15 +150,15 @@ export function CashAdvanceTable({ cashAdvances: initialCashAdvances }: CashAdva
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem disabled={ca.status !== 'Pending'}>
+                      <DropdownMenuItem disabled={ca.status !== 'Pending'} onClick={() => handleAction(`Approved advance for ${ca.personnel}.`)}>
                         <Check className="mr-2 h-4 w-4" />
                         <span>Approve</span>
                       </DropdownMenuItem>
-                      <DropdownMenuItem disabled={ca.status !== 'Approved'}>
+                      <DropdownMenuItem disabled={ca.status !== 'Approved'} onClick={() => handleAction(`Liquidated advance for ${ca.personnel}.`)}>
                         <FileUp className="mr-2 h-4 w-4" />
                         <span>Liquidate</span>
                       </DropdownMenuItem>
-                      <DropdownMenuItem className="text-destructive" disabled={ca.status !== 'Pending'}>
+                      <DropdownMenuItem className="text-destructive" disabled={ca.status !== 'Pending'} onClick={() => handleAction(`Rejected advance for ${ca.personnel}.`)}>
                         <X className="mr-2 h-4 w-4" />
                         <span>Reject</span>
                       </DropdownMenuItem>
