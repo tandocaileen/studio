@@ -90,11 +90,11 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
     try {
       const motorcyclesForAI: GenerateCashAdvanceInput['motorcycles'] = selectedMotorcycles.map(m => ({
         ...m,
-        purchaseDate: new Date(m.purchaseDate).toISOString(),
+        purchaseDate: m.purchaseDate.toISOString(),
         documents: m.documents.map(d => ({
             ...d,
-            uploadedAt: new Date(d.uploadedAt).toISOString(),
-            expiresAt: d.expiresAt ? new Date(d.expiresAt).toISOString() : undefined,
+            uploadedAt: d.uploadedAt.toISOString(),
+            expiresAt: d.expiresAt ? d.expiresAt.toISOString() : undefined,
             type: d.type
         }))
       }));
@@ -118,7 +118,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
   };
 
   const handleSelectMotorcycle = (motorcycle: Motorcycle, checked: boolean | 'indeterminate') => {
-    if (checked) {
+    if (checked === true) {
       setSelectedMotorcycles([...selectedMotorcycles, motorcycle]);
     } else {
       setSelectedMotorcycles(selectedMotorcycles.filter(m => m.id !== motorcycle.id));
@@ -126,7 +126,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
   };
 
   const handleSelectAll = (checked: boolean | 'indeterminate') => {
-    if (checked) {
+    if (checked === true) {
       setSelectedMotorcycles(motorcycles);
     } else {
       setSelectedMotorcycles([]);
@@ -220,7 +220,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                   Add Motorcycle
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
+              <DialogContent className="sm:max-w-2xl">
                 <DialogHeader>
                   <DialogTitle>Add New Motorcycle</DialogTitle>
                   <DialogDescription>
@@ -331,10 +331,10 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead padding="checkbox">
+                <TableHead>
                   <Checkbox
                     checked={selectedMotorcycles.length === motorcycles.length && motorcycles.length > 0}
-                    onCheckedChange={handleSelectAll}
+                    onCheckedChange={(checked) => handleSelectAll(checked)}
                     aria-label="Select all"
                   />
                 </TableHead>
@@ -353,8 +353,8 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                 const isEditing = editingMotorcycleId === motorcycle.id;
                 const insurance = motorcycle.documents.find(d => d.type === 'Insurance');
                 return (
-                  <TableRow key={motorcycle.id} data-state={selectedMotorcycles.some(m => m.id === motorcycle.id) && "selected"}>
-                     <TableCell padding="checkbox">
+                  <TableRow key={motorcycle.id} data-state={selectedMotorcycles.some(m => m.id === motorcycle.id) ? "selected" : undefined}>
+                     <TableCell>
                       <Checkbox
                         checked={selectedMotorcycles.some(m => m.id === motorcycle.id)}
                         onCheckedChange={(checked) => handleSelectMotorcycle(motorcycle, checked)}
@@ -363,7 +363,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                     </TableCell>
                     <TableCell className="font-medium">
                       {isEditing ? (
-                        <Input name="plateNumber" value={editedData.plateNumber} onChange={handleInputChange} className="h-8"/>
+                        <Input name="plateNumber" value={editedData.plateNumber || ''} onChange={handleInputChange} className="h-8"/>
                       ) : (
                         motorcycle.plateNumber
                       )}
@@ -371,8 +371,8 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                     <TableCell>
                       {isEditing ? (
                         <div className="flex gap-2">
-                          <Input name="make" value={editedData.make} onChange={handleInputChange} className="h-8"/>
-                          <Input name="model" value={editedData.model} onChange={handleInputChange} className="h-8"/>
+                          <Input name="make" value={editedData.make || ''} onChange={handleInputChange} className="h-8"/>
+                          <Input name="model" value={editedData.model || ''} onChange={handleInputChange} className="h-8"/>
                         </div>
                       ) : (
                         `${motorcycle.make} ${motorcycle.model}`
@@ -500,3 +500,5 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
     </>
   );
 }
+
+    
