@@ -22,7 +22,8 @@ function DashboardContent({ searchQuery }: { searchQuery: string }) {
   }, []);
 
   const { user } = useAuth();
-  const userPosition = "Liaison Supervisor";
+  // In a real app, user's branch would come from their profile data.
+  const userBranch = "Main Office"; 
 
   if (!motorcycles || !cashAdvances) {
     return <AppLoader />;
@@ -42,8 +43,11 @@ function DashboardContent({ searchQuery }: { searchQuery: string }) {
           <div>
               <p className="text-lg text-muted-foreground">Welcome back,</p>
               <h2 className="text-2xl font-bold leading-tight tracking-tighter">
-                  {user?.name} 
+                  {user?.name}
               </h2>
+              <p className="text-sm text-muted-foreground font-medium">
+                  {userBranch}
+              </p>
           </div>
       </div>
       <SummaryCards
