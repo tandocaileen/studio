@@ -9,6 +9,7 @@ import {
   Settings,
   DollarSign,
   PanelLeft,
+  LifeBuoy,
 } from 'lucide-react';
 import {
   Tooltip,
@@ -25,8 +26,8 @@ import { Button } from '../ui/button';
 const navItems = [
   { href: '/', icon: Home, label: 'Dashboard' },
   { href: '/cash-advances', icon: DollarSign, label: 'Cash Advances' },
-  { href: '#', icon: Package, label: 'Reports', disabled: true },
-  { href: '#', icon: Users, label: 'Personnel', disabled: true },
+  { href: '/settings', icon: Settings, label: 'Settings' },
+  { href: '/support', icon: LifeBuoy, label: 'Support' },
 ];
 
 export function AppSidebar() {
@@ -45,14 +46,11 @@ export function AppSidebar() {
         <Tooltip key={item.label}>
           <TooltipTrigger asChild>
             <Link
-              href={item.disabled ? '#' : item.href}
+              href={item.href}
               className={cn(
                 'flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8',
-                pathname === item.href && 'bg-accent text-accent-foreground',
-                item.disabled && 'cursor-not-allowed opacity-50'
+                pathname === item.href && 'bg-accent text-accent-foreground'
               )}
-              aria-disabled={item.disabled}
-              tabIndex={item.disabled ? -1 : undefined}
             >
               <item.icon className="h-5 w-5" />
               <span className="sr-only">{item.label}</span>
@@ -68,20 +66,6 @@ export function AppSidebar() {
     <TooltipProvider>
       <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
         {mainNav}
-        <nav className="mt-auto flex flex-col items-center gap-4 px-2 sm:py-5">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Link
-                href="#"
-                className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-              >
-                <Settings className="h-5 w-5" />
-                <span className="sr-only">Settings</span>
-              </Link>
-            </TooltipTrigger>
-            <TooltipContent side="right">Settings</TooltipContent>
-          </Tooltip>
-        </nav>
       </aside>
       <div className="sm:hidden">
         <Sheet>
@@ -103,14 +87,11 @@ export function AppSidebar() {
               {navItems.map((item) => (
                  <Link
                     key={item.label}
-                    href={item.disabled ? '#' : item.href}
+                    href={item.href}
                     className={cn(
                       'flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground',
-                      pathname === item.href && 'text-foreground',
-                      item.disabled && 'cursor-not-allowed opacity-50'
+                      pathname === item.href && 'text-foreground'
                     )}
-                    aria-disabled={item.disabled}
-                    tabIndex={item.disabled ? -1 : undefined}
                   >
                     <item.icon className="h-5 w-5" />
                     {item.label}
