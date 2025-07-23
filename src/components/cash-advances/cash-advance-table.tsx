@@ -21,13 +21,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CashAdvance } from '@/types';
-import { MoreHorizontal, PlusCircle, Check, X, FileUp } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, Check, X, FileUp, Download, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
 import { Label } from '../ui/label';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { CashAdvanceDocument } from './cash-advance-document';
+import { generatePdf } from '@/lib/pdf';
 
 type CashAdvanceTableProps = {
   cashAdvances: CashAdvance[];
@@ -35,13 +37,24 @@ type CashAdvanceTableProps = {
 
 export function CashAdvanceTable({ cashAdvances: initialCashAdvances }: CashAdvanceTableProps) {
   const [cashAdvances, setCashAdvances] = React.useState(initialCashAdvances);
+  const [previewingAdvance, setPreviewingAdvance] = React.useState<CashAdvance | null>(null);
   const { toast } = useToast();
+  const documentRef = React.useRef(null);
 
   const handleAction = (message: string) => {
     toast({
       title: 'Action Triggered',
       description: message,
     })
+  }
+
+  const handleDownload = async () => {
+    if (!previewingAdvance || !documentRef.current) {
+        toast({ title: 'Error', description: 'Cannot download PDF. No document to download.', variant: 'destructive' });
+        return;
+    };
+    await generatePdf(documentRef.current, `cash_advance_${previewingAdvance.id}.pdf`);
+    toast({ title: 'Download Started', description: `Downloading PDF for CA #${previewingAdvance.id}`});
   }
 
   const statusVariant = (status: CashAdvance['status']): 'default' | 'secondary' | 'destructive' | 'outline' => {
@@ -71,6 +84,7 @@ export function CashAdvanceTable({ cashAdvances: initialCashAdvances }: CashAdva
 
 
   return (
+    <>
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
@@ -150,6 +164,10 @@ export function CashAdvanceTable({ cashAdvances: initialCashAdvances }: CashAdva
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                       <DropdownMenuItem onClick={() => setPreviewingAdvance(ca)}>
+                        <Eye className="mr-2 h-4 w-4" />
+                        <span>Preview</span>
+                      </DropdownMenuItem>
                       <DropdownMenuItem disabled={ca.status !== 'Pending'} onClick={() => handleAction(`Approved advance for ${ca.personnel}.`)}>
                         <Check className="mr-2 h-4 w-4" />
                         <span>Approve</span>
@@ -171,5 +189,28 @@ export function CashAdvanceTable({ cashAdvances: initialCashAdvances }: CashAdva
         </Table>
       </CardContent>
     </Card>
+    
+    <Dialog open={!!previewingAdvance} onOpenChange={(open) => !open && setPreviewingAdvance(null)}>
+        <DialogContent className="max-w-4xl">
+            <DialogHeader>
+                <DialogTitle>Cash Advance Preview</DialogTitle>
+                <DialogDescription>
+                    Review the details of the cash advance request. You can download it as a PDF.
+                </DialogDescription>
+            </DialogHeader>
+            <div className="mt-4 max-h-[70vh] overflow-y-auto p-2">
+                {previewingAdvance && <CashAdvanceDocument ref={documentRef} advance={previewingAdvance} />}
+            </div>
+            <DialogFooter>
+                <Button variant="outline" onClick={() => setPreviewingAdvance(null)}>Close</Button>
+                <Button onClick={handleDownload}>
+                    <Download className="mr-2 h-4 w-4"/>
+                    Download PDF
+                </Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
+
+    </>
   );
 }
