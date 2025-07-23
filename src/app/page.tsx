@@ -9,8 +9,21 @@ import { AppLoader } from "@/components/layout/loader";
 async function DashboardContent() {
   const motorcycles = await getMotorcycles();
   const cashAdvances = await getCashAdvances();
+  
+  // Hardcoded for demonstration. In a real app, this would come from user session.
+  const userName = "John Doe";
+  const userBranch = "Main Office";
+
   return (
     <>
+      <div className="flex items-center justify-between">
+          <div>
+              <p className="text-lg text-muted-foreground">Welcome back,</p>
+              <h2 className="text-2xl font-bold leading-tight tracking-tighter">
+                  {userName} <span className="text-base font-normal text-muted-foreground">({userBranch})</span>
+              </h2>
+          </div>
+      </div>
       <SummaryCards
         motorcycles={motorcycles}
         cashAdvances={cashAdvances}

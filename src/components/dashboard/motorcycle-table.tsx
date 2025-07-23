@@ -340,9 +340,9 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                 </TableHead>
                 <TableHead>Plate No.</TableHead>
                 <TableHead>Make & Model</TableHead>
-                <TableHead>Assigned Branch</TableHead>
+                <TableHead>Engine No.</TableHead>
+                <TableHead>Chassis No.</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Insurance Expiry</TableHead>
                 <TableHead>
                   <span className="sr-only">Actions</span>
                 </TableHead>
@@ -351,7 +351,6 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
             <TableBody>
               {motorcycles.map((motorcycle) => {
                 const isEditing = editingMotorcycleId === motorcycle.id;
-                const insurance = motorcycle.documents.find(d => d.type === 'Insurance');
                 return (
                   <TableRow key={motorcycle.id} data-state={selectedMotorcycles.some(m => m.id === motorcycle.id) ? "selected" : undefined}>
                      <TableCell>
@@ -380,16 +379,16 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                     </TableCell>
                     <TableCell>
                       {isEditing ? (
-                        <Select value={editedData.assignedBranch} onValueChange={(value) => handleSelectChange('assignedBranch', value)}>
-                          <SelectTrigger className="h-8">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {branches.map(branch => <SelectItem key={branch} value={branch}>{branch}</SelectItem>)}
-                          </SelectContent>
-                        </Select>
+                         <Input name="engineNumber" value={editedData.engineNumber || ''} onChange={handleInputChange} className="h-8"/>
                       ) : (
-                        motorcycle.assignedBranch
+                        motorcycle.engineNumber
+                      )}
+                    </TableCell>
+                     <TableCell>
+                      {isEditing ? (
+                         <Input name="chassisNumber" value={editedData.chassisNumber || ''} onChange={handleInputChange} className="h-8"/>
+                      ) : (
+                        motorcycle.chassisNumber
                       )}
                     </TableCell>
                     <TableCell>
@@ -407,9 +406,6 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                       ) : (
                         <Badge variant={statusVariant(motorcycle.status)}>{motorcycle.status}</Badge>
                       )}
-                    </TableCell>
-                    <TableCell>
-                      {insurance?.expiresAt ? format(new Date(insurance.expiresAt), 'MMM dd, yyyy') : 'N/A'}
                     </TableCell>
                     <TableCell>
                       {isEditing ? (
