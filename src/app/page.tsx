@@ -13,6 +13,7 @@ async function DashboardContent() {
   // Hardcoded for demonstration. In a real app, this would come from user session.
   const userName = "John Doe";
   const userBranch = "Main Office";
+  const userPosition = "Liaison Supervisor";
 
   return (
     <>

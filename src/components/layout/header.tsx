@@ -34,6 +34,8 @@ type HeaderProps = {
 
 export function Header({ title }: HeaderProps) {
   const { setTheme } = useTheme();
+  // Hardcoded for now, will be replaced with actual user data
+  const userPosition = "Liaison Supervisor";
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
@@ -81,32 +83,39 @@ export function Header({ title }: HeaderProps) {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="outline"
-            size="icon"
-            className="overflow-hidden rounded-full"
-          >
-            <Image
-              src={`https://placehold.co/36x36.png`}
-              width={36}
-              height={36}
-              alt="Avatar"
-              className="overflow-hidden"
-              data-ai-hint="user avatar"
-            />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuLabel>My Account</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem>Settings</DropdownMenuItem>
-          <DropdownMenuItem>Support</DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem>Logout</DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+
+      <div className="flex items-center gap-2">
+         <div className="text-right hidden sm:block">
+            <p className="text-sm font-medium">Logged in as</p>
+            <p className="text-xs text-muted-foreground">{userPosition}</p>
+        </div>
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+            <Button
+                variant="outline"
+                size="icon"
+                className="overflow-hidden rounded-full"
+            >
+                <Image
+                src={`https://placehold.co/36x36.png`}
+                width={36}
+                height={36}
+                alt="Avatar"
+                className="overflow-hidden"
+                data-ai-hint="user avatar"
+                />
+            </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>Settings</DropdownMenuItem>
+            <DropdownMenuItem>Support</DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>Logout</DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </header>
   );
 }
