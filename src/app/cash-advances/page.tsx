@@ -44,7 +44,7 @@ function CashAdvancesContent({ searchQuery }: { searchQuery: string }) {
         }
 
         // Search query filtering
-        if (motorcycle) {
+        if (motorcycle && user.role !== 'Cashier') {
             if (motorcycle.customerName?.toLowerCase().includes(query)) return true;
             if (motorcycle.model.toLowerCase().includes(query)) return true;
         }

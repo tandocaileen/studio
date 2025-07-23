@@ -91,7 +91,7 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
     }
   }
 
-  const canShowAdminActions = user?.role === 'Cashier';
+  const isCashier = user?.role === 'Cashier';
 
   return (
     <>
@@ -108,8 +108,8 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Customer</TableHead>
-              <TableHead>Motorcycle</TableHead>
+              <TableHead>{isCashier ? 'Liaison' : 'Customer'}</TableHead>
+              {isCashier ? <TableHead>Purpose</TableHead> : <TableHead>Motorcycle</TableHead>}
               <TableHead className="text-right">Amount</TableHead>
               <TableHead>Date</TableHead>
               <TableHead>Status</TableHead>
@@ -121,8 +121,12 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
           <TableBody>
             {advances.map(({ cashAdvance: ca, motorcycle }) => (
               <TableRow key={ca.id}>
-                <TableCell className="font-medium">{motorcycle?.customerName || ca.personnel}</TableCell>
-                <TableCell className="max-w-[300px] truncate">{motorcycle ? `${motorcycle.make} ${motorcycle.model}` : ca.purpose}</TableCell>
+                 <TableCell className="font-medium">
+                  {isCashier ? ca.personnel : (motorcycle?.customerName || ca.personnel)}
+                </TableCell>
+                <TableCell className="max-w-[300px] truncate">
+                  {isCashier ? ca.purpose : (motorcycle ? `${motorcycle.make} ${motorcycle.model}` : ca.purpose)}
+                </TableCell>
                 <TableCell className="text-right">₱{ca.amount.toLocaleString()}</TableCell>
                 <TableCell>{format(new Date(ca.date), 'MMM dd, yyyy')}</TableCell>
                 <TableCell>
@@ -145,7 +149,7 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
                         <Eye className="mr-2 h-4 w-4" />
                         <span>Preview/Print</span>
                       </DropdownMenuItem>
-                      {canShowAdminActions && (
+                      {isCashier && (
                         <>
                           <DropdownMenuItem disabled={ca.status !== 'Pending'} onClick={() => handleAction(`Approved advance for ${ca.personnel}.`)}>
                             <Check className="mr-2 h-4 w-4" />
