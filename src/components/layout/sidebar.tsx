@@ -10,7 +10,8 @@ import {
   LifeBuoy,
   Receipt,
   LogOut,
-  Users
+  Users,
+  LayoutDashboard
 } from 'lucide-react';
 import {
   Tooltip,
@@ -33,7 +34,7 @@ type NavItem = {
 }
 
 const navItems: NavItem[] = [
-  { href: '/', icon: Home, label: 'Dashboard', allowedRoles: ['Store Supervisor'] },
+  { href: '/', icon: LayoutDashboard, label: 'Dashboard', allowedRoles: ['Store Supervisor', 'Cashier'] },
   { href: '/', icon: Home, label: 'Home', allowedRoles: ['Liaison'] },
   { href: '/cash-advances', icon: DollarSign, label: 'Cash Advances', allowedRoles: ['Liaison', 'Cashier'] },
   { href: '/liquidations', icon: Receipt, label: 'Liquidations', allowedRoles: ['Liaison'] },
