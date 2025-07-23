@@ -9,7 +9,6 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
-import { Motorcycle, CashAdvance } from '@/types';
 
 const MotorcycleSchema = z.object({
   id: z.string(),
@@ -44,12 +43,12 @@ const CashAdvanceSchema = z.object({
 });
 
 
-export const GenerateCashAdvanceInputSchema = z.object({
+const GenerateCashAdvanceInputSchema = z.object({
   motorcycles: z.array(MotorcycleSchema).describe("An array of motorcycle objects that need cash advances for renewal."),
 });
 export type GenerateCashAdvanceInput = z.infer<typeof GenerateCashAdvanceInputSchema>;
 
-export const GenerateCashAdvanceOutputSchema = z.object({
+const GenerateCashAdvanceOutputSchema = z.object({
   cashAdvances: z.array(CashAdvanceSchema).describe("An array of generated cash advance objects."),
 });
 export type GenerateCashAdvanceOutput = z.infer<typeof GenerateCashAdvanceOutputSchema>;
