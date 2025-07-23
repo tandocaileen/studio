@@ -11,6 +11,7 @@ import { ProtectedPage } from "@/components/auth/protected-page";
 import { useAuth } from "@/context/AuthContext";
 import { CashAdvance, Motorcycle } from "@/types";
 import { SummaryCards } from "@/components/dashboard/summary-cards";
+import { OverdueAdvances } from "@/components/dashboard/overdue-advances";
 
 function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
   const [motorcycles, setMotorcycles] = useState<Motorcycle[] | null>(null);
@@ -143,9 +144,7 @@ function CashierDashboardContent() {
                 </div>
             </div>
             <SummaryCards motorcycles={motorcycles} cashAdvances={cashAdvances} />
-            <div className="flex items-center justify-center h-64 border border-dashed rounded-lg">
-                <p className="text-muted-foreground">Alerts and Monitoring Dashboard (coming soon)</p>
-            </div>
+            <OverdueAdvances cashAdvances={cashAdvances} />
         </div>
     )
 }
