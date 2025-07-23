@@ -55,3 +55,10 @@ export type CashAdvance = {
   liquidationRemarks?: string;
 };
 
+export type LiaisonUser = {
+    id: string;
+    name: string;
+    assignedBranch: string;
+    processingFee: number;
+    orFee: number;
+}

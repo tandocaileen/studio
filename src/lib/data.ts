@@ -1,5 +1,6 @@
 
-import type { Motorcycle, CashAdvance } from '@/types';
+
+import type { Motorcycle, CashAdvance, LiaisonUser } from '@/types';
 
 const today = new Date();
 const addDays = (date: Date, days: number) => {
@@ -28,7 +29,7 @@ const motorcycles: Motorcycle[] = [
       { type: 'Insurance', url: '#', uploadedAt: new Date('2023-01-20'), expiresAt: addDays(today, 25) },
     ],
     customerName: 'Juan Dela Cruz',
-    assignedLiaison: 'Demo Liaison',
+    assignedLiaison: 'Liaison A',
     processingFee: 1500,
     orFee: 1000,
   },
@@ -51,7 +52,7 @@ const motorcycles: Motorcycle[] = [
       { type: 'Insurance', url: '#', uploadedAt: new Date('2022-05-25'), expiresAt: addDays(today, 5) },
     ],
     customerName: 'Maria Clara',
-    assignedLiaison: 'Demo Liaison',
+    assignedLiaison: 'Liaison B',
     processingFee: 1500,
     orFee: 1000,
   },
@@ -74,7 +75,7 @@ const motorcycles: Motorcycle[] = [
       { type: 'Insurance', url: '#', uploadedAt: new Date('2023-03-15'), expiresAt: addDays(today, 150) },
     ],
     customerName: 'Jose Rizal',
-    assignedLiaison: 'Demo Liaison',
+    assignedLiaison: 'Liaison A',
     processingFee: 1600,
     orFee: 1100,
   },
@@ -167,7 +168,7 @@ const cashAdvances: CashAdvance[] = [
   {
     id: 'ca1',
     motorcycleId: '2', // NMAX For Renewal
-    personnel: 'Demo Liaison',
+    personnel: 'Liaison B',
     purpose: 'OR/CR Renewal for 456 DEF',
     amount: 2500,
     date: addDays(today, -40),
@@ -176,7 +177,7 @@ const cashAdvances: CashAdvance[] = [
   {
     id: 'ca2',
     motorcycleId: '1', // Click 125i
-    personnel: 'Demo Liaison',
+    personnel: 'Liaison A',
     purpose: 'Minor Repair for 123 ABC',
     amount: 1200,
     date: new Date('2024-03-01'),
@@ -197,7 +198,7 @@ const cashAdvances: CashAdvance[] = [
   {
     id: 'ca4',
     motorcycleId: '3', // Burgman
-    personnel: 'Demo Liaison',
+    personnel: 'Liaison A',
     purpose: 'Insurance payment for 789 GHI',
     amount: 3500,
     date: addDays(today, -5),
@@ -208,7 +209,7 @@ const cashAdvances: CashAdvance[] = [
     {
     id: 'ca5',
     motorcycleId: '2', // NMAX For Renewal
-    personnel: 'Demo Liaison',
+    personnel: 'Liaison B',
     purpose: 'Renewal for AAA 111',
     amount: 2800,
     date: addDays(today, -2),
@@ -216,6 +217,12 @@ const cashAdvances: CashAdvance[] = [
     checkVoucherNumber: 'CV-2024-05-002',
     checkVoucherReleaseDate: addDays(today, -2),
   },
+];
+
+const liaisonUsers: LiaisonUser[] = [
+    { id: '1', name: 'Demo Liaison', assignedBranch: 'Main Office', processingFee: 1500, orFee: 1000 },
+    { id: '2', name: 'Liaison A', assignedBranch: 'East Branch', processingFee: 1550, orFee: 1050 },
+    { id: '3', name: 'Liaison B', assignedBranch: 'West Branch', processingFee: 1600, orFee: 1100 },
 ];
 
 export async function getMotorcycles() {
@@ -232,4 +239,9 @@ export async function getCashAdvances() {
 
 export function getBranches() {
   return [...new Set(motorcycles.map(m => m.assignedBranch))];
+}
+
+export async function getLiaisons() {
+    await new Promise(resolve => setTimeout(resolve, 500));
+    return liaisonUsers;
 }
