@@ -30,9 +30,3 @@ export type CashAdvance = {
   status: 'Pending' | 'Approved' | 'Liquidated' | 'Rejected';
   receipts?: string[];
 };
-
-export type Notification = {
-  message: string;
-  recipient?: string;
-  urgency: 'high' | 'medium' | 'low';
-};
