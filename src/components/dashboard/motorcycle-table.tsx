@@ -38,7 +38,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { Checkbox } from '../ui/checkbox';
-import { generateCashAdvance } from '@/ai/flows/cash-advance-flow';
+import { generateCashAdvance, GenerateCashAdvanceInput } from '@/ai/flows/cash-advance-flow';
 
 type MotorcycleTableProps = {
   motorcycles: Motorcycle[];
@@ -75,7 +75,17 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
     });
 
     try {
-      const result = await generateCashAdvance({ motorcycles: selectedMotorcycles });
+      const motorcyclesForAI: GenerateCashAdvanceInput['motorcycles'] = selectedMotorcycles.map(m => ({
+        ...m,
+        purchaseDate: m.purchaseDate.toISOString(),
+        documents: m.documents.map(d => ({
+            ...d,
+            uploadedAt: d.uploadedAt.toISOString(),
+            expiresAt: d.expiresAt ? d.expiresAt.toISOString() : undefined
+        }))
+      }));
+
+      const result = await generateCashAdvance({ motorcycles: motorcyclesForAI });
       console.log('Cash advance generated: ', result);
       toast({
         title: 'Cash Advance Generated',
@@ -192,7 +202,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
               <TableRow>
                 <TableHead padding="checkbox">
                   <Checkbox
-                    checked={selectedMotorcycles.length === motorcycles.length}
+                    checked={selectedMotorcycles.length === motorcycles.length && motorcycles.length > 0}
                     onCheckedChange={handleSelectAll}
                     aria-label="Select all"
                   />
