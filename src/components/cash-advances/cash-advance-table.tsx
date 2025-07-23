@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -21,7 +22,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CashAdvance } from '@/types';
-import { MoreHorizontal, PlusCircle, Check, X, FileUp, Download, Eye } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, Check, X, FileUp, Download, Eye, FileCheck, Banknote } from 'lucide-react';
 import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
 import { Label } from '../ui/label';
@@ -62,8 +63,10 @@ export function CashAdvanceTable({ cashAdvances: initialCashAdvances }: CashAdva
       case 'Pending':
         return 'default';
       case 'Approved':
+      case 'Check Voucher Released':
         return 'outline';
       case 'Liquidated':
+      case 'Encashed':
         return 'secondary';
       case 'Rejected':
         return 'destructive';
@@ -76,6 +79,8 @@ export function CashAdvanceTable({ cashAdvances: initialCashAdvances }: CashAdva
     switch (status) {
       case 'Pending': return 'bg-amber-500';
       case 'Approved': return 'bg-blue-500';
+      case 'Check Voucher Released': return 'bg-purple-500';
+      case 'Encashed': return 'bg-teal-500';
       case 'Liquidated': return 'bg-green-500';
       case 'Rejected': return 'bg-red-500';
       default: return 'bg-gray-500';
@@ -166,13 +171,21 @@ export function CashAdvanceTable({ cashAdvances: initialCashAdvances }: CashAdva
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
                        <DropdownMenuItem onClick={() => setPreviewingAdvance(ca)}>
                         <Eye className="mr-2 h-4 w-4" />
-                        <span>Preview</span>
+                        <span>Preview/Print</span>
                       </DropdownMenuItem>
                       <DropdownMenuItem disabled={ca.status !== 'Pending'} onClick={() => handleAction(`Approved advance for ${ca.personnel}.`)}>
                         <Check className="mr-2 h-4 w-4" />
                         <span>Approve</span>
                       </DropdownMenuItem>
-                      <DropdownMenuItem disabled={ca.status !== 'Approved'} onClick={() => handleAction(`Liquidated advance for ${ca.personnel}.`)}>
+                       <DropdownMenuItem disabled={ca.status !== 'Approved'} onClick={() => handleAction(`CV released for ${ca.personnel}.`)}>
+                        <FileCheck className="mr-2 h-4 w-4" />
+                        <span>Release CV</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem disabled={ca.status !== 'Check Voucher Released'} onClick={() => handleAction(`Marked as encashed for ${ca.personnel}.`)}>
+                        <Banknote className="mr-2 h-4 w-4" />
+                        <span>Mark as Encashed</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem disabled={!['Approved', 'Encashed'].includes(ca.status)} onClick={() => handleAction(`Liquidated advance for ${ca.personnel}.`)}>
                         <FileUp className="mr-2 h-4 w-4" />
                         <span>Liquidate</span>
                       </DropdownMenuItem>

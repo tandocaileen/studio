@@ -1,4 +1,5 @@
 
+
 export type DocumentType = 'OR/CR' | 'COC' | 'Insurance' | 'CSR' | 'HPG Control Form';
 
 export type Document = {
@@ -53,3 +54,4 @@ export type CashAdvance = {
   shortageOverage?: number;
   liquidationRemarks?: string;
 };
+

@@ -117,6 +117,8 @@ const cashAdvances: CashAdvance[] = [
     date: new Date('2024-03-01'),
     status: 'Liquidated',
     receipts: ['#'],
+    totalLiquidation: 1150,
+    shortageOverage: -50
   },
   {
     id: 'ca3',
@@ -131,8 +133,20 @@ const cashAdvances: CashAdvance[] = [
     personnel: 'John Doe',
     purpose: 'Insurance payment for 789 GHI',
     amount: 3500,
-    date: addDays(today, -50),
-    status: 'Pending',
+    date: addDays(today, -5),
+    status: 'Check Voucher Released',
+    checkVoucherNumber: 'CV-2024-05-001',
+    checkVoucherReleaseDate: addDays(today, -5),
+  },
+    {
+    id: 'ca5',
+    personnel: 'Jane Smith',
+    purpose: 'Renewal for AAA 111',
+    amount: 2800,
+    date: addDays(today, -2),
+    status: 'Encashed',
+    checkVoucherNumber: 'CV-2024-05-002',
+    checkVoucherReleaseDate: addDays(today, -2),
   },
 ];
 
