@@ -73,13 +73,19 @@ function DashboardContent({ searchQuery }: { searchQuery: string }) {
 
 export default function DashboardPage() {
   const [searchQuery, setSearchQuery] = useState('');
+  const { user } = useAuth();
+
+  const getTitle = () => {
+    if (user?.role === 'Liaison') return 'Home';
+    return 'Dashboard';
+  }
 
   return (
     <ProtectedPage allowedRoles={['Store Supervisor', 'Liaison']}>
       <div className="flex min-h-screen w-full flex-col bg-muted/40">
         <AppSidebar />
         <div className="flex flex-col pt-14 sm:gap-4 sm:py-4 sm:pl-14">
-          <Header title="Dashboard" onSearch={setSearchQuery} />
+          <Header title={getTitle()} onSearch={setSearchQuery} />
           <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
             <div className="grid auto-rows-max items-start gap-4 md:gap-8">
                 <DashboardContent searchQuery={searchQuery} />

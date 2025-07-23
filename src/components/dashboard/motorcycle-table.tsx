@@ -72,7 +72,9 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
 
   const { toast } = useToast();
   const { user } = useAuth();
-
+  
+  const isLiaison = user?.role === 'Liaison';
+  const isSupervisor = user?.role === 'Store Supervisor';
 
   const handleAction = (message: string) => {
     toast({
@@ -89,6 +91,15 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
         variant: 'destructive',
       });
       return;
+    }
+
+    if (selectedMotorcycles.some(m => m.status === 'Incomplete')) {
+        toast({
+            title: 'Cannot Generate Cash Advance',
+            description: 'Please unselect motorcycles with an "Incomplete" status.',
+            variant: 'destructive',
+        });
+        return;
     }
     
     toast({
@@ -236,8 +247,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
     }
   };
 
-  const isLiaison = user?.role === 'Liaison';
-  const isSupervisor = user?.role === 'Store Supervisor';
+  const isGenerateCaDisabled = selectedMotorcycles.length === 0 || selectedMotorcycles.some(m => m.status === 'Incomplete');
 
 
   return (
@@ -255,7 +265,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
           </div>
           <div className="flex gap-2">
             {isLiaison && (
-              <Button size="sm" className="gap-1" onClick={handleGenerateCashAdvance} disabled={selectedMotorcycles.length === 0}>
+              <Button size="sm" className="gap-1" onClick={handleGenerateCashAdvance} disabled={isGenerateCaDisabled}>
                   <DollarSign className="h-4 w-4" />
                   <span className="hidden sm:inline">Generate CA</span>
               </Button>
@@ -497,18 +507,18 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
                           <DropdownMenuItem onClick={() => handleEditClick(motorcycle)}>
                             <Truck className="mr-2 h-4 w-4" />
-                            <span>Edit Details</span>
+                            <span>{isLiaison ? 'View Details' : 'Edit Details'}</span>
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => setViewingDocumentsMotorcycle(motorcycle)}>
                             <FileText className="mr-2 h-4 w-4" />
                             <span>View Documents</span>
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleAction(`Logging maintenance for ${motorcycle.plateNumber}.`)}>
-                            <Wrench className="mr-2 h-4 w-4" />
-                            <span>Log Maintenance</span>
-                          </DropdownMenuItem>
-                          {isSupervisor && (
+                           {isSupervisor && (
                             <>
+                              <DropdownMenuItem onClick={() => handleAction(`Logging maintenance for ${motorcycle.plateNumber}.`)}>
+                                <Wrench className="mr-2 h-4 w-4" />
+                                <span>Log Maintenance</span>
+                              </DropdownMenuItem>
                                <DropdownMenuSeparator />
                                <DropdownMenuItem className="text-destructive" onClick={() => handleAction(`Deleting ${motorcycle.plateNumber}.`)}>Delete</DropdownMenuItem>
                             </>
@@ -527,9 +537,11 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
       <Dialog open={!!editingMotorcycle} onOpenChange={(open) => !open && handleCancelEdit()}>
           <DialogContent className="sm:max-w-4xl max-w-[90vw] max-h-[90vh]">
               <DialogHeader>
-                  <DialogTitle>Edit Motorcycle - {editingMotorcycle?.plateNumber}</DialogTitle>
+                  <DialogTitle>
+                    {isLiaison ? 'View Motorcycle' : 'Edit Motorcycle'} - {editingMotorcycle?.plateNumber}
+                  </DialogTitle>
                   <DialogDescription>
-                      Update the details and documents for this unit.
+                      {isLiaison ? 'Viewing details for this unit.' : 'Update the details and documents for this unit.'}
                   </DialogDescription>
               </DialogHeader>
               <ScrollArea className="max-h-[70vh]">
@@ -538,31 +550,31 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="grid gap-2">
                           <Label htmlFor="edit-plateNumber">Plate No.</Label>
-                          <Input id="edit-plateNumber" name="plateNumber" value={editedData.plateNumber || ''} onChange={handleInputChange} />
+                          <Input id="edit-plateNumber" name="plateNumber" value={editedData.plateNumber || ''} onChange={handleInputChange} disabled={isLiaison} />
                       </div>
                       <div className="grid gap-2">
                           <Label htmlFor="edit-customerName">Customer Name</Label>
-                          <Input id="edit-customerName" name="customerName" value={editedData.customerName || ''} onChange={handleInputChange} />
+                          <Input id="edit-customerName" name="customerName" value={editedData.customerName || ''} onChange={handleInputChange} disabled={isLiaison} />
                       </div>
                       <div className="grid gap-2">
                           <Label htmlFor="edit-make">Make</Label>
-                          <Input id="edit-make" name="make" value={editedData.make || ''} onChange={handleInputChange} />
+                          <Input id="edit-make" name="make" value={editedData.make || ''} onChange={handleInputChange} disabled={isLiaison} />
                       </div>
                       <div className="grid gap-2">
                           <Label htmlFor="edit-model">Model</Label>
-                          <Input id="edit-model" name="model" value={editedData.model || ''} onChange={handleInputChange} />
+                          <Input id="edit-model" name="model" value={editedData.model || ''} onChange={handleInputChange} disabled={isLiaison} />
                       </div>
                        <div className="grid gap-2">
                           <Label htmlFor="edit-engineNumber">Engine No.</Label>
-                          <Input id="edit-engineNumber" name="engineNumber" value={editedData.engineNumber || ''} onChange={handleInputChange} />
+                          <Input id="edit-engineNumber" name="engineNumber" value={editedData.engineNumber || ''} onChange={handleInputChange} disabled={isLiaison} />
                       </div>
                       <div className="grid gap-2">
                           <Label htmlFor="edit-chassisNumber">Chassis No.</Label>
-                          <Input id="edit-chassisNumber" name="chassisNumber" value={editedData.chassisNumber || ''} onChange={handleInputChange} />
+                          <Input id="edit-chassisNumber" name="chassisNumber" value={editedData.chassisNumber || ''} onChange={handleInputChange} disabled={isLiaison} />
                       </div>
                        <div className="grid gap-2">
                           <Label htmlFor="edit-branch">Branch</Label>
-                           <Select value={editedData.assignedBranch} onValueChange={(value) => handleSelectChange('assignedBranch', value)}>
+                           <Select value={editedData.assignedBranch} onValueChange={(value) => handleSelectChange('assignedBranch', value)} disabled={isLiaison}>
                             <SelectTrigger>
                               <SelectValue />
                             </SelectTrigger>
@@ -573,7 +585,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                       </div>
                        <div className="grid gap-2">
                           <Label htmlFor="edit-assignedLiaison">Assign Liaison</Label>
-                           <Select value={editedData.assignedLiaison} onValueChange={(value) => handleSelectChange('assignedLiaison', value)}>
+                           <Select value={editedData.assignedLiaison} onValueChange={(value) => handleSelectChange('assignedLiaison', value)} disabled={isLiaison}>
                             <SelectTrigger>
                               <SelectValue placeholder="Select a liaison" />
                             </SelectTrigger>
@@ -587,7 +599,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                       </div>
                       <div className="grid gap-2">
                         <Label htmlFor="status">Status</Label>
-                        <Select value={editedData.status} onValueChange={(value) => handleSelectChange('status', value)}>
+                        <Select value={editedData.status} onValueChange={(value) => handleSelectChange('status', value)} disabled={isLiaison}>
                           <SelectTrigger>
                             <SelectValue/>
                           </SelectTrigger>
@@ -605,23 +617,23 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="grid gap-2">
                             <Label htmlFor="edit-cocNumber">COC No.</Label>
-                            <Input id="edit-cocNumber" name="cocNumber" value={editedData.cocNumber || ''} onChange={handleInputChange} />
+                            <Input id="edit-cocNumber" name="cocNumber" value={editedData.cocNumber || ''} onChange={handleInputChange} disabled={isLiaison} />
                         </div>
                          <div className="grid gap-2">
                             <Label htmlFor="edit-policyNumber">Policy No.</Label>
-                            <Input id="edit-policyNumber" name="policyNumber" value={editedData.policyNumber || ''} onChange={handleInputChange} />
+                            <Input id="edit-policyNumber" name="policyNumber" value={editedData.policyNumber || ''} onChange={handleInputChange} disabled={isLiaison} />
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="edit-insuranceType">Insurance Type</Label>
-                            <Input id="edit-insuranceType" name="insuranceType" value={editedData.insuranceType || ''} onChange={handleInputChange} />
+                            <Input id="edit-insuranceType" name="insuranceType" value={editedData.insuranceType || ''} onChange={handleInputChange} disabled={isLiaison} />
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="edit-hpgControlNumber">HPG Control No.</Label>
-                            <Input id="edit-hpgControlNumber" name="hpgControlNumber" value={editedData.hpgControlNumber || ''} onChange={handleInputChange} />
+                            <Input id="edit-hpgControlNumber" name="hpgControlNumber" value={editedData.hpgControlNumber || ''} onChange={handleInputChange} disabled={isLiaison} />
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="edit-sarCode">SAR Code</Label>
-                            <Input id="edit-sarCode" name="sarCode" value={editedData.sarCode || ''} onChange={handleInputChange} />
+                            <Input id="edit-sarCode" name="sarCode" value={editedData.sarCode || ''} onChange={handleInputChange} disabled={isLiaison} />
                         </div>
                      </div>
 
@@ -648,6 +660,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                               size="icon"
                               className="absolute top-1 right-1 h-6 w-6"
                               onClick={() => handleRemoveDocument(doc.id, false)}
+                              disabled={isLiaison}
                             >
                               <Trash2 className="h-4 w-4 text-destructive" />
                             </Button>
@@ -656,6 +669,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                               <Select
                                 value={doc.type}
                                 onValueChange={(value: DocumentType) => handleDocumentChange(doc.id, 'type', value, false)}
+                                disabled={isLiaison}
                               >
                                 <SelectTrigger id={`edit-doc-type-${index}`} className="col-span-3">
                                   <SelectValue />
@@ -670,7 +684,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                             <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor={`edit-doc-file-${index}`} className="text-right">File</Label>
                                 <div className="col-span-3 flex items-center gap-2">
-                                    <Input id={`edit-doc-file-${index}`} type="file" className="flex-grow" onChange={(e) => handleFileChange(doc.id, e, false)} />
+                                    <Input id={`edit-doc-file-${index}`} type="file" className="flex-grow" onChange={(e) => handleFileChange(doc.id, e, false)} disabled={isLiaison} />
                                     <Button variant="outline" size="sm" asChild>
                                         <a href={doc.url} target="_blank" rel="noopener noreferrer">
                                             View Current <ExternalLink className="ml-2 h-3 w-3" />
@@ -689,6 +703,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                                           "col-span-3 justify-start text-left font-normal",
                                           !doc.expiresAt && "text-muted-foreground"
                                         )}
+                                        disabled={isLiaison}
                                       >
                                         <CalendarIcon className="mr-2 h-4 w-4" />
                                         {doc.expiresAt ? format(new Date(doc.expiresAt), "PPP") : <span>Pick a date</span>}
@@ -713,8 +728,8 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                 </div>
               </ScrollArea>
               <DialogFooter>
-                  <Button variant="outline" onClick={handleCancelEdit}>Cancel</Button>
-                  <Button onClick={handleSaveEdit}>Save Changes</Button>
+                  <Button variant="outline" onClick={handleCancelEdit}>Close</Button>
+                  {!isLiaison && <Button onClick={handleSaveEdit}>Save Changes</Button>}
               </DialogFooter>
           </DialogContent>
       </Dialog>
