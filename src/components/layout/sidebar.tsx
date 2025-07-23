@@ -10,6 +10,7 @@ import {
   DollarSign,
   PanelLeft,
   LifeBuoy,
+  Receipt,
 } from 'lucide-react';
 import {
   Tooltip,
@@ -26,6 +27,7 @@ import { Button } from '../ui/button';
 const navItems = [
   { href: '/', icon: Home, label: 'Dashboard' },
   { href: '/cash-advances', icon: DollarSign, label: 'Cash Advances' },
+  { href: '/liquidations', icon: Receipt, label: 'Liquidations' },
   { href: '/settings', icon: Settings, label: 'Settings' },
   { href: '/support', icon: LifeBuoy, label: 'Support' },
 ];
