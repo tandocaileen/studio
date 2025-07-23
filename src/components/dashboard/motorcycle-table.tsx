@@ -45,6 +45,7 @@ import { Calendar } from '../ui/calendar';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '../ui/scroll-area';
 import { useAuth } from '@/context/AuthContext';
+import { CashAdvancePreview } from './cash-advance-preview';
 
 type MotorcycleTableProps = {
   motorcycles: Motorcycle[];
@@ -69,6 +70,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
   const [editedDocuments, setEditedDocuments] = React.useState<NewDocument[]>([]);
   const [viewingDocumentsMotorcycle, setViewingDocumentsMotorcycle] = React.useState<Motorcycle | null>(null);
   const [newDocuments, setNewDocuments] = React.useState<NewDocument[]>([]);
+  const [isPreviewingCa, setIsPreviewingCa] = React.useState(false);
 
   const { toast } = useToast();
   const { user } = useAuth();
@@ -83,8 +85,8 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
     });
   };
 
-  const handleGenerateCashAdvance = async () => {
-    if (selectedMotorcycles.length === 0) {
+  const handleOpenCaPreview = () => {
+     if (selectedMotorcycles.length === 0) {
       toast({
         title: 'No Motorcycles Selected',
         description: 'Please select at least one motorcycle to generate a cash advance.',
@@ -101,6 +103,10 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
         });
         return;
     }
+    setIsPreviewingCa(true);
+  }
+
+  const handleGenerateCashAdvance = async () => {
     
     toast({
         title: 'AI is working...',
@@ -133,7 +139,8 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
             variant: 'destructive',
           });
     }
-
+    
+    setIsPreviewingCa(false);
     setSelectedMotorcycles([]);
   };
 
@@ -265,7 +272,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
           </div>
           <div className="flex gap-2">
             {isLiaison && (
-              <Button size="sm" className="gap-1" onClick={handleGenerateCashAdvance} disabled={isGenerateCaDisabled}>
+              <Button size="sm" className="gap-1" onClick={handleOpenCaPreview} disabled={isGenerateCaDisabled}>
                   <DollarSign className="h-4 w-4" />
                   <span className="hidden sm:inline">Generate CA</span>
               </Button>
@@ -774,6 +781,26 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
           </div>
         </DialogContent>
       </Dialog>
+      
+       {/* CA Preview Dialog */}
+      <Dialog open={isPreviewingCa} onOpenChange={setIsPreviewingCa}>
+        <DialogContent className="max-w-4xl">
+            <DialogHeader>
+                <DialogTitle>Cash Advance Request Preview</DialogTitle>
+                <DialogDescription>
+                    Review the details below. The total amount will be requested for cash advance.
+                </DialogDescription>
+            </DialogHeader>
+            <div className="mt-4 max-h-[70vh] overflow-y-auto p-2 border rounded-md">
+                <CashAdvancePreview motorcycles={selectedMotorcycles} />
+            </div>
+            <DialogFooter>
+                <Button variant="outline" onClick={() => setIsPreviewingCa(false)}>Cancel</Button>
+                <Button onClick={handleGenerateCashAdvance}>Submit Request</Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
     </>
   );
 }
+
