@@ -52,14 +52,17 @@ type NewDocument = {
   id: number;
   type: 'OR/CR' | 'COC' | 'Insurance';
   file: File | null;
+  url?: string;
+  uploadedAt?: Date;
   expiresAt?: Date;
 };
 
 export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleTableProps) {
   const [motorcycles, setMotorcycles] = React.useState(initialMotorcycles);
   const [selectedMotorcycles, setSelectedMotorcycles] = React.useState<Motorcycle[]>([]);
-  const [editingMotorcycleId, setEditingMotorcycleId] = React.useState<string | null>(null);
+  const [editingMotorcycle, setEditingMotorcycle] = React.useState<Motorcycle | null>(null);
   const [editedData, setEditedData] = React.useState<Partial<Motorcycle>>({});
+  const [editedDocuments, setEditedDocuments] = React.useState<NewDocument[]>([]);
   const [viewingDocumentsMotorcycle, setViewingDocumentsMotorcycle] = React.useState<Motorcycle | null>(null);
   const [newDocuments, setNewDocuments] = React.useState<NewDocument[]>([]);
 
@@ -150,25 +153,47 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
   const branches = getBranches();
 
   const handleEditClick = (motorcycle: Motorcycle) => {
-    setEditingMotorcycleId(motorcycle.id);
+    setEditingMotorcycle(motorcycle);
     setEditedData(motorcycle);
+    setEditedDocuments(motorcycle.documents.map((doc, index) => ({
+      id: index,
+      type: doc.type,
+      file: null,
+      url: doc.url,
+      uploadedAt: doc.uploadedAt,
+      expiresAt: doc.expiresAt
+    })));
   };
 
   const handleCancelEdit = () => {
-    setEditingMotorcycleId(null);
+    setEditingMotorcycle(null);
     setEditedData({});
+    setEditedDocuments([]);
   };
 
   const handleSaveEdit = () => {
-    if (!editingMotorcycleId) return;
+    if (!editingMotorcycle) return;
+
+    // Here you would handle the logic to save the updated motorcycle data
+    // and upload/delete documents. For this demo, we'll just update the local state.
+
+    const updatedMotorcycle = {
+      ...editingMotorcycle,
+      ...editedData,
+      documents: editedDocuments.map(doc => ({
+        type: doc.type,
+        url: doc.url || '#',
+        uploadedAt: doc.uploadedAt || new Date(),
+        expiresAt: doc.expiresAt,
+      })) as Document[],
+    };
 
     setMotorcycles(motorcycles.map(m => 
-      m.id === editingMotorcycleId ? { ...m, ...editedData } as Motorcycle : m
+      m.id === editingMotorcycle.id ? updatedMotorcycle : m
     ));
 
-    handleAction(`Motorcycle ${editedData.plateNumber || 'details'} updated.`);
-    setEditingMotorcycleId(null);
-    setEditedData({});
+    handleAction(`Motorcycle ${updatedMotorcycle.plateNumber} details updated.`);
+    handleCancelEdit();
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -177,24 +202,29 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
   };
   
   const handleSelectChange = (name: string, value: string) => {
-    setEditedData(prev => ({ ...prev, [name]: value }));
+    setEditedData(prev => ({ ...prev, [name]: value as any }));
   };
   
   const handleAddNewDocument = () => {
     setNewDocuments(prev => [...prev, { id: Date.now(), type: 'OR/CR', file: null }]);
   }
 
-  const handleRemoveDocument = (id: number) => {
-    setNewDocuments(prev => prev.filter(doc => doc.id !== id));
+  const handleRemoveDocument = (id: number, isNew: boolean) => {
+    if (isNew) {
+      setNewDocuments(prev => prev.filter(doc => doc.id !== id));
+    } else {
+      setEditedDocuments(prev => prev.filter(doc => doc.id !== id));
+    }
   }
 
-  const handleDocumentChange = (id: number, field: keyof NewDocument, value: any) => {
-    setNewDocuments(prev => prev.map(doc => doc.id === id ? { ...doc, [field]: value } : doc));
+  const handleDocumentChange = (id: number, field: keyof NewDocument, value: any, isNew: boolean) => {
+    const setDocs = isNew ? setNewDocuments : setEditedDocuments;
+    setDocs(prev => prev.map(doc => doc.id === id ? { ...doc, [field]: value } : doc));
   }
 
-  const handleFileChange = (id: number, e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (id: number, e: React.ChangeEvent<HTMLInputElement>, isNew: boolean) => {
     if (e.target.files && e.target.files.length > 0) {
-      handleDocumentChange(id, 'file', e.target.files[0]);
+      handleDocumentChange(id, 'file', e.target.files[0], isNew);
     }
   };
 
@@ -261,7 +291,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                             variant="ghost"
                             size="icon"
                             className="absolute top-1 right-1 h-6 w-6"
-                            onClick={() => handleRemoveDocument(doc.id)}
+                            onClick={() => handleRemoveDocument(doc.id, true)}
                           >
                             <Trash2 className="h-4 w-4 text-destructive" />
                           </Button>
@@ -269,7 +299,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                             <Label htmlFor={`doc-type-${index}`} className="text-right">Type</Label>
                             <Select
                               value={doc.type}
-                              onValueChange={(value: 'OR/CR' | 'COC' | 'Insurance') => handleDocumentChange(doc.id, 'type', value)}
+                              onValueChange={(value: 'OR/CR' | 'COC' | 'Insurance') => handleDocumentChange(doc.id, 'type', value, true)}
                             >
                               <SelectTrigger id={`doc-type-${index}`} className="col-span-3">
                                 <SelectValue />
@@ -283,7 +313,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                           </div>
                           <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor={`doc-file-${index}`} className="text-right">File</Label>
-                            <Input id={`doc-file-${index}`} type="file" className="col-span-3" onChange={(e) => handleFileChange(doc.id, e)} />
+                            <Input id={`doc-file-${index}`} type="file" className="col-span-3" onChange={(e) => handleFileChange(doc.id, e, true)} />
                           </div>
                           {doc.type === 'Insurance' || doc.type === 'OR/CR' ? (
                             <div className="grid grid-cols-4 items-center gap-4">
@@ -305,7 +335,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                                     <Calendar
                                       mode="single"
                                       selected={doc.expiresAt}
-                                      onSelect={(date) => handleDocumentChange(doc.id, 'expiresAt', date)}
+                                      onSelect={(date) => handleDocumentChange(doc.id, 'expiresAt', date, true)}
                                       initialFocus
                                     />
                                   </PopoverContent>
@@ -349,9 +379,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
               </TableRow>
             </TableHeader>
             <TableBody>
-              {motorcycles.map((motorcycle) => {
-                const isEditing = editingMotorcycleId === motorcycle.id;
-                return (
+              {motorcycles.map((motorcycle) => (
                   <TableRow key={motorcycle.id} data-state={selectedMotorcycles.some(m => m.id === motorcycle.id) ? "selected" : undefined}>
                      <TableCell>
                       <Checkbox
@@ -360,98 +388,163 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                         aria-label={`Select motorcycle ${motorcycle.plateNumber}`}
                       />
                     </TableCell>
-                    <TableCell className="font-medium">
-                      {isEditing ? (
-                        <Input name="plateNumber" value={editedData.plateNumber || ''} onChange={handleInputChange} className="h-8"/>
-                      ) : (
-                        motorcycle.plateNumber
-                      )}
+                    <TableCell className="font-medium">{motorcycle.plateNumber}</TableCell>
+                    <TableCell>{`${motorcycle.make} ${motorcycle.model}`}</TableCell>
+                    <TableCell>{motorcycle.engineNumber}</TableCell>
+                    <TableCell>{motorcycle.chassisNumber}</TableCell>
+                    <TableCell>
+                      <Badge variant={statusVariant(motorcycle.status)}>{motorcycle.status}</Badge>
                     </TableCell>
                     <TableCell>
-                      {isEditing ? (
-                        <div className="flex gap-2">
-                          <Input name="make" value={editedData.make || ''} onChange={handleInputChange} className="h-8"/>
-                          <Input name="model" value={editedData.model || ''} onChange={handleInputChange} className="h-8"/>
-                        </div>
-                      ) : (
-                        `${motorcycle.make} ${motorcycle.model}`
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {isEditing ? (
-                         <Input name="engineNumber" value={editedData.engineNumber || ''} onChange={handleInputChange} className="h-8"/>
-                      ) : (
-                        motorcycle.engineNumber
-                      )}
-                    </TableCell>
-                     <TableCell>
-                      {isEditing ? (
-                         <Input name="chassisNumber" value={editedData.chassisNumber || ''} onChange={handleInputChange} className="h-8"/>
-                      ) : (
-                        motorcycle.chassisNumber
-                      )}
-                    </TableCell>
-                    <TableCell>
-                       {isEditing ? (
-                        <Select value={editedData.status} onValueChange={(value) => handleSelectChange('status', value as Motorcycle['status'])}>
-                          <SelectTrigger className="h-8">
-                            <SelectValue/>
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Registered">Registered</SelectItem>
-                            <SelectItem value="Unregistered">Unregistered</SelectItem>
-                            <SelectItem value="For Renewal">For Renewal</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <Badge variant={statusVariant(motorcycle.status)}>{motorcycle.status}</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {isEditing ? (
-                        <div className="flex items-center gap-2">
-                          <Button variant="ghost" size="icon" onClick={handleSaveEdit}>
-                            <Save className="h-4 w-4 text-primary" />
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button aria-haspopup="true" size="icon" variant="ghost">
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Toggle menu</span>
                           </Button>
-                          <Button variant="ghost" size="icon" onClick={handleCancelEdit}>
-                            <XCircle className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </div>
-                      ) : (
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button aria-haspopup="true" size="icon" variant="ghost">
-                              <MoreHorizontal className="h-4 w-4" />
-                              <span className="sr-only">Toggle menu</span>
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => handleEditClick(motorcycle)}>
-                              <Truck className="mr-2 h-4 w-4" />
-                              <span>Edit Details</span>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setViewingDocumentsMotorcycle(motorcycle)}>
-                              <FileText className="mr-2 h-4 w-4" />
-                              <span>View Documents</span>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleAction(`Logging maintenance for ${motorcycle.plateNumber}.`)}>
-                              <Wrench className="mr-2 h-4 w-4" />
-                              <span>Log Maintenance</span>
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-destructive" onClick={() => handleAction(`Deleting ${motorcycle.plateNumber}.`)}>Delete</DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      )}
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuItem onClick={() => handleEditClick(motorcycle)}>
+                            <Truck className="mr-2 h-4 w-4" />
+                            <span>Edit Details</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => setViewingDocumentsMotorcycle(motorcycle)}>
+                            <FileText className="mr-2 h-4 w-4" />
+                            <span>View Documents</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleAction(`Logging maintenance for ${motorcycle.plateNumber}.`)}>
+                            <Wrench className="mr-2 h-4 w-4" />
+                            <span>Log Maintenance</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem className="text-destructive" onClick={() => handleAction(`Deleting ${motorcycle.plateNumber}.`)}>Delete</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
-                );
-              })}
+              ))}
             </TableBody>
           </Table>
         </CardContent>
       </Card>
+      
+      {/* Edit Motorcycle Dialog */}
+      <Dialog open={!!editingMotorcycle} onOpenChange={(open) => !open && handleCancelEdit()}>
+          <DialogContent className="max-w-[80vw]">
+              <DialogHeader>
+                  <DialogTitle>Edit Motorcycle - {editingMotorcycle?.plateNumber}</DialogTitle>
+                  <DialogDescription>
+                      Update the details and documents for this unit.
+                  </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto pr-4">
+                  {/* Basic Details */}
+                  <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="plateNumber" className="text-right">Plate No.</Label>
+                      <Input id="plateNumber" name="plateNumber" value={editedData.plateNumber || ''} onChange={handleInputChange} className="col-span-3" />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="make" className="text-right">Make</Label>
+                      <Input id="make" name="make" value={editedData.make || ''} onChange={handleInputChange} className="col-span-3" />
+                  </div>
+                   <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="model" className="text-right">Model</Label>
+                      <Input id="model" name="model" value={editedData.model || ''} onChange={handleInputChange} className="col-span-3" />
+                  </div>
+                   <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="status" className="text-right">Status</Label>
+                      <Select value={editedData.status} onValueChange={(value) => handleSelectChange('status', value)}>
+                        <SelectTrigger className="col-span-3">
+                          <SelectValue/>
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Registered">Registered</SelectItem>
+                          <SelectItem value="Unregistered">Unregistered</SelectItem>
+                          <SelectItem value="For Renewal">For Renewal</SelectItem>
+                        </SelectContent>
+                      </Select>
+                  </div>
+                  {/* Document Management */}
+                   <div className="col-span-4">
+                    <Label className="text-base font-semibold">Documents</Label>
+                    <div className="space-y-4 mt-2">
+                      {editedDocuments.map((doc, index) => (
+                        <div key={doc.id} className="grid grid-cols-1 gap-4 p-4 border rounded-lg relative">
+                           <Button
+                            variant="ghost"
+                            size="icon"
+                            className="absolute top-1 right-1 h-6 w-6"
+                            onClick={() => handleRemoveDocument(doc.id, false)}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor={`edit-doc-type-${index}`} className="text-right">Type</Label>
+                            <Select
+                              value={doc.type}
+                              onValueChange={(value: 'OR/CR' | 'COC' | 'Insurance') => handleDocumentChange(doc.id, 'type', value, false)}
+                            >
+                              <SelectTrigger id={`edit-doc-type-${index}`} className="col-span-3">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="OR/CR">OR/CR</SelectItem>
+                                <SelectItem value="COC">COC</SelectItem>
+                                <SelectItem value="Insurance">Insurance</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                              <Label htmlFor={`edit-doc-file-${index}`} className="text-right">File</Label>
+                              <div className="col-span-3 flex items-center gap-2">
+                                  <Input id={`edit-doc-file-${index}`} type="file" className="flex-grow" onChange={(e) => handleFileChange(doc.id, e, false)} />
+                                  <Button variant="outline" size="sm" asChild>
+                                      <a href={doc.url} target="_blank" rel="noopener noreferrer">
+                                          View Current <ExternalLink className="ml-2 h-3 w-3" />
+                                      </a>
+                                  </Button>
+                              </div>
+                          </div>
+                          {doc.type === 'Insurance' || doc.type === 'OR/CR' ? (
+                            <div className="grid grid-cols-4 items-center gap-4">
+                              <Label htmlFor={`edit-doc-expiry-${index}`} className="text-right">Expiry</Label>
+                                <Popover>
+                                  <PopoverTrigger asChild>
+                                    <Button
+                                      variant={"outline"}
+                                      className={cn(
+                                        "col-span-3 justify-start text-left font-normal",
+                                        !doc.expiresAt && "text-muted-foreground"
+                                      )}
+                                    >
+                                      <CalendarIcon className="mr-2 h-4 w-4" />
+                                      {doc.expiresAt ? format(doc.expiresAt, "PPP") : <span>Pick a date</span>}
+                                    </Button>
+                                  </PopoverTrigger>
+                                  <PopoverContent className="w-auto p-0">
+                                    <Calendar
+                                      mode="single"
+                                      selected={doc.expiresAt}
+                                      onSelect={(date) => handleDocumentChange(doc.id, 'expiresAt', date, false)}
+                                      initialFocus
+                                    />
+                                  </PopoverContent>
+                                </Popover>
+                            </div>
+                          ) : null}
+                        </div>
+                      ))}
+                       {/* This is where you might add a button to add NEW documents during an edit */}
+                    </div>
+                  </div>
+              </div>
+              <DialogFooter>
+                  <Button variant="outline" onClick={handleCancelEdit}>Cancel</Button>
+                  <Button onClick={handleSaveEdit}>Save Changes</Button>
+              </DialogFooter>
+          </DialogContent>
+      </Dialog>
       
       {/* View Documents Dialog */}
       <Dialog open={!!viewingDocumentsMotorcycle} onOpenChange={(open) => !open && setViewingDocumentsMotorcycle(null)}>
@@ -496,7 +589,3 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
     </>
   );
 }
-
-    
-
-    
