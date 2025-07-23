@@ -21,7 +21,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Motorcycle } from '@/types';
-import { MoreHorizontal, PlusCircle, FileText, Truck, Wrench, DollarSign, ExternalLink } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, FileText, Truck, Wrench, DollarSign, ExternalLink, Save, XCircle } from 'lucide-react';
 import { getBranches } from '@/lib/data';
 import {
   Dialog,
@@ -47,7 +47,8 @@ type MotorcycleTableProps = {
 export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleTableProps) {
   const [motorcycles, setMotorcycles] = React.useState(initialMotorcycles);
   const [selectedMotorcycles, setSelectedMotorcycles] = React.useState<Motorcycle[]>([]);
-  const [editingMotorcycle, setEditingMotorcycle] = React.useState<Motorcycle | null>(null);
+  const [editingMotorcycleId, setEditingMotorcycleId] = React.useState<string | null>(null);
+  const [editedData, setEditedData] = React.useState<Partial<Motorcycle>>({});
   const [viewingDocumentsMotorcycle, setViewingDocumentsMotorcycle] = React.useState<Motorcycle | null>(null);
 
   const { toast } = useToast();
@@ -113,7 +114,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
 
   const handleSelectAll = (checked: boolean | 'indeterminate') => {
     if (checked) {
-      setSelectedMotorcycles(motorcycles);
+      setMotorcycles(motorcycles);
     } else {
       setSelectedMotorcycles([]);
     }
@@ -134,6 +135,40 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
   };
 
   const branches = getBranches();
+
+  const handleEditClick = (motorcycle: Motorcycle) => {
+    setEditingMotorcycleId(motorcycle.id);
+    setEditedData(motorcycle);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingMotorcycleId(null);
+    setEditedData({});
+  };
+
+  const handleSaveEdit = () => {
+    if (!editingMotorcycleId) return;
+
+    // Here you would typically make an API call to save the data
+    // For this example, we'll just update the local state
+    setMotorcycles(motorcycles.map(m => 
+      m.id === editingMotorcycleId ? { ...m, ...editedData } as Motorcycle : m
+    ));
+
+    handleAction(`Motorcycle ${editedData.plateNumber} updated.`);
+    setEditingMotorcycleId(null);
+    setEditedData({});
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setEditedData(prev => ({ ...prev, [name]: value }));
+  };
+  
+  const handleSelectChange = (name: string, value: string) => {
+    setEditedData(prev => ({ ...prev, [name]: value }));
+  };
+
 
   return (
     <>
@@ -219,6 +254,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
             </TableHeader>
             <TableBody>
               {motorcycles.map((motorcycle) => {
+                const isEditing = editingMotorcycleId === motorcycle.id;
                 const insurance = motorcycle.documents.find(d => d.type === 'Insurance');
                 return (
                   <TableRow key={motorcycle.id} data-state={selectedMotorcycles.some(m => m.id === motorcycle.id) && "selected"}>
@@ -229,41 +265,93 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                         aria-label={`Select motorcycle ${motorcycle.plateNumber}`}
                       />
                     </TableCell>
-                    <TableCell className="font-medium">{motorcycle.plateNumber}</TableCell>
-                    <TableCell>{motorcycle.make} {motorcycle.model}</TableCell>
-                    <TableCell>{motorcycle.assignedBranch}</TableCell>
+                    <TableCell className="font-medium">
+                      {isEditing ? (
+                        <Input name="plateNumber" value={editedData.plateNumber} onChange={handleInputChange} className="h-8"/>
+                      ) : (
+                        motorcycle.plateNumber
+                      )}
+                    </TableCell>
                     <TableCell>
-                      <Badge variant={statusVariant(motorcycle.status)}>{motorcycle.status}</Badge>
+                      {isEditing ? (
+                        <div className="flex gap-2">
+                          <Input name="make" value={editedData.make} onChange={handleInputChange} className="h-8"/>
+                          <Input name="model" value={editedData.model} onChange={handleInputChange} className="h-8"/>
+                        </div>
+                      ) : (
+                        `${motorcycle.make} ${motorcycle.model}`
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {isEditing ? (
+                        <Select value={editedData.assignedBranch} onValueChange={(value) => handleSelectChange('assignedBranch', value)}>
+                          <SelectTrigger className="h-8">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {branches.map(branch => <SelectItem key={branch} value={branch}>{branch}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        motorcycle.assignedBranch
+                      )}
+                    </TableCell>
+                    <TableCell>
+                       {isEditing ? (
+                        <Select value={editedData.status} onValueChange={(value) => handleSelectChange('status', value)}>
+                          <SelectTrigger className="h-8">
+                            <SelectValue/>
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Registered">Registered</SelectItem>
+                            <SelectItem value="Unregistered">Unregistered</SelectItem>
+                            <SelectItem value="For Renewal">For Renewal</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <Badge variant={statusVariant(motorcycle.status)}>{motorcycle.status}</Badge>
+                      )}
                     </TableCell>
                     <TableCell>
                       {insurance?.expiresAt ? format(insurance.expiresAt, 'MMM dd, yyyy') : 'N/A'}
                     </TableCell>
                     <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button aria-haspopup="true" size="icon" variant="ghost">
-                            <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">Toggle menu</span>
+                      {isEditing ? (
+                        <div className="flex items-center gap-2">
+                          <Button variant="ghost" size="icon" onClick={handleSaveEdit}>
+                            <Save className="h-4 w-4 text-primary" />
                           </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem onClick={() => setEditingMotorcycle(motorcycle)}>
-                            <Truck className="mr-2 h-4 w-4" />
-                            <span>Edit Details</span>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => setViewingDocumentsMotorcycle(motorcycle)}>
-                            <FileText className="mr-2 h-4 w-4" />
-                            <span>View Documents</span>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleAction(`Logging maintenance for ${motorcycle.plateNumber}.`)}>
-                            <Wrench className="mr-2 h-4 w-4" />
-                            <span>Log Maintenance</span>
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-destructive" onClick={() => handleAction(`Deleting ${motorcycle.plateNumber}.`)}>Delete</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                          <Button variant="ghost" size="icon" onClick={handleCancelEdit}>
+                            <XCircle className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button aria-haspopup="true" size="icon" variant="ghost">
+                              <MoreHorizontal className="h-4 w-4" />
+                              <span className="sr-only">Toggle menu</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuItem onClick={() => handleEditClick(motorcycle)}>
+                              <Truck className="mr-2 h-4 w-4" />
+                              <span>Edit Details</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setViewingDocumentsMotorcycle(motorcycle)}>
+                              <FileText className="mr-2 h-4 w-4" />
+                              <span>View Documents</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleAction(`Logging maintenance for ${motorcycle.plateNumber}.`)}>
+                              <Wrench className="mr-2 h-4 w-4" />
+                              <span>Log Maintenance</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="text-destructive" onClick={() => handleAction(`Deleting ${motorcycle.plateNumber}.`)}>Delete</DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
                     </TableCell>
                   </TableRow>
                 );
@@ -272,48 +360,6 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
           </Table>
         </CardContent>
       </Card>
-      
-      {/* Edit Motorcycle Dialog */}
-      <Dialog open={!!editingMotorcycle} onOpenChange={(open) => !open && setEditingMotorcycle(null)}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Edit Motorcycle</DialogTitle>
-            <DialogDescription>
-              Update the details for {editingMotorcycle?.plateNumber}.
-            </DialogDescription>
-          </DialogHeader>
-          {editingMotorcycle && (
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="plate" className="text-right">Plate No.</Label>
-                <Input id="plate" defaultValue={editingMotorcycle.plateNumber} className="col-span-3" />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="make" className="text-right">Make</Label>
-                <Input id="make" defaultValue={editingMotorcycle.make} className="col-span-3" />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="model" className="text-right">Model</Label>
-                <Input id="model" defaultValue={editingMotorcycle.model} className="col-span-3" />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="branch" className="text-right">Branch</Label>
-                <Select defaultValue={editingMotorcycle.assignedBranch}>
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Select a branch" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {branches.map(branch => <SelectItem key={branch} value={branch}>{branch}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          )}
-          <DialogFooter>
-            <Button type="submit" onClick={() => { handleAction('Motorcycle details updated.'); setEditingMotorcycle(null); }}>Save Changes</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
       
       {/* View Documents Dialog */}
       <Dialog open={!!viewingDocumentsMotorcycle} onOpenChange={(open) => !open && setViewingDocumentsMotorcycle(null)}>
