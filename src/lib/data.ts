@@ -77,9 +77,27 @@ const motorcycles: Motorcycle[] = [
     assignedBranch: 'Main Office',
     purchaseDate: new Date('2021-11-01'),
     supplier: 'Wheeltek',
-    status: 'Unregistered',
+    status: 'Incomplete',
     documents: [],
   },
+  {
+    id: '5',
+    make: 'Honda',
+    model: 'PCX160',
+    year: 2023,
+    color: 'Pearl White',
+    plateNumber: '212 MNO',
+    engineNumber: 'E99887766',
+    chassisNumber: 'C99887766',
+    assignedBranch: 'South Branch',
+    purchaseDate: new Date('2023-08-01'),
+    supplier: 'Honda Prestige',
+    status: 'Ready to Register',
+    documents: [
+        { type: 'COC', url: '#', uploadedAt: new Date('2023-08-05') },
+        { type: 'Insurance', url: '#', uploadedAt: new Date('2023-08-05'), expiresAt: addDays(today, 360) },
+    ]
+  }
 ];
 
 const cashAdvances: CashAdvance[] = [
@@ -103,7 +121,7 @@ const cashAdvances: CashAdvance[] = [
   {
     id: 'ca3',
     personnel: 'Peter Jones',
-    purpose: 'New motorcycle registration',
+    purpose: 'New motorcycle registration for 212 MNO',
     amount: 5000,
     date: new Date('2024-02-15'),
     status: 'Approved',

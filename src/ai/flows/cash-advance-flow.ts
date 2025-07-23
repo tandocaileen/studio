@@ -28,7 +28,7 @@ const MotorcycleSchema = z.object({
     uploadedAt: z.string().describe('The upload date of the document.'),
     expiresAt: z.string().optional().describe('The expiration date of the document.'),
   })),
-  status: z.enum(['Registered', 'Unregistered', 'For Renewal']),
+  status: z.enum(['Incomplete', 'Ready to Register', 'Registered', 'For Renewal']),
 });
 
 

@@ -137,14 +137,16 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
   };
 
 
-  const statusVariant = (status: Motorcycle['status']): 'default' | 'secondary' | 'destructive' => {
+  const statusVariant = (status: Motorcycle['status']): 'default' | 'secondary' | 'destructive' | 'outline' => {
     switch (status) {
       case 'Registered':
         return 'secondary';
       case 'For Renewal':
         return 'destructive';
-      case 'Unregistered':
+      case 'Ready to Register':
         return 'default';
+      case 'Incomplete':
+        return 'outline';
       default:
         return 'default';
     }
@@ -475,8 +477,9 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                           <SelectValue/>
                         </SelectTrigger>
                         <SelectContent>
+                          <SelectItem value="Incomplete">Incomplete</SelectItem>
+                          <SelectItem value="Ready to Register">Ready to Register</SelectItem>
                           <SelectItem value="Registered">Registered</SelectItem>
-                          <SelectItem value="Unregistered">Unregistered</SelectItem>
                           <SelectItem value="For Renewal">For Renewal</SelectItem>
                         </SelectContent>
                       </Select>

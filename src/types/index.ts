@@ -18,7 +18,7 @@ export type Motorcycle = {
   purchaseDate: Date;
   supplier: string;
   documents: Document[];
-  status: 'Registered' | 'Unregistered' | 'For Renewal';
+  status: 'Incomplete' | 'Ready to Register' | 'Registered' | 'For Renewal';
 };
 
 export type CashAdvance = {
