@@ -21,17 +21,37 @@ function DashboardContent({ searchQuery }: { searchQuery: string }) {
   const { user } = useAuth();
   const userBranch = "Main Office"; 
 
-  if (!motorcycles) {
+  if (!user || !motorcycles) {
     return <AppLoader />;
   }
 
-  const filteredMotorcycles = motorcycles.filter(m => 
-    m.plateNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    m.make.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    m.model.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    m.engineNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    m.chassisNumber.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filter logic based on user role
+  const filteredMotorcycles = motorcycles.filter(m => {
+    const isUserAssigned = m.assignedLiaison === user.name;
+    const isUnregistered = ['Incomplete', 'Ready to Register'].includes(m.status);
+
+    // Role-based filtering
+    let roleFilter = false;
+    if (user.role === 'Store Supervisor') {
+      roleFilter = true; // Supervisor sees all
+    } else if (user.role === 'Liaison') {
+      roleFilter = isUserAssigned && isUnregistered;
+    }
+
+    if (!roleFilter) return false;
+
+    // Search query filtering
+    const searchFilter =
+      m.plateNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      m.make.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      m.model.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      m.engineNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      m.chassisNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (m.customerName && m.customerName.toLowerCase().includes(searchQuery.toLowerCase()));
+      
+    return searchFilter;
+  });
+
 
   return (
     <>
@@ -55,7 +75,7 @@ export default function DashboardPage() {
   const [searchQuery, setSearchQuery] = useState('');
 
   return (
-    <ProtectedPage allowedRoles={['Store Supervisor']}>
+    <ProtectedPage allowedRoles={['Store Supervisor', 'Liaison']}>
       <div className="flex min-h-screen w-full flex-col bg-muted/40">
         <AppSidebar />
         <div className="flex flex-col pt-14 sm:gap-4 sm:py-4 sm:pl-14">

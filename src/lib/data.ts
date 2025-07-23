@@ -1,3 +1,4 @@
+
 import type { Motorcycle, CashAdvance } from '@/types';
 
 const today = new Date();
@@ -26,6 +27,10 @@ const motorcycles: Motorcycle[] = [
       { type: 'COC', url: '#', uploadedAt: new Date('2023-01-20') },
       { type: 'Insurance', url: '#', uploadedAt: new Date('2023-01-20'), expiresAt: addDays(today, 25) },
     ],
+    customerName: 'Juan Dela Cruz',
+    assignedLiaison: 'John Doe',
+    processingFee: 1500,
+    orFee: 1000,
   },
   {
     id: '2',
@@ -45,6 +50,10 @@ const motorcycles: Motorcycle[] = [
       { type: 'COC', url: '#', uploadedAt: new Date('2022-05-25') },
       { type: 'Insurance', url: '#', uploadedAt: new Date('2022-05-25'), expiresAt: addDays(today, 5) },
     ],
+    customerName: 'Maria Clara',
+    assignedLiaison: 'John Doe',
+    processingFee: 1500,
+    orFee: 1000,
   },
   {
     id: '3',
@@ -64,6 +73,10 @@ const motorcycles: Motorcycle[] = [
       { type: 'COC', url: '#', uploadedAt: new Date('2023-03-15') },
       { type: 'Insurance', url: '#', uploadedAt: new Date('2023-03-15'), expiresAt: addDays(today, 150) },
     ],
+    customerName: 'Jose Rizal',
+    assignedLiaison: 'Peter Jones',
+    processingFee: 1600,
+    orFee: 1100,
   },
   {
     id: '4',
@@ -79,6 +92,10 @@ const motorcycles: Motorcycle[] = [
     supplier: 'Wheeltek',
     status: 'Incomplete',
     documents: [],
+    customerName: 'Andres Bonifacio',
+    assignedLiaison: 'Jane Smith',
+    processingFee: 1500,
+    orFee: 1000,
   },
   {
     id: '5',
@@ -96,13 +113,18 @@ const motorcycles: Motorcycle[] = [
     documents: [
         { type: 'COC', url: '#', uploadedAt: new Date('2023-08-05') },
         { type: 'Insurance', url: '#', uploadedAt: new Date('2023-08-05'), expiresAt: addDays(today, 360) },
-    ]
+    ],
+    customerName: 'Gabriela Silang',
+    assignedLiaison: 'Jane Smith',
+    processingFee: 1550,
+    orFee: 1050,
   }
 ];
 
 const cashAdvances: CashAdvance[] = [
   {
     id: 'ca1',
+    motorcycleId: '2', // NMAX For Renewal
     personnel: 'John Doe',
     purpose: 'OR/CR Renewal for 456 DEF',
     amount: 2500,
@@ -111,6 +133,7 @@ const cashAdvances: CashAdvance[] = [
   },
   {
     id: 'ca2',
+    motorcycleId: '1', // Click 125i
     personnel: 'Jane Smith',
     purpose: 'Minor Repair for 123 ABC',
     amount: 1200,
@@ -122,6 +145,7 @@ const cashAdvances: CashAdvance[] = [
   },
   {
     id: 'ca3',
+    motorcycleId: '5', // PCX160 Ready to Register
     personnel: 'Peter Jones',
     purpose: 'New motorcycle registration for 212 MNO',
     amount: 5000,
@@ -130,6 +154,7 @@ const cashAdvances: CashAdvance[] = [
   },
   {
     id: 'ca4',
+    motorcycleId: '3', // Burgman
     personnel: 'John Doe',
     purpose: 'Insurance payment for 789 GHI',
     amount: 3500,
@@ -140,6 +165,7 @@ const cashAdvances: CashAdvance[] = [
   },
     {
     id: 'ca5',
+    motorcycleId: '2', // NMAX For Renewal
     personnel: 'Jane Smith',
     purpose: 'Renewal for AAA 111',
     amount: 2800,

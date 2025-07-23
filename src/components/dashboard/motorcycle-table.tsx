@@ -44,6 +44,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { Calendar } from '../ui/calendar';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '../ui/scroll-area';
+import { useAuth } from '@/context/AuthContext';
 
 type MotorcycleTableProps = {
   motorcycles: Motorcycle[];
@@ -70,6 +71,8 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
   const [newDocuments, setNewDocuments] = React.useState<NewDocument[]>([]);
 
   const { toast } = useToast();
+  const { user } = useAuth();
+
 
   const handleAction = (message: string) => {
     toast({
@@ -233,6 +236,10 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
     }
   };
 
+  const isLiaison = user?.role === 'Liaison';
+  const isSupervisor = user?.role === 'Store Supervisor';
+
+
   return (
     <>
       <Card>
@@ -240,194 +247,201 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
           <div>
             <CardTitle>Motorcycles</CardTitle>
             <CardDescription>
-              Manage and monitor all motorcycle units.
+              {isLiaison 
+                ? "Unregistered motorcycles assigned to you."
+                : "Manage and monitor all motorcycle units."
+              }
             </CardDescription>
           </div>
           <div className="flex gap-2">
-            <Button size="sm" className="gap-1" onClick={handleGenerateCashAdvance} disabled={selectedMotorcycles.length === 0}>
-                <DollarSign className="h-4 w-4" />
-                <span className="hidden sm:inline">Generate CA</span>
-            </Button>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button size="sm" className="gap-1">
-                  <PlusCircle className="h-4 w-4" />
-                  <span className="hidden sm:inline">Add Motorcycle</span>
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-4xl max-w-[90vw] max-h-[90vh]">
-                <DialogHeader>
-                  <DialogTitle>Add New Motorcycle</DialogTitle>
-                  <DialogDescription>
-                    Fill in the details for the new unit.
-                  </DialogDescription>
-                </DialogHeader>
-                <ScrollArea className="max-h-[70vh]">
-                  <div className="grid gap-4 py-4 pr-6">
-                    <h3 className="font-semibold text-lg border-b pb-2 mb-2">Motorcycle Details</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="grid gap-2">
-                          <Label htmlFor="plate">Plate No.</Label>
-                          <Input id="plate" placeholder="ABC 1234" />
-                      </div>
-                      <div className="grid gap-2">
-                          <Label htmlFor="customerName">Customer Name</Label>
-                          <Input id="customerName" placeholder="e.g., John Doe" />
-                      </div>
-                      <div className="grid gap-2">
-                          <Label htmlFor="make">Make</Label>
-                          <Input id="make" placeholder="e.g., Honda" />
-                      </div>
-                      <div className="grid gap-2">
-                          <Label htmlFor="model">Model</Label>
-                          <Input id="model" placeholder="e.g., Click 125i" />
-                      </div>
-                      <div className="grid gap-2">
-                          <Label htmlFor="engineNumber">Engine No.</Label>
-                          <Input id="engineNumber" placeholder="e.g., E12345678" />
-                      </div>
-                      <div className="grid gap-2">
-                          <Label htmlFor="chassisNumber">Chassis No.</Label>
-                          <Input id="chassisNumber" placeholder="e.g., C12345678" />
-                      </div>
-                       <div className="grid gap-2">
-                          <Label htmlFor="branch">Branch</Label>
-                          <Select>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select a branch" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {branches.map(branch => <SelectItem key={branch} value={branch}>{branch}</SelectItem>)}
-                            </SelectContent>
-                          </Select>
-                      </div>
-                       <div className="grid gap-2">
-                          <Label htmlFor="assignedLiaison">Assign Liaison</Label>
-                          <Select>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select a liaison" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {/* TODO: Populate with actual liaison users */}
-                              <SelectItem value="John Doe">John Doe</SelectItem>
-                              <SelectItem value="Jane Smith">Jane Smith</SelectItem>
-                              <SelectItem value="Peter Jones">Peter Jones</SelectItem>
-                            </SelectContent>
-                          </Select>
-                      </div>
-                    </div>
-
-                    <h3 className="font-semibold text-lg border-b pb-2 mt-4 mb-2">Insurance & Control</h3>
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {isLiaison && (
+              <Button size="sm" className="gap-1" onClick={handleGenerateCashAdvance} disabled={selectedMotorcycles.length === 0}>
+                  <DollarSign className="h-4 w-4" />
+                  <span className="hidden sm:inline">Generate CA</span>
+              </Button>
+            )}
+            {isSupervisor && (
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button size="sm" className="gap-1">
+                    <PlusCircle className="h-4 w-4" />
+                    <span className="hidden sm:inline">Add Motorcycle</span>
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-4xl max-w-[90vw] max-h-[90vh]">
+                  <DialogHeader>
+                    <DialogTitle>Add New Motorcycle</DialogTitle>
+                    <DialogDescription>
+                      Fill in the details for the new unit.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <ScrollArea className="max-h-[70vh]">
+                    <div className="grid gap-4 py-4 pr-6">
+                      <h3 className="font-semibold text-lg border-b pb-2 mb-2">Motorcycle Details</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="cocNumber">COC No.</Label>
-                            <Input id="cocNumber" placeholder="Enter COC number" />
+                            <Label htmlFor="plate">Plate No.</Label>
+                            <Input id="plate" placeholder="ABC 1234" />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="customerName">Customer Name</Label>
+                            <Input id="customerName" placeholder="e.g., John Doe" />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="make">Make</Label>
+                            <Input id="make" placeholder="e.g., Honda" />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="model">Model</Label>
+                            <Input id="model" placeholder="e.g., Click 125i" />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="engineNumber">Engine No.</Label>
+                            <Input id="engineNumber" placeholder="e.g., E12345678" />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="chassisNumber">Chassis No.</Label>
+                            <Input id="chassisNumber" placeholder="e.g., C12345678" />
                         </div>
                          <div className="grid gap-2">
-                            <Label htmlFor="policyNumber">Policy No.</Label>
-                            <Input id="policyNumber" placeholder="Enter policy number" />
-                        </div>
-                        <div className="grid gap-2">
-                            <Label htmlFor="insuranceType">Insurance Type</Label>
-                            <Input id="insuranceType" placeholder="e.g., Comprehensive" />
-                        </div>
-                        <div className="grid gap-2">
-                            <Label htmlFor="hpgControlNumber">HPG Control No.</Label>
-                            <Input id="hpgControlNumber" placeholder="Enter HPG Control number" />
-                        </div>
-                        <div className="grid gap-2">
-                            <Label htmlFor="sarCode">SAR Code</Label>
-                            <Input id="sarCode" placeholder="Enter SAR code" />
-                        </div>
-                     </div>
-                     
-                    <h3 className="font-semibold text-lg border-b pb-2 mt-4 mb-2">Fees</h3>
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="grid gap-2">
-                            <Label htmlFor="processingFee">Processing Fee</Label>
-                            <Input id="processingFee" type="number" defaultValue="1500" disabled />
+                            <Label htmlFor="branch">Branch</Label>
+                            <Select>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select a branch" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {branches.map(branch => <SelectItem key={branch} value={branch}>{branch}</SelectItem>)}
+                              </SelectContent>
+                            </Select>
                         </div>
                          <div className="grid gap-2">
-                            <Label htmlFor="orFee">OR Fee</Label>
-                            <Input id="orFee" type="number" defaultValue="1000" disabled />
+                            <Label htmlFor="assignedLiaison">Assign Liaison</Label>
+                            <Select>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select a liaison" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {/* TODO: Populate with actual liaison users */}
+                                <SelectItem value="John Doe">John Doe</SelectItem>
+                                <SelectItem value="Jane Smith">Jane Smith</SelectItem>
+                                <SelectItem value="Peter Jones">Peter Jones</SelectItem>
+                              </SelectContent>
+                            </Select>
                         </div>
-                     </div>
+                      </div>
 
-                    <div className="col-span-full mt-4">
-                      <Label className="text-lg font-semibold">Documents</Label>
-                      <div className="space-y-4 mt-2">
-                        {newDocuments.map((doc, index) => (
-                          <div key={doc.id} className="grid grid-cols-1 gap-4 p-4 border rounded-lg relative">
-                             <Button
-                              variant="ghost"
-                              size="icon"
-                              className="absolute top-1 right-1 h-6 w-6"
-                              onClick={() => handleRemoveDocument(doc.id, true)}
-                            >
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
-                            <div className="grid grid-cols-4 items-center gap-4">
-                              <Label htmlFor={`doc-type-${index}`} className="text-right">Type</Label>
-                              <Select
-                                value={doc.type}
-                                onValueChange={(value: DocumentType) => handleDocumentChange(doc.id, 'type', value, true)}
-                              >
-                                <SelectTrigger id={`doc-type-${index}`} className="col-span-3">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {ALL_DOC_TYPES.map(type => (
-                                      <SelectItem key={type} value={type}>{type}</SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div className="grid grid-cols-4 items-center gap-4">
-                              <Label htmlFor={`doc-file-${index}`} className="text-right">File</Label>
-                              <Input id={`doc-file-${index}`} type="file" className="col-span-3" onChange={(e) => handleFileChange(doc.id, e, true)} />
-                            </div>
-                            {doc.type === 'Insurance' || doc.type === 'OR/CR' ? (
-                              <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor={`doc-expiry-${index}`} className="text-right">Expiry / Effectivity</Label>
-                                  <Popover>
-                                    <PopoverTrigger asChild>
-                                      <Button
-                                        variant={"outline"}
-                                        className={cn(
-                                          "col-span-3 justify-start text-left font-normal",
-                                          !doc.expiresAt && "text-muted-foreground"
-                                        )}
-                                      >
-                                        <CalendarIcon className="mr-2 h-4 w-4" />
-                                        {doc.expiresAt ? format(doc.expiresAt, "PPP") : <span>Pick a date</span>}
-                                      </Button>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-auto p-0">
-                                      <Calendar
-                                        mode="single"
-                                        selected={doc.expiresAt}
-                                        onSelect={(date) => handleDocumentChange(doc.id, 'expiresAt', date, true)}
-                                        initialFocus
-                                      />
-                                    </PopoverContent>
-                                  </Popover>
-                              </div>
-                            ) : null}
+                      <h3 className="font-semibold text-lg border-b pb-2 mt-4 mb-2">Insurance & Control</h3>
+                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="grid gap-2">
+                              <Label htmlFor="cocNumber">COC No.</Label>
+                              <Input id="cocNumber" placeholder="Enter COC number" />
                           </div>
-                        ))}
-                        <Button variant="outline" size="sm" onClick={handleAddNewDocument}>
-                          <PlusCircle className="mr-2 h-4 w-4" /> Add Document
-                        </Button>
+                           <div className="grid gap-2">
+                              <Label htmlFor="policyNumber">Policy No.</Label>
+                              <Input id="policyNumber" placeholder="Enter policy number" />
+                          </div>
+                          <div className="grid gap-2">
+                              <Label htmlFor="insuranceType">Insurance Type</Label>
+                              <Input id="insuranceType" placeholder="e.g., Comprehensive" />
+                          </div>
+                          <div className="grid gap-2">
+                              <Label htmlFor="hpgControlNumber">HPG Control No.</Label>
+                              <Input id="hpgControlNumber" placeholder="Enter HPG Control number" />
+                          </div>
+                          <div className="grid gap-2">
+                              <Label htmlFor="sarCode">SAR Code</Label>
+                              <Input id="sarCode" placeholder="Enter SAR code" />
+                          </div>
+                       </div>
+                       
+                      <h3 className="font-semibold text-lg border-b pb-2 mt-4 mb-2">Fees</h3>
+                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="grid gap-2">
+                              <Label htmlFor="processingFee">Processing Fee</Label>
+                              <Input id="processingFee" type="number" defaultValue="1500" disabled />
+                          </div>
+                           <div className="grid gap-2">
+                              <Label htmlFor="orFee">OR Fee</Label>
+                              <Input id="orFee" type="number" defaultValue="1000" disabled />
+                          </div>
+                       </div>
+
+                      <div className="col-span-full mt-4">
+                        <Label className="text-lg font-semibold">Documents</Label>
+                        <div className="space-y-4 mt-2">
+                          {newDocuments.map((doc, index) => (
+                            <div key={doc.id} className="grid grid-cols-1 gap-4 p-4 border rounded-lg relative">
+                               <Button
+                                variant="ghost"
+                                size="icon"
+                                className="absolute top-1 right-1 h-6 w-6"
+                                onClick={() => handleRemoveDocument(doc.id, true)}
+                              >
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                              <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor={`doc-type-${index}`} className="text-right">Type</Label>
+                                <Select
+                                  value={doc.type}
+                                  onValueChange={(value: DocumentType) => handleDocumentChange(doc.id, 'type', value, true)}
+                                >
+                                  <SelectTrigger id={`doc-type-${index}`} className="col-span-3">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {ALL_DOC_TYPES.map(type => (
+                                        <SelectItem key={type} value={type}>{type}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor={`doc-file-${index}`} className="text-right">File</Label>
+                                <Input id={`doc-file-${index}`} type="file" className="col-span-3" onChange={(e) => handleFileChange(doc.id, e, true)} />
+                              </div>
+                              {doc.type === 'Insurance' || doc.type === 'OR/CR' ? (
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                  <Label htmlFor={`doc-expiry-${index}`} className="text-right">Expiry / Effectivity</Label>
+                                    <Popover>
+                                      <PopoverTrigger asChild>
+                                        <Button
+                                          variant={"outline"}
+                                          className={cn(
+                                            "col-span-3 justify-start text-left font-normal",
+                                            !doc.expiresAt && "text-muted-foreground"
+                                          )}
+                                        >
+                                          <CalendarIcon className="mr-2 h-4 w-4" />
+                                          {doc.expiresAt ? format(doc.expiresAt, "PPP") : <span>Pick a date</span>}
+                                        </Button>
+                                      </PopoverTrigger>
+                                      <PopoverContent className="w-auto p-0">
+                                        <Calendar
+                                          mode="single"
+                                          selected={doc.expiresAt}
+                                          onSelect={(date) => handleDocumentChange(doc.id, 'expiresAt', date, true)}
+                                          initialFocus
+                                        />
+                                      </PopoverContent>
+                                    </Popover>
+                                </div>
+                              ) : null}
+                            </div>
+                          ))}
+                          <Button variant="outline" size="sm" onClick={handleAddNewDocument}>
+                            <PlusCircle className="mr-2 h-4 w-4" /> Add Document
+                          </Button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </ScrollArea>
-                <DialogFooter>
-                   <Button variant="outline" onClick={() => (document.querySelector('[aria-label="Close"]') as HTMLElement)?.click()}>Cancel</Button>
-                  <Button type="submit" onClick={() => handleAction('New motorcycle saved.')}>Save Motorcycle</Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+                  </ScrollArea>
+                  <DialogFooter>
+                     <Button variant="outline" onClick={() => (document.querySelector('[aria-label="Close"]') as HTMLElement)?.click()}>Cancel</Button>
+                    <Button type="submit" onClick={() => handleAction('New motorcycle saved.')}>Save Motorcycle</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            )}
           </div>
         </CardHeader>
         <CardContent>
@@ -493,8 +507,12 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                             <Wrench className="mr-2 h-4 w-4" />
                             <span>Log Maintenance</span>
                           </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-destructive" onClick={() => handleAction(`Deleting ${motorcycle.plateNumber}.`)}>Delete</DropdownMenuItem>
+                          {isSupervisor && (
+                            <>
+                               <DropdownMenuSeparator />
+                               <DropdownMenuItem className="text-destructive" onClick={() => handleAction(`Deleting ${motorcycle.plateNumber}.`)}>Delete</DropdownMenuItem>
+                            </>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>

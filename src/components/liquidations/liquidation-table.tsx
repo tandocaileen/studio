@@ -13,26 +13,38 @@ import {
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FileUp } from 'lucide-react';
+import { FileUp, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { LiquidationItem } from '@/app/liquidations/page';
 import { ScrollArea } from '../ui/scroll-area';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
+import { Textarea } from '../ui/textarea';
 
 type LiquidationTableProps = {
   items: LiquidationItem[];
 };
 
 export function LiquidationTable({ items }: LiquidationTableProps) {
+  const [selectedItem, setSelectedItem] = React.useState<LiquidationItem | null>(null);
   const { toast } = useToast();
 
   const handleLiquidate = (item: LiquidationItem) => {
-    toast({
-        title: 'Action Triggered',
-        description: `Liquidate action for ${item.motorcycle?.plateNumber || item.cashAdvance.purpose}`
+    setSelectedItem(item);
+  }
+
+  const handleFinalSubmit = () => {
+     if (!selectedItem) return;
+     toast({
+        title: 'Liquidation Submitted',
+        description: `Liquidation for ${selectedItem.motorcycle?.plateNumber || selectedItem.cashAdvance.purpose} has been submitted for review.`
     })
+    setSelectedItem(null);
   }
 
   return (
+    <>
     <Card>
       <CardHeader>
         <CardTitle>For Liquidation</CardTitle>
@@ -54,7 +66,7 @@ export function LiquidationTable({ items }: LiquidationTableProps) {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {items.filter(item => item.cashAdvance.status === 'Approved').map(({ cashAdvance, motorcycle }) => (
+                {items.filter(item => ['Approved', 'Encashed'].includes(item.cashAdvance.status)).map(({ cashAdvance, motorcycle }) => (
                 <TableRow key={cashAdvance.id}>
                     <TableCell>{motorcycle?.engineNumber || 'N/A'}</TableCell>
                     <TableCell>{motorcycle?.chassisNumber || 'N/A'}</TableCell>
@@ -74,5 +86,87 @@ export function LiquidationTable({ items }: LiquidationTableProps) {
         </ScrollArea>
       </CardContent>
     </Card>
+
+    <Dialog open={!!selectedItem} onOpenChange={(open) => !open && setSelectedItem(null)}>
+        <DialogContent className="sm:max-w-4xl max-w-[90vw] max-h-[90vh]">
+            <DialogHeader>
+                <DialogTitle>Liquidate Cash Advance</DialogTitle>
+                <DialogDescription>
+                    Fill in the details for the liquidation of CA for {selectedItem?.motorcycle?.plateNumber || 'N/A'}.
+                </DialogDescription>
+            </DialogHeader>
+            <ScrollArea className="max-h-[70vh] -mx-6 px-6">
+                <div className="py-4 grid gap-8">
+                     {/* Auto-generated Section */}
+                    <div className="grid gap-4 p-4 border rounded-lg">
+                        <h3 className="font-semibold text-lg">Cash Advance Details</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="grid gap-2">
+                                <Label>Account Code</Label>
+                                <Input value="CA-LTO-001" disabled />
+                            </div>
+                             <div className="grid gap-2">
+                                <Label>Customer Name</Label>
+                                <Input value={selectedItem?.motorcycle?.customerName} disabled />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label>OR Amount (from CA)</Label>
+                                <Input value={selectedItem?.cashAdvance.amount.toLocaleString()} disabled />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label>Processing Fee</Label>
+                                <Input value={selectedItem?.motorcycle?.processingFee?.toLocaleString() || '1500'} disabled />
+                            </div>
+                             <div className="col-span-full grid gap-2">
+                                <Label>Total Cash Advance</Label>
+                                <Input className="font-bold text-lg" value={`₱${selectedItem?.cashAdvance.amount.toLocaleString()}`} disabled />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Liquidation Input Section */}
+                    <div className="grid gap-4 p-4 border rounded-lg">
+                        <h3 className="font-semibold text-lg">Liquidation Details</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                             <div className="grid gap-2">
+                                <Label htmlFor="lto-or-number">LTO OR Number</Label>
+                                <Input id="lto-or-number" placeholder="Enter LTO OR number" />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="lto-or-amount">LTO OR Amount</Label>
+                                <Input id="lto-or-amount" type="number" placeholder="0.00" />
+                            </div>
+                             <div className="grid gap-2">
+                                <Label htmlFor="lto-process-fee">LTO Process Fee</Label>
+                                <Input id="lto-process-fee" type="number" placeholder="0.00" />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="total-liquidation">Total Liquidation</Label>
+                                <Input id="total-liquidation" type="number" placeholder="0.00" disabled />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="shortage-overage">Shortage / Overage</Label>
+                                <Input id="shortage-overage" type="number" placeholder="0.00" disabled />
+                            </div>
+                             <div className="col-span-full grid gap-2">
+                                <Label htmlFor="remarks">Remarks</Label>
+                                <Textarea id="remarks" placeholder="Add any remarks here..." />
+                            </div>
+                            <div className="col-span-full grid gap-2">
+                                <Label htmlFor="receipt-upload">Upload Official Receipt</Label>
+                                <Input id="receipt-upload" type="file" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </ScrollArea>
+             <DialogFooter>
+                <Button variant="outline" onClick={() => setSelectedItem(null)}>Cancel</Button>
+                <Button onClick={handleFinalSubmit}>Submit Liquidation</Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
+
+    </>
   );
 }

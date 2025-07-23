@@ -31,16 +31,20 @@ import { Textarea } from '../ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { CashAdvanceDocument } from './cash-advance-document';
 import { generatePdf } from '@/lib/pdf';
+import type { EnrichedCashAdvance } from '@/app/cash-advances/page';
+import { useAuth } from '@/context/AuthContext';
+
 
 type CashAdvanceTableProps = {
-  cashAdvances: CashAdvance[];
+  advances: EnrichedCashAdvance[];
 };
 
-export function CashAdvanceTable({ cashAdvances: initialCashAdvances }: CashAdvanceTableProps) {
-  const [cashAdvances, setCashAdvances] = React.useState(initialCashAdvances);
+export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTableProps) {
+  const [advances, setAdvances] = React.useState(initialAdvances);
   const [previewingAdvance, setPreviewingAdvance] = React.useState<CashAdvance | null>(null);
   const { toast } = useToast();
   const documentRef = React.useRef(null);
+  const { user } = useAuth();
 
   const handleAction = (message: string) => {
     toast({
@@ -87,6 +91,7 @@ export function CashAdvanceTable({ cashAdvances: initialCashAdvances }: CashAdva
     }
   }
 
+  const canShowAdminActions = user?.role === 'Cashier';
 
   return (
     <>
@@ -98,6 +103,7 @@ export function CashAdvanceTable({ cashAdvances: initialCashAdvances }: CashAdva
             Track and manage all cash advance requests and liquidations.
           </CardDescription>
         </div>
+        {user?.role === 'Liaison' && (
         <Dialog>
           <DialogTrigger asChild>
             <Button size="sm" className="gap-1">
@@ -131,13 +137,14 @@ export function CashAdvanceTable({ cashAdvances: initialCashAdvances }: CashAdva
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        )}
       </CardHeader>
       <CardContent>
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Personnel</TableHead>
-              <TableHead>Purpose</TableHead>
+              <TableHead>Customer</TableHead>
+              <TableHead>Motorcycle</TableHead>
               <TableHead className="text-right">Amount</TableHead>
               <TableHead>Date</TableHead>
               <TableHead>Status</TableHead>
@@ -147,10 +154,10 @@ export function CashAdvanceTable({ cashAdvances: initialCashAdvances }: CashAdva
             </TableRow>
           </TableHeader>
           <TableBody>
-            {cashAdvances.map((ca) => (
+            {advances.map(({ cashAdvance: ca, motorcycle }) => (
               <TableRow key={ca.id}>
-                <TableCell className="font-medium">{ca.personnel}</TableCell>
-                <TableCell className="max-w-[300px] truncate">{ca.purpose}</TableCell>
+                <TableCell className="font-medium">{motorcycle?.customerName || ca.personnel}</TableCell>
+                <TableCell className="max-w-[300px] truncate">{motorcycle ? `${motorcycle.make} ${motorcycle.model}` : ca.purpose}</TableCell>
                 <TableCell className="text-right">₱{ca.amount.toLocaleString()}</TableCell>
                 <TableCell>{format(new Date(ca.date), 'MMM dd, yyyy')}</TableCell>
                 <TableCell>
@@ -173,26 +180,32 @@ export function CashAdvanceTable({ cashAdvances: initialCashAdvances }: CashAdva
                         <Eye className="mr-2 h-4 w-4" />
                         <span>Preview/Print</span>
                       </DropdownMenuItem>
-                      <DropdownMenuItem disabled={ca.status !== 'Pending'} onClick={() => handleAction(`Approved advance for ${ca.personnel}.`)}>
-                        <Check className="mr-2 h-4 w-4" />
-                        <span>Approve</span>
-                      </DropdownMenuItem>
-                       <DropdownMenuItem disabled={ca.status !== 'Approved'} onClick={() => handleAction(`CV released for ${ca.personnel}.`)}>
-                        <FileCheck className="mr-2 h-4 w-4" />
-                        <span>Release CV</span>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem disabled={ca.status !== 'Check Voucher Released'} onClick={() => handleAction(`Marked as encashed for ${ca.personnel}.`)}>
-                        <Banknote className="mr-2 h-4 w-4" />
-                        <span>Mark as Encashed</span>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem disabled={!['Approved', 'Encashed'].includes(ca.status)} onClick={() => handleAction(`Liquidated advance for ${ca.personnel}.`)}>
-                        <FileUp className="mr-2 h-4 w-4" />
-                        <span>Liquidate</span>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className="text-destructive" disabled={ca.status !== 'Pending'} onClick={() => handleAction(`Rejected advance for ${ca.personnel}.`)}>
-                        <X className="mr-2 h-4 w-4" />
-                        <span>Reject</span>
-                      </DropdownMenuItem>
+                      {canShowAdminActions && (
+                        <>
+                          <DropdownMenuItem disabled={ca.status !== 'Pending'} onClick={() => handleAction(`Approved advance for ${ca.personnel}.`)}>
+                            <Check className="mr-2 h-4 w-4" />
+                            <span>Approve</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem disabled={ca.status !== 'Approved'} onClick={() => handleAction(`CV released for ${ca.personnel}.`)}>
+                            <FileCheck className="mr-2 h-4 w-4" />
+                            <span>Release CV</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem disabled={ca.status !== 'Check Voucher Released'} onClick={() => handleAction(`Marked as encashed for ${ca.personnel}.`)}>
+                            <Banknote className="mr-2 h-4 w-4" />
+                            <span>Mark as Encashed</span>
+                          </DropdownMenuItem>
+                           <DropdownMenuItem className="text-destructive" disabled={ca.status !== 'Pending'} onClick={() => handleAction(`Rejected advance for ${ca.personnel}.`)}>
+                            <X className="mr-2 h-4 w-4" />
+                            <span>Reject</span>
+                          </DropdownMenuItem>
+                        </>
+                      )}
+                      {user?.role === 'Liaison' && (
+                         <DropdownMenuItem disabled={!['Approved', 'Encashed'].includes(ca.status)} onClick={() => handleAction(`Liquidated advance for ${ca.personnel}.`)}>
+                            <FileUp className="mr-2 h-4 w-4" />
+                            <span>Liquidate</span>
+                        </DropdownMenuItem>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>

@@ -4,29 +4,57 @@
 import { Header } from "@/components/layout/header";
 import { AppSidebar } from "@/components/layout/sidebar";
 import { CashAdvanceTable } from "@/components/cash-advances/cash-advance-table";
-import { getCashAdvances } from "@/lib/data";
+import { getCashAdvances, getMotorcycles } from "@/lib/data";
 import React, { useState, useEffect } from "react";
 import { AppLoader } from "@/components/layout/loader";
 import { ProtectedPage } from "@/components/auth/protected-page";
-import { CashAdvance } from "@/types";
+import { CashAdvance, Motorcycle } from "@/types";
+import { useAuth } from "@/context/AuthContext";
+
+export type EnrichedCashAdvance = {
+    cashAdvance: CashAdvance;
+    motorcycle?: Motorcycle;
+}
 
 function CashAdvancesContent({ searchQuery }: { searchQuery: string }) {
-    const [cashAdvances, setCashAdvances] = useState<CashAdvance[] | null>(null);
+    const [advances, setAdvances] = useState<EnrichedCashAdvance[] | null>(null);
+    const { user } = useAuth();
 
     useEffect(() => {
-        getCashAdvances().then(setCashAdvances);
+        Promise.all([getCashAdvances(), getMotorcycles()]).then(([cashAdvances, motorcycles]) => {
+            const enriched: EnrichedCashAdvance[] = cashAdvances.map(ca => {
+                const motorcycle = motorcycles.find(m => m.id === ca.motorcycleId);
+                return { cashAdvance: ca, motorcycle };
+            });
+            setAdvances(enriched);
+        });
     }, []);
 
-    if (!cashAdvances) {
+    if (!advances || !user) {
         return <AppLoader />;
     }
 
-    const filteredCashAdvances = cashAdvances.filter(ca =>
-        ca.personnel.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        ca.purpose.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const filteredCashAdvances = advances.filter(item => {
+        const { cashAdvance, motorcycle } = item;
+        const query = searchQuery.toLowerCase();
 
-    return <CashAdvanceTable cashAdvances={filteredCashAdvances} />;
+        // Role-based filtering
+        if (user.role === 'Liaison' && cashAdvance.personnel !== user.name) {
+            return false;
+        }
+
+        // Search query filtering
+        if (motorcycle) {
+            if (motorcycle.customerName?.toLowerCase().includes(query)) return true;
+            if (motorcycle.model.toLowerCase().includes(query)) return true;
+        }
+        if (cashAdvance.purpose.toLowerCase().includes(query)) return true;
+        if (cashAdvance.personnel.toLowerCase().includes(query)) return true;
+
+        return false;
+    });
+
+    return <CashAdvanceTable advances={filteredCashAdvances} />;
 }
 
 export default function CashAdvancesPage() {
