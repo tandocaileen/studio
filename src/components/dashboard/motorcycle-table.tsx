@@ -90,7 +90,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
   const isLiaison = user?.role === 'Liaison';
   const isSupervisor = user?.role === 'Store Supervisor';
   const isCashier = user?.role === 'Cashier';
-  const canEdit = isSupervisor || isCashier;
+  const canEditInsuranceAndControl = isSupervisor || isCashier;
 
 
   const handleAction = (message: string) => {
@@ -371,13 +371,13 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
                           <DropdownMenuItem onClick={() => handleEditClick(motorcycle)}>
                             <Truck className="mr-2 h-4 w-4" />
-                            <span>{canEdit ? 'Edit Details' : 'View Details'}</span>
+                            <span>View / Edit Details</span>
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => setViewingDocumentsMotorcycle(motorcycle)}>
                             <FileText className="mr-2 h-4 w-4" />
                             <span>View Documents</span>
                           </DropdownMenuItem>
-                           {canEdit && (
+                           {canEditInsuranceAndControl && (
                             <>
                               <DropdownMenuItem onClick={() => handleAction(`Logging maintenance for ${motorcycle.plateNumber}.`)}>
                                 <Wrench className="mr-2 h-4 w-4" />
@@ -433,43 +433,43 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
           <DialogContent className="sm:max-w-4xl max-w-[90vw] max-h-[90vh]">
               <DialogHeader>
                   <DialogTitle>
-                    {canEdit ? 'Edit Motorcycle' : 'View Motorcycle'} - {editingMotorcycle?.plateNumber}
+                    View / Edit Details - {editingMotorcycle?.plateNumber}
                   </DialogTitle>
                   <DialogDescription>
-                      {canEdit ? 'Update the details and documents for this unit.' : 'Viewing details for this unit.'}
+                      {canEditInsuranceAndControl ? 'Update the insurance and control details for this unit.' : 'Viewing details for this unit.'}
                   </DialogDescription>
               </DialogHeader>
               <ScrollArea className="max-h-[70vh]">
                 <div className="grid gap-4 py-4 pr-6">
-                    <h3 className="font-semibold text-lg border-b pb-2 mb-2">Motorcycle Details</h3>
+                    <h3 className="font-semibold text-lg border-b pb-2 mb-2">Motorcycle Details (Read-Only)</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="grid gap-2">
                           <Label htmlFor="edit-plateNumber">Plate No.</Label>
-                          <Input id="edit-plateNumber" name="plateNumber" value={editedData.plateNumber || ''} onChange={handleInputChange} disabled={!canEdit} />
+                          <Input id="edit-plateNumber" name="plateNumber" value={editedData.plateNumber || ''} disabled />
                       </div>
                       <div className="grid gap-2">
                           <Label htmlFor="edit-customerName">Customer Name</Label>
-                          <Input id="edit-customerName" name="customerName" value={editedData.customerName || ''} onChange={handleInputChange} disabled={!canEdit} />
+                          <Input id="edit-customerName" name="customerName" value={editedData.customerName || ''} disabled />
                       </div>
                       <div className="grid gap-2">
                           <Label htmlFor="edit-make">Make</Label>
-                          <Input id="edit-make" name="make" value={editedData.make || ''} onChange={handleInputChange} disabled={!canEdit} />
+                          <Input id="edit-make" name="make" value={editedData.make || ''} disabled />
                       </div>
                       <div className="grid gap-2">
                           <Label htmlFor="edit-model">Model</Label>
-                          <Input id="edit-model" name="model" value={editedData.model || ''} onChange={handleInputChange} disabled={!canEdit} />
+                          <Input id="edit-model" name="model" value={editedData.model || ''} disabled />
                       </div>
                        <div className="grid gap-2">
                           <Label htmlFor="edit-engineNumber">Engine No.</Label>
-                          <Input id="edit-engineNumber" name="engineNumber" value={editedData.engineNumber || ''} onChange={handleInputChange} disabled={!canEdit} />
+                          <Input id="edit-engineNumber" name="engineNumber" value={editedData.engineNumber || ''} disabled />
                       </div>
                       <div className="grid gap-2">
                           <Label htmlFor="edit-chassisNumber">Chassis No.</Label>
-                          <Input id="edit-chassisNumber" name="chassisNumber" value={editedData.chassisNumber || ''} onChange={handleInputChange} disabled={!canEdit} />
+                          <Input id="edit-chassisNumber" name="chassisNumber" value={editedData.chassisNumber || ''} disabled />
                       </div>
                        <div className="grid gap-2">
                           <Label htmlFor="edit-branch">Branch</Label>
-                           <Select value={editedData.assignedBranch} onValueChange={(value) => handleSelectChange('assignedBranch', value)} disabled={!canEdit}>
+                           <Select value={editedData.assignedBranch} disabled>
                             <SelectTrigger>
                               <SelectValue />
                             </SelectTrigger>
@@ -480,7 +480,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                       </div>
                        <div className="grid gap-2">
                           <Label htmlFor="edit-assignedLiaison">Assign Liaison</Label>
-                           <Select value={editedData.assignedLiaison} onValueChange={(value) => handleSelectChange('assignedLiaison', value)} disabled={!canEdit}>
+                           <Select value={editedData.assignedLiaison} disabled>
                             <SelectTrigger>
                               <SelectValue placeholder="Select a liaison" />
                             </SelectTrigger>
@@ -491,7 +491,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                       </div>
                       <div className="grid gap-2">
                         <Label htmlFor="status">Status</Label>
-                        <Select value={editedData.status} onValueChange={(value) => handleSelectChange('status', value)} disabled={!canEdit}>
+                        <Select value={editedData.status} onValueChange={(value) => handleSelectChange('status', value)} disabled={!canEditInsuranceAndControl}>
                           <SelectTrigger>
                             <SelectValue/>
                           </SelectTrigger>
@@ -505,27 +505,27 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                       </div>
                     </div>
 
-                    <h3 className="font-semibold text-lg border-b pb-2 mt-4 mb-2">Insurance &amp; Control</h3>
+                    <h3 className="font-semibold text-lg border-b pb-2 mt-4 mb-2">Insurance &amp; Control (Editable)</h3>
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="grid gap-2">
                             <Label htmlFor="edit-cocNumber">COC No.</Label>
-                            <Input id="edit-cocNumber" name="cocNumber" value={editedData.cocNumber || ''} onChange={handleInputChange} disabled={!canEdit} />
+                            <Input id="edit-cocNumber" name="cocNumber" value={editedData.cocNumber || ''} onChange={handleInputChange} disabled={!canEditInsuranceAndControl} required />
                         </div>
                          <div className="grid gap-2">
                             <Label htmlFor="edit-policyNumber">Policy No.</Label>
-                            <Input id="edit-policyNumber" name="policyNumber" value={editedData.policyNumber || ''} onChange={handleInputChange} disabled={!canEdit} />
+                            <Input id="edit-policyNumber" name="policyNumber" value={editedData.policyNumber || ''} onChange={handleInputChange} disabled={!canEditInsuranceAndControl} required />
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="edit-insuranceType">Insurance Type</Label>
-                            <Input id="edit-insuranceType" name="insuranceType" value={editedData.insuranceType || ''} onChange={handleInputChange} disabled={!canEdit} />
+                            <Input id="edit-insuranceType" name="insuranceType" value={editedData.insuranceType || ''} onChange={handleInputChange} disabled={!canEditInsuranceAndControl} required />
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="edit-hpgControlNumber">HPG Control No.</Label>
-                            <Input id="edit-hpgControlNumber" name="hpgControlNumber" value={editedData.hpgControlNumber || ''} onChange={handleInputChange} disabled={!canEdit} />
+                            <Input id="edit-hpgControlNumber" name="hpgControlNumber" value={editedData.hpgControlNumber || ''} onChange={handleInputChange} disabled={!canEditInsuranceAndControl} required />
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="edit-sarCode">SAR Code</Label>
-                            <Input id="edit-sarCode" name="sarCode" value={editedData.sarCode || ''} onChange={handleInputChange} disabled={!canEdit} />
+                            <Input id="edit-sarCode" name="sarCode" value={editedData.sarCode || ''} onChange={handleInputChange} disabled={!canEditInsuranceAndControl} required />
                         </div>
                      </div>
 
@@ -552,7 +552,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                               size="icon"
                               className="absolute top-1 right-1 h-6 w-6"
                               onClick={() => handleRemoveDocument(doc.id, false)}
-                              disabled={!canEdit}
+                              disabled={!canEditInsuranceAndControl}
                             >
                               <Trash2 className="h-4 w-4 text-destructive" />
                             </Button>
@@ -561,7 +561,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                               <Select
                                 value={doc.type}
                                 onValueChange={(value: DocumentType) => handleDocumentChange(doc.id, 'type', value, false)}
-                                disabled={!canEdit}
+                                disabled={!canEditInsuranceAndControl}
                               >
                                 <SelectTrigger id={`edit-doc-type-${index}`} className="col-span-3">
                                   <SelectValue />
@@ -576,7 +576,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                             <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor={`edit-doc-file-${index}`} className="text-right">File</Label>
                                 <div className="col-span-3 flex items-center gap-2">
-                                    <Input id={`edit-doc-file-${index}`} type="file" className="flex-grow" onChange={(e) => handleFileChange(doc.id, e, false)} disabled={!canEdit} />
+                                    <Input id={`edit-doc-file-${index}`} type="file" className="flex-grow" onChange={(e) => handleFileChange(doc.id, e, false)} disabled={!canEditInsuranceAndControl} />
                                     <Button variant="outline" size="sm" asChild>
                                         <a href={doc.url} target="_blank" rel="noopener noreferrer">
                                             View Current <ExternalLink className="ml-2 h-3 w-3" />
@@ -595,7 +595,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                                           "col-span-3 justify-start text-left font-normal",
                                           !doc.expiresAt && "text-muted-foreground"
                                         )}
-                                        disabled={!canEdit}
+                                        disabled={!canEditInsuranceAndControl}
                                       >
                                         <CalendarIcon className="mr-2 h-4 w-4" />
                                         {doc.expiresAt ? format(new Date(doc.expiresAt), "PPP") : <span>Pick a date</span>}
@@ -621,7 +621,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
               </ScrollArea>
               <DialogFooter>
                   <Button variant="outline" onClick={handleCancelEdit}>Close</Button>
-                  {canEdit && <Button onClick={handleSaveEdit}>Save Changes</Button>}
+                  {canEditInsuranceAndControl && <Button onClick={handleSaveEdit}>Save Changes</Button>}
               </DialogFooter>
           </DialogContent>
       </Dialog>
@@ -688,5 +688,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
     </>
   );
 }
+
+    
 
     

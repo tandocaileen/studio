@@ -9,11 +9,11 @@
 
 ### Store Supervisor / Cashier Workflow
 - **Dashboard**: Provides a high-level financial overview with key metrics.
-  - **Summary Cards**: Displays statistics for total motorcycles, upcoming document expirations, pending advances, and the total value of outstanding advances.
-  - **Overdue CV Reception Alert**: A dedicated table highlights check vouchers that were released more than three days ago but have not been marked as "CV Received," prompting follow-up.
-- **Motorcycle Management**:
-  - Ability to add new motorcycle records.
-  - Manually encodes `SAR Code`, `COC Number`, `Policy Number`, and other insurance details upon receiving LTO documents.
+  - **Unregistered Units View**: Defaults to showing a table of all unregistered motorcycles (`Incomplete` or `Ready to Register`) to prioritize actionable items. A filter allows them to view all motorcycles.
+  - **Receive MC Docs**: A primary action on the dashboard allows for the bulk receiving of motorcycle documents from the main office. This interface allows them to input `HPG Control Number` and other key details for multiple motorcycles at once.
+  - **Motorcycle Management**:
+    - When viewing a motorcycle's details, the core information (make, model, plate number, etc.) is **read-only**.
+    - The **"Insurance & Control"** section is editable, allowing the user to input required data like `SAR Code`, `COC Number`, `Policy Number`, etc.
 - **Endorsements**: Assigns motorcycles to specific liaisons for processing.
 - **Cash Advances**:
   - Views all cash advance requests from liaisons.
@@ -45,3 +45,5 @@
 - **UI Framework**: Built with Next.js, React, ShadCN UI components, and Tailwind CSS for a modern and responsive interface.
 - **Icons**: Uses `lucide-react` for consistent and professional iconography.
 - **User Experience**: Designed to minimize clicks and provide a smooth, intuitive experience, making it accessible for users of all technical skill levels. All major tables include pagination to handle large datasets efficiently.
+
+    
