@@ -83,7 +83,7 @@
           "mc-0001",
           "mc-0002"
         ],
-        "createdBy": "supervisor_user_id_ref"
+        "createdBy": "user_id_ref (of a Supervisor or Cashier)"
       }
     },
     "cash_advances": {
@@ -106,7 +106,7 @@
           "receivedDate": "Firestore.Timestamp"
         },
         "approvalDetails": {
-          "approvedBy": "cashier_user_id_ref",
+          "approvedBy": "user_id_ref (of a Supervisor or Cashier)",
           "approvedDate": "Firestore.Timestamp",
           "rejectionReason": null
         }
