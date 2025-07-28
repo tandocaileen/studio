@@ -27,10 +27,10 @@ export function OverdueAdvances({ cashAdvances }: OverdueAdvancesProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
             <AlertCircle className="text-destructive" />
-            Overdue Encashment Alert
+            Overdue CV Reception Alert
         </CardTitle>
         <CardDescription>
-          These check vouchers were released over 3 days ago but have not been marked as encashed.
+          These check vouchers were released over 3 days ago but have not been marked as received by the liaison.
         </CardDescription>
       </CardHeader>
       <CardContent>

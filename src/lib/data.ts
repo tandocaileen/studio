@@ -242,7 +242,7 @@ const cashAdvances: CashAdvance[] = [
     purpose: 'Renewal for AAA 111',
     amount: 2800,
     date: addDays(today, -2),
-    status: 'Encashed',
+    status: 'CV Received',
     checkVoucherNumber: 'CV-2024-05-002',
     checkVoucherReleaseDate: addDays(today, -2),
   },

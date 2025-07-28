@@ -21,6 +21,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
+import { cn } from '@/lib/utils';
 
 type LiquidationTableProps = {
   items: LiquidationItem[];
@@ -85,7 +86,7 @@ export function LiquidationTable({ items }: LiquidationTableProps) {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {items.filter(item => ['Approved', 'Encashed'].includes(item.cashAdvance.status)).map(({ cashAdvance, motorcycle }) => (
+                {items.filter(item => ['Approved', 'CV Received'].includes(item.cashAdvance.status)).map(({ cashAdvance, motorcycle }) => (
                 <TableRow key={cashAdvance.id}>
                     <TableCell>{motorcycle?.customerName || 'N/A'}</TableCell>
                     <TableCell>{motorcycle?.plateNumber || 'N/A'}</TableCell>

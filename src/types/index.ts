@@ -45,7 +45,7 @@ export type CashAdvance = {
   purpose: string;
   amount: number;
   date: Date;
-  status: 'Pending' | 'Approved' | 'Liquidated' | 'Rejected' | 'Check Voucher Released' | 'Encashed';
+  status: 'Pending' | 'Approved' | 'Liquidated' | 'Rejected' | 'Check Voucher Released' | 'CV Received';
   receipts?: string[];
   // New fields for Cashier & Liaison
   motorcycleId?: string;
