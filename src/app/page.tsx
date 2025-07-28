@@ -19,10 +19,10 @@ import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog";
 import { ReceiveLtoDocs } from "@/components/dashboard/receive-lto-docs";
 import { EndorsedIncompleteTable } from "@/components/dashboard/endorsed-incomplete-table";
 import { cn } from "@/lib/utils";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 type ViewFilter = 'unregistered' | 'all';
-type DashboardTab = 'pending-endorsements' | 'all-motorcycles';
+type DashboardTab = 'all-motorcycles' | 'pending-endorsements';
 
 function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
   const [motorcycles, setMotorcycles] = useState<Motorcycle[] | null>(null);
@@ -93,19 +93,26 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
 
        <div className="grid gap-4">
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as DashboardTab)}>
-            <TabsList>
-                <TabsTrigger value="all-motorcycles">Motorcycles List</TabsTrigger>
-                <TabsTrigger 
-                  value="pending-endorsements"
-                  className={cn(
-                    'data-[state=active]:bg-destructive/10 data-[state=active]:text-destructive-foreground',
-                    endorsedIncompleteMotorcycles.length > 0 && 'text-destructive'
-                  )}
-                >
-                  Endorsed Units with Incomplete Details ({endorsedIncompleteMotorcycles.length})
-                </TabsTrigger>
-            </TabsList>
             <Card>
+                 <CardHeader className="p-0 border-b">
+                    <TabsList className="bg-transparent p-0">
+                        <TabsTrigger 
+                          value="all-motorcycles" 
+                          className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none rounded-none"
+                        >
+                          Motorcycles List
+                        </TabsTrigger>
+                        <TabsTrigger 
+                          value="pending-endorsements"
+                          className={cn(
+                            'data-[state=active]:border-b-2 data-[state=active]:border-destructive data-[state=active]:shadow-none data-[state=active]:text-destructive rounded-none',
+                            endorsedIncompleteMotorcycles.length > 0 && 'text-destructive'
+                          )}
+                        >
+                          Endorsed Units with Incomplete Details ({endorsedIncompleteMotorcycles.length})
+                        </TabsTrigger>
+                    </TabsList>
+                </CardHeader>
                 <CardContent className="p-0">
                     <TabsContent value="pending-endorsements" className="mt-0">
                         <EndorsedIncompleteTable 
