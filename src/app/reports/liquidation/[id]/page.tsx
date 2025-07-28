@@ -20,7 +20,7 @@ import { AlertCircle } from 'lucide-react';
 
 type ReportDataType = {
   cashAdvance: CashAdvance;
-  motorcycles: (Motorcycle & { liquidation: Partial<CashAdvance> })[];
+  motorcycles: Motorcycle[];
 };
 
 function LiquidationReportContent() {
@@ -35,22 +35,14 @@ function LiquidationReportContent() {
     if (id) {
       Promise.all([getCashAdvances(), getMotorcycles()]).then(([cas, mcs]) => {
         const mainCA = cas.find(ca => ca.id === id);
-        if (mainCA) {
-          // This is a simplified logic. In a real app, you'd fetch the specific motorcycles associated with this CA.
-          // For demo, we find related CAs that make up this main one
-           const relatedMotorcycleCAs = cas.filter(ca => (ca.motorcycleId && mainCA.motorcycleIds?.includes(ca.motorcycleId)) || ca.id === id);
-
-            const motorcyclesWithLiquidation = relatedMotorcycleCAs.map(ca => {
-                const motorcycle = mcs.find(mc => mc.id === ca.motorcycleId);
-                return {
-                    ...motorcycle,
-                    liquidation: ca,
-                } as (Motorcycle & { liquidation: Partial<CashAdvance> });
-            }).filter(item => item.id); // Filter out items where motorcycle wasn't found
+        if (mainCA && mainCA.motorcycleIds) {
+          const associatedMotorcycles = mainCA.motorcycleIds
+            .map(mcId => mcs.find(m => m.id === mcId))
+            .filter(Boolean) as Motorcycle[];
 
           setReportData({
             cashAdvance: mainCA,
-            motorcycles: motorcyclesWithLiquidation,
+            motorcycles: associatedMotorcycles,
           });
         }
         setLoading(false);

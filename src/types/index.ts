@@ -22,7 +22,7 @@ export type Motorcycle = {
   purchaseDate: Date;
   supplier: string;
   documents: Document[];
-  status: 'Incomplete' | 'Ready to Register' | 'Registered' | 'For Renewal';
+  status: 'Incomplete' | 'Ready to Register' | 'Registered' | 'For Renewal' | 'Liquidated';
   customerName?: string;
   cocNumber?: string;
   policyNumber?: string;
@@ -35,6 +35,17 @@ export type Motorcycle = {
   salesInvoiceNo?: string;
   accountCode?: string;
   endorsementCode?: string;
+  liquidationDetails?: {
+    ltoOrNumber: string;
+    ltoOrAmount: number;
+    ltoProcessFee: number;
+    totalLiquidation: number;
+    shortageOverage: number;
+    remarks: string;
+    liquidatedBy: string;
+    liquidationDate: Date;
+    parentCaId: string;
+  };
 };
 
 export type CashAdvance = {

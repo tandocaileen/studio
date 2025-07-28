@@ -1,15 +1,138 @@
 
 'use client';
 
+import * as React from 'react';
 import { Header } from "@/components/layout/header";
 import { AppSidebar } from "@/components/layout/sidebar";
-import { LiquidationsContent } from "@/components/liquidations/liquidation-table";
-import React, { useState } from "react";
 import { ProtectedPage } from "@/components/auth/protected-page";
+import { useToast } from '@/hooks/use-toast';
+import { getCashAdvances, getMotorcycles } from '@/lib/data';
+import { CashAdvance, Motorcycle } from '@/types';
+import { useAuth } from '@/context/AuthContext';
+import { AppLoader } from '@/components/layout/loader';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { CheckCircle, Eye, FileUp, Circle, FileDown } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useRouter } from 'next/navigation';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { cn } from '@/lib/utils';
 
+
+type ViewMode = 'motorcycle' | 'ca';
+
+type GroupedLiquidation = {
+    cashAdvance: CashAdvance;
+    motorcycles: Motorcycle[];
+};
+
+type LiquidationFormData = {
+    [motorcycleId: string]: {
+        ltoOrNumber: string;
+        ltoOrAmount: number;
+        ltoProcessFee: number;
+        remarks: string;
+        receiptFile?: File | null;
+    }
+}
 
 export default function LiquidationsPage() {
-    const [searchQuery, setSearchQuery] = useState('');
+    const [searchQuery, setSearchQuery] = React.useState('');
+    const { user } = useAuth();
+    const [motorcycles, setMotorcycles] = React.useState<Motorcycle[] | null>(null);
+    const [cashAdvances, setCashAdvances] = React.useState<CashAdvance[] | null>(null);
+    const [viewMode, setViewMode] = React.useState<ViewMode>('motorcycle');
+    const [selectedCA, setSelectedCA] = React.useState<GroupedLiquidation | null>(null);
+    const [formData, setFormData] = React.useState<LiquidationFormData>({});
+
+    const { toast } = useToast();
+    const router = useRouter();
+    
+    React.useEffect(() => {
+        Promise.all([getMotorcycles(), getCashAdvances()]).then(([mcs, cas]) => {
+            setMotorcycles(mcs);
+            setCashAdvances(cas);
+        });
+    }, []);
+
+    const handleLiquidateClick = (mc: Motorcycle, ca: CashAdvance) => {
+        const grouped: GroupedLiquidation = {
+            cashAdvance: ca,
+            motorcycles: [mc]
+        };
+        setSelectedCA(grouped);
+        
+        const initialFormData: LiquidationFormData = {};
+        initialFormData[mc.id] = {
+            ltoOrNumber: '',
+            ltoOrAmount: 0,
+            ltoProcessFee: 0,
+            remarks: ''
+        };
+        setFormData(initialFormData);
+    };
+
+    const handleFormChange = (mcId: string, field: keyof LiquidationFormData[string], value: any) => {
+        setFormData(prev => ({ ...prev, [mcId]: { ...prev[mcId], [field]: value } }));
+    }
+
+    const handleFinalSubmit = () => {
+        if (!selectedCA) return;
+        console.log("Submitting Liquidation Data: ", formData);
+        toast({
+            title: 'Liquidation Submitted',
+            description: `Liquidation for selected motorcycle has been submitted for review.`
+        });
+        setSelectedCA(null);
+    }
+    
+    if (!user || !motorcycles || !cashAdvances) {
+        return <AppLoader />;
+    }
+
+    const isLiaison = user.role === 'Liaison';
+
+    const getMcAdvanceAmount = (mc: Motorcycle): number => {
+        const ca = cashAdvances.find(c => c.motorcycleIds?.includes(mc.id));
+        if (!ca || !ca.motorcycleIds) return mc.processingFee! + mc.orFee!;
+        return ca.amount / ca.motorcycleIds.length;
+    };
+    
+    const singleMcFormData = selectedCA ? formData[selectedCA.motorcycles[0].id] : null;
+    const totalLiquidation = (singleMcFormData?.ltoOrAmount || 0) + (singleMcFormData?.ltoProcessFee || 0);
+    const singleMcAdvance = selectedCA ? getMcAdvanceAmount(selectedCA.motorcycles[0]) : 0;
+    const shortageOverage = singleMcAdvance - totalLiquidation;
+
+    // Data for Motorcycle View
+    const pendingLiquidationMotorcycles = motorcycles.filter(mc => {
+        const ca = cashAdvances.find(c => c.motorcycleIds?.includes(mc.id));
+        if (!ca) return false;
+        const isReadyForLiq = ['Approved', 'CV Received'].includes(ca.status);
+        const isNotLiquidated = mc.status !== 'Liquidated';
+
+        if (isLiaison && mc.assignedLiaison !== user.name) return false;
+
+        return isReadyForLiq && isNotLiquidated;
+    });
+
+    // Data for CA View
+    const groupedItems: GroupedLiquidation[] = cashAdvances
+        .filter(ca => ca.motorcycleIds && ca.motorcycleIds.length > 0)
+        .map(ca => {
+            const associatedMotorcycles = ca.motorcycleIds!.map(id => motorcycles.find(m => m.id === id)).filter(Boolean) as Motorcycle[];
+            return { cashAdvance: ca, motorcycles: associatedMotorcycles };
+        });
+
+    const filteredGroupedItems = groupedItems.filter(item => {
+        if(isLiaison && item.cashAdvance.personnel !== user.name) return false;
+        return ['Approved', 'CV Received', 'Liquidated'].includes(item.cashAdvance.status);
+    });
 
     return (
         <ProtectedPage allowedRoles={['Store Supervisor', 'Liaison', 'Cashier']}>
@@ -18,7 +141,167 @@ export default function LiquidationsPage() {
                 <div className="flex flex-col pt-14 sm:gap-4 sm:py-4 sm:pl-14">
                     <Header title="Liquidations & Reports" onSearch={setSearchQuery} />
                     <main className="flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-                       <LiquidationsContent searchQuery={searchQuery} />
+                       <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as ViewMode)} className="w-full">
+                           <div className="flex items-center">
+                                <TabsList>
+                                    <TabsTrigger value="motorcycle">By Motorcycle</TabsTrigger>
+                                    <TabsTrigger value="ca">By Cash Advance</TabsTrigger>
+                                </TabsList>
+                                {user.role !== 'Liaison' && (
+                                     <Button className="ml-auto" variant="outline">
+                                        <FileDown className="mr-2" />
+                                        Generate Master Report
+                                    </Button>
+                                )}
+                           </div>
+                            <TabsContent value="motorcycle">
+                               <Card>
+                                   <CardHeader>
+                                       <CardTitle>Pending Liquidations by Motorcycle</CardTitle>
+                                       <CardDescription>Liquidate expenses for individual motorcycles.</CardDescription>
+                                   </CardHeader>
+                                   <CardContent>
+                                       <Table>
+                                           <TableHeader>
+                                               <TableRow>
+                                                   <TableHead>Customer</TableHead>
+                                                   <TableHead>Plate No.</TableHead>
+                                                   <TableHead>CA Number</TableHead>
+                                                   <TableHead>Liaison</TableHead>
+                                                   <TableHead className="text-right">Amount</TableHead>
+                                                   <TableHead>Action</TableHead>
+                                               </TableRow>
+                                           </TableHeader>
+                                           <TableBody>
+                                                {pendingLiquidationMotorcycles.map(mc => {
+                                                    const ca = cashAdvances.find(c => c.motorcycleIds?.includes(mc.id));
+                                                    if (!ca) return null;
+                                                    return (
+                                                        <TableRow key={mc.id}>
+                                                            <TableCell>{mc.customerName}</TableCell>
+                                                            <TableCell>{mc.plateNumber}</TableCell>
+                                                            <TableCell>{ca.id}</TableCell>
+                                                            <TableCell>{ca.personnel}</TableCell>
+                                                            <TableCell className="text-right">₱{getMcAdvanceAmount(mc).toLocaleString()}</TableCell>
+                                                            <TableCell>
+                                                                {isLiaison ? (
+                                                                    <Button size="sm" onClick={() => handleLiquidateClick(mc, ca)}>
+                                                                        <FileUp className="mr-2 h-4 w-4" />
+                                                                        Liquidate
+                                                                    </Button>
+                                                                ) : (
+                                                                     <Badge variant="outline">Pending</Badge>
+                                                                )}
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    )
+                                                })}
+                                           </TableBody>
+                                       </Table>
+                                       {pendingLiquidationMotorcycles.length === 0 && (
+                                           <div className="text-center py-12 text-muted-foreground">
+                                               <p>No motorcycles pending liquidation.</p>
+                                           </div>
+                                       )}
+                                   </CardContent>
+                               </Card>
+                            </TabsContent>
+                            <TabsContent value="ca">
+                                 <div className="grid gap-4">
+                                    {filteredGroupedItems.map((group) => {
+                                        const liquidatedCount = group.motorcycles.filter(m => m.status === 'Liquidated').length;
+                                        const isFullyLiquidated = liquidatedCount === group.motorcycles.length;
+                                        const isPartiallyLiquidated = liquidatedCount > 0 && !isFullyLiquidated;
+                                        
+                                        let statusLabel = "Pending";
+                                        let statusColor = "bg-amber-500";
+                                        let statusIcon = <Circle className="mr-2 h-4 w-4 text-amber-500" />;
+
+                                        if(isFullyLiquidated) {
+                                            statusLabel = "Fully Liquidated";
+                                            statusColor = "bg-green-500";
+                                            statusIcon = <CheckCircle className="mr-2 h-4 w-4 text-green-500" />;
+                                        } else if (isPartiallyLiquidated) {
+                                            statusLabel = "Partially Liquidated";
+                                            statusColor = "bg-blue-500";
+                                            statusIcon = <CheckCircle className="mr-2 h-4 w-4 text-blue-500" />;
+                                        }
+
+                                        return (
+                                            <Card key={group.cashAdvance.id}>
+                                                <CardHeader>
+                                                    <div className="flex justify-between items-start">
+                                                        <div>
+                                                            <CardTitle className="text-lg">CA #{group.cashAdvance.id}</CardTitle>
+                                                            <CardDescription>{group.cashAdvance.purpose}</CardDescription>
+                                                            <CardDescription>Liaison: {group.cashAdvance.personnel} | Date: {new Date(group.cashAdvance.date).toLocaleDateString()}</CardDescription>
+                                                        </div>
+                                                        <div className="text-right">
+                                                            <Badge variant={'outline'}>
+                                                                {statusIcon} {statusLabel}
+                                                            </Badge>
+                                                        </div>
+                                                    </div>
+                                                </CardHeader>
+                                                <CardContent>
+                                                    <div className="flex justify-end">
+                                                        <Button 
+                                                            onClick={() => router.push(`/reports/liquidation/${group.cashAdvance.id}`)}
+                                                            >
+                                                            <Eye className="mr-2 h-4 w-4" />
+                                                            View Full Report
+                                                        </Button>
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        )
+                                    })}
+                                </div>
+                            </TabsContent>
+                       </Tabs>
+
+                         <Dialog open={!!selectedCA} onOpenChange={(open) => !open && setSelectedCA(null)}>
+                            <DialogContent className="sm:max-w-xl">
+                                <DialogHeader>
+                                    <DialogTitle>Liquidate: {selectedCA?.motorcycles[0].customerName}</DialogTitle>
+                                    <DialogDescription>
+                                    CA: {selectedCA?.cashAdvance.id} | Plate: {selectedCA?.motorcycles[0].plateNumber}
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <div className="py-4 grid gap-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="lto-or-number">LTO OR Number</Label>
+                                            <Input id="lto-or-number" placeholder="Enter LTO OR number" value={singleMcFormData?.ltoOrNumber || ''} onChange={e => handleFormChange(selectedCA!.motorcycles[0].id, 'ltoOrNumber', e.target.value)} />
+                                        </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="lto-or-amount">LTO OR Amount</Label>
+                                            <Input id="lto-or-amount" type="number" placeholder="0.00" value={singleMcFormData?.ltoOrAmount || ''} onChange={e => handleFormChange(selectedCA!.motorcycles[0].id, 'ltoOrAmount', parseFloat(e.target.value) || 0)} />
+                                        </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="lto-process-fee">LTO Process Fee</Label>
+                                            <Input id="lto-process-fee" type="number" placeholder="0.00" value={singleMcFormData?.ltoProcessFee || ''} onChange={e => handleFormChange(selectedCA!.motorcycles[0].id, 'ltoProcessFee', parseFloat(e.target.value) || 0)} />
+                                        </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="shortage-overage">Shortage / Overage</Label>
+                                            <Input id="shortage-overage" type="number" placeholder="0.00" disabled value={shortageOverage.toFixed(2)} className={cn('font-bold', shortageOverage < 0 ? 'text-destructive' : 'text-green-600')} />
+                                        </div>
+                                    </div>
+                                     <div className="grid gap-2">
+                                        <Label htmlFor="remarks">Remarks</Label>
+                                        <Textarea id="remarks" placeholder="Add any remarks here..." value={singleMcFormData?.remarks || ''} onChange={e => handleFormChange(selectedCA!.motorcycles[0].id, 'remarks', e.target.value)} />
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="receipt-upload">Upload Official Receipt</Label>
+                                        <Input id="receipt-upload" type="file" onChange={e => handleFormChange(selectedCA!.motorcycles[0].id, 'receiptFile', e.target.files ? e.target.files[0] : null)} />
+                                    </div>
+                                </div>
+                                <DialogFooter>
+                                    <Button variant="outline" onClick={() => setSelectedCA(null)}>Cancel</Button>
+                                    <Button onClick={handleFinalSubmit}>Submit Liquidation</Button>
+                                </DialogFooter>
+                            </DialogContent>
+                        </Dialog>
                     </main>
                 </div>
             </div>

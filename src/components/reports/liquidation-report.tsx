@@ -1,4 +1,5 @@
 
+
 import { CashAdvance, Motorcycle } from "@/types";
 import { format } from "date-fns";
 import React from "react";
@@ -8,7 +9,7 @@ import { Separator } from "../ui/separator";
 type LiquidationReportProps = {
     reportData: {
         cashAdvance: CashAdvance;
-        motorcycles: (Motorcycle & { liquidation: Partial<CashAdvance>})[];
+        motorcycles: Motorcycle[];
     }
 }
 
@@ -16,11 +17,15 @@ export const LiquidationReport = React.forwardRef<HTMLDivElement, LiquidationRep
     
     const { cashAdvance, motorcycles } = reportData;
 
-    const totalCA = motorcycles.reduce((sum, mc) => sum + (mc.liquidation.amount || 0), 0);
-    const totalLiquidation = motorcycles.reduce((sum, mc) => sum + (mc.liquidation.totalLiquidation || 0), 0);
-    const totalShortageOverage = motorcycles.reduce((sum, mc) => sum + (mc.liquidation.shortageOverage || 0), 0);
-    
+    const getMcAdvanceAmount = (mc: Motorcycle): number => {
+        if (!cashAdvance || !cashAdvance.motorcycleIds) return mc.processingFee! + mc.orFee!;
+        return cashAdvance.amount / cashAdvance.motorcycleIds.length;
+    };
 
+    const totalCA = motorcycles.reduce((sum, mc) => sum + getMcAdvanceAmount(mc), 0);
+    const totalLiquidation = motorcycles.reduce((sum, mc) => sum + (mc.liquidationDetails?.totalLiquidation || 0), 0);
+    const totalShortageOverage = totalCA - totalLiquidation;
+    
     return (
         <div ref={ref} className="bg-white text-black p-8 font-sans text-xs">
             <header className="text-center mb-6">
@@ -57,20 +62,25 @@ export const LiquidationReport = React.forwardRef<HTMLDivElement, LiquidationRep
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {motorcycles.map((mc, index) => (
+                    {motorcycles.map((mc, index) => {
+                        const liq = mc.liquidationDetails;
+                        const mcAdvance = getMcAdvanceAmount(mc);
+                        const mcShortageOverage = mcAdvance - (liq?.totalLiquidation || 0);
+
+                        return (
                         <TableRow key={mc.id}>
                             <TableCell className="border p-1">{index + 1}</TableCell>
                             <TableCell className="border p-1">{mc.salesInvoiceNo}</TableCell>
                             <TableCell className="border p-1">{mc.customerName}</TableCell>
-                            <TableCell className="border p-1 text-right font-mono">{(mc.liquidation.amount)?.toLocaleString('en-US', { minimumFractionDigits: 2 })}</TableCell>
-                            <TableCell className="border p-1">{mc.liquidation.ltoOrNumber}</TableCell>
-                            <TableCell className="border p-1 text-right font-mono">{(mc.liquidation.ltoOrAmount)?.toLocaleString('en-US', { minimumFractionDigits: 2 })}</TableCell>
-                            <TableCell className="border p-1 text-right font-mono">{(mc.liquidation.ltoProcessFee)?.toLocaleString('en-US', { minimumFractionDigits: 2 })}</TableCell>
-                            <TableCell className="border p-1 text-right font-mono">{(mc.liquidation.totalLiquidation)?.toLocaleString('en-US', { minimumFractionDigits: 2 })}</TableCell>
-                            <TableCell className="border p-1 text-right font-mono">{(mc.liquidation.shortageOverage)?.toLocaleString('en-US', { minimumFractionDigits: 2 })}</TableCell>
-                            <TableCell className="border p-1">{mc.liquidation.liquidationRemarks || "FULL LIQUIDATION"}</TableCell>
+                            <TableCell className="border p-1 text-right font-mono">{mcAdvance.toLocaleString('en-US', { minimumFractionDigits: 2 })}</TableCell>
+                            <TableCell className="border p-1">{liq?.ltoOrNumber || ''}</TableCell>
+                            <TableCell className="border p-1 text-right font-mono">{liq?.ltoOrAmount?.toLocaleString('en-US', { minimumFractionDigits: 2 }) || ''}</TableCell>
+                            <TableCell className="border p-1 text-right font-mono">{liq?.ltoProcessFee?.toLocaleString('en-US', { minimumFractionDigits: 2 }) || ''}</TableCell>
+                            <TableCell className="border p-1 text-right font-mono">{liq?.totalLiquidation?.toLocaleString('en-US', { minimumFractionDigits: 2 }) || ''}</TableCell>
+                            <TableCell className="border p-1 text-right font-mono">{liq ? mcShortageOverage.toLocaleString('en-US', { minimumFractionDigits: 2 }) : ''}</TableCell>
+                            <TableCell className="border p-1">{liq?.remarks || ''}</TableCell>
                         </TableRow>
-                    ))}
+                    )})}
                 </TableBody>
                 <TableFooter>
                     <TableRow className="font-bold">

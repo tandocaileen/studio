@@ -22,7 +22,7 @@ const motorcycles: Motorcycle[] = [
     assignedBranch: 'Main Office',
     purchaseDate: new Date('2023-01-15'),
     supplier: 'Honda Prestige',
-    status: 'Registered',
+    status: 'Liquidated',
     documents: [
       { type: 'OR/CR', url: '#/doc/orcr123', uploadedAt: new Date('2023-01-20'), expiresAt: addDays(today, 300) },
       { type: 'COC', url: '#', uploadedAt: new Date('2023-01-20') },
@@ -37,7 +37,18 @@ const motorcycles: Motorcycle[] = [
     hpgControlNumber: 'HPG-CTRL-001',
     cocNumber: 'COC-123',
     policyNumber: 'POL-123',
-    sarCode: 'SAR-123'
+    sarCode: 'SAR-123',
+    liquidationDetails: {
+      parentCaId: 'ca-070124-002',
+      ltoOrNumber: 'LTO-OR-123',
+      ltoOrAmount: 1200,
+      ltoProcessFee: 1300,
+      totalLiquidation: 2500,
+      shortageOverage: 0,
+      remarks: 'Full Liquidation',
+      liquidatedBy: 'Liaison A',
+      liquidationDate: addDays(today, -25)
+    }
   },
   {
     id: '2',
@@ -80,7 +91,7 @@ const motorcycles: Motorcycle[] = [
     assignedBranch: 'West Branch',
     purchaseDate: new Date('2023-03-10'),
     supplier: 'Suzuki Philippines',
-    status: 'Registered',
+    status: 'Liquidated',
     documents: [
       { type: 'OR/CR', url: '#/doc/orcr789', uploadedAt: new Date('2023-03-15'), expiresAt: addDays(today, 400) },
       { type: 'COC', url: '#', uploadedAt: new Date('2023-03-15') },
@@ -95,7 +106,18 @@ const motorcycles: Motorcycle[] = [
     hpgControlNumber: 'HPG-CTRL-003',
     cocNumber: 'COC-789',
     policyNumber: 'POL-789',
-    sarCode: 'SAR-789'
+    sarCode: 'SAR-789',
+     liquidationDetails: {
+      parentCaId: 'ca-070124-002',
+      ltoOrNumber: 'LTO-OR-456',
+      ltoOrAmount: 1300,
+      ltoProcessFee: 1450,
+      totalLiquidation: 2750,
+      shortageOverage: 0,
+      remarks: 'Full Liquidation',
+      liquidatedBy: 'Liaison A',
+      liquidationDate: addDays(today, -25)
+    }
   },
   {
     id: '4',
@@ -214,10 +236,6 @@ const cashAdvances: CashAdvance[] = [
     totalLiquidation: 5250,
     checkVoucherNumber: 'CV-2024-06-010',
     checkVoucherReleaseDate: addDays(today, -28),
-    ltoOrNumber: 'LTO-OR-123, LTO-OR-456',
-    ltoOrAmount: 4000,
-    ltoProcessFee: 1250,
-    liquidationRemarks: 'Fully Liquidated',
   },
   {
     id: 'ca-070124-003',
