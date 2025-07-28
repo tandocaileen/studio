@@ -12,6 +12,7 @@ import { useAuth } from "@/context/AuthContext";
 import { CashAdvance, Motorcycle } from "@/types";
 import { SummaryCards } from "@/components/dashboard/summary-cards";
 import { OverdueAdvances } from "@/components/dashboard/overdue-advances";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
   const [motorcycles, setMotorcycles] = useState<Motorcycle[] | null>(null);
@@ -62,6 +63,7 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
 
 function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
   const [motorcycles, setMotorcycles] = useState<Motorcycle[] | null>(null);
+  const [viewFilter, setViewFilter] = useState<'pending' | 'all'>('pending');
   
   useEffect(() => {
     getMotorcycles().then(setMotorcycles);
@@ -77,9 +79,12 @@ function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
   // Filter logic based on user role
   const filteredMotorcycles = motorcycles.filter(m => {
     const isUserAssigned = m.assignedLiaison === user.name;
-    const isUnregistered = ['Incomplete', 'Ready to Register'].includes(m.status);
+    if (!isUserAssigned) return false;
 
-    if (!(isUserAssigned && isUnregistered)) return false;
+    if (viewFilter === 'pending') {
+        const isUnregistered = ['Incomplete', 'Ready to Register'].includes(m.status);
+        if(!isUnregistered) return false;
+    }
     
     if (!searchQuery) return true;
 
@@ -108,6 +113,14 @@ function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
                   {userBranch} - {user?.role}
               </p>
           </div>
+      </div>
+      <div className="flex items-center gap-4">
+        <Tabs value={viewFilter} onValueChange={(value) => setViewFilter(value as 'pending' | 'all')}>
+            <TabsList>
+                <TabsTrigger value="pending">Pending Assignments</TabsTrigger>
+                <TabsTrigger value="all">View All</TabsTrigger>
+            </TabsList>
+        </Tabs>
       </div>
       <MotorcycleTable motorcycles={filteredMotorcycles} />
     </>
