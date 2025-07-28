@@ -31,7 +31,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -306,185 +305,6 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                   <span className="hidden sm:inline">Generate CA</span>
               </Button>
             )}
-            {canEdit && (
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button size="sm" className="gap-1">
-                    <PlusCircle className="h-4 w-4" />
-                    <span className="hidden sm:inline">Add Motorcycle</span>
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-4xl max-w-[90vw] max-h-[90vh]">
-                  <DialogHeader>
-                    <DialogTitle>Add New Motorcycle</DialogTitle>
-                    <DialogDescription>
-                      Fill in the details for the new unit.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <ScrollArea className="max-h-[70vh]">
-                    <div className="grid gap-4 py-4 pr-6">
-                      <h3 className="font-semibold text-lg border-b pb-2 mb-2">Motorcycle Details</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="grid gap-2">
-                            <Label htmlFor="plate">Plate No.</Label>
-                            <Input id="plate" placeholder="ABC 1234" />
-                        </div>
-                        <div className="grid gap-2">
-                            <Label htmlFor="customerName">Customer Name</Label>
-                            <Input id="customerName" placeholder="e.g., John Doe" />
-                        </div>
-                        <div className="grid gap-2">
-                            <Label htmlFor="make">Make</Label>
-                            <Input id="make" placeholder="e.g., Honda" />
-                        </div>
-                        <div className="grid gap-2">
-                            <Label htmlFor="model">Model</Label>
-                            <Input id="model" placeholder="e.g., Click 125i" />
-                        </div>
-                        <div className="grid gap-2">
-                            <Label htmlFor="engineNumber">Engine No.</Label>
-                            <Input id="engineNumber" placeholder="e.g., E12345678" />
-                        </div>
-                        <div className="grid gap-2">
-                            <Label htmlFor="chassisNumber">Chassis No.</Label>
-                            <Input id="chassisNumber" placeholder="e.g., C12345678" />
-                        </div>
-                         <div className="grid gap-2">
-                            <Label htmlFor="branch">Branch</Label>
-                            <Select>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select a branch" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {branches.map(branch => <SelectItem key={branch} value={branch}>{branch}</SelectItem>)}
-                              </SelectContent>
-                            </Select>
-                        </div>
-                         <div className="grid gap-2">
-                            <Label htmlFor="assignedLiaison">Assign Liaison</Label>
-                            <Select>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select a liaison" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {liaisons.map(liaison => <SelectItem key={liaison.id} value={liaison.name}>{liaison.name}</SelectItem>)}
-                              </SelectContent>
-                            </Select>
-                        </div>
-                      </div>
-
-                      <h3 className="font-semibold text-lg border-b pb-2 mt-4 mb-2">Insurance & Control</h3>
-                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="grid gap-2">
-                              <Label htmlFor="cocNumber">COC No.</Label>
-                              <Input id="cocNumber" placeholder="Enter COC number" />
-                          </div>
-                           <div className="grid gap-2">
-                              <Label htmlFor="policyNumber">Policy No.</Label>
-                              <Input id="policyNumber" placeholder="Enter policy number" />
-                          </div>
-                          <div className="grid gap-2">
-                              <Label htmlFor="insuranceType">Insurance Type</Label>
-                              <Input id="insuranceType" placeholder="e.g., Comprehensive" />
-                          </div>
-                          <div className="grid gap-2">
-                              <Label htmlFor="hpgControlNumber">HPG Control No.</Label>
-                              <Input id="hpgControlNumber" placeholder="Enter HPG Control number" />
-                          </div>
-                          <div className="grid gap-2">
-                              <Label htmlFor="sarCode">SAR Code</Label>
-                              <Input id="sarCode" placeholder="Enter SAR code" />
-                          </div>
-                       </div>
-                       
-                      <h3 className="font-semibold text-lg border-b pb-2 mt-4 mb-2">Fees</h3>
-                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="grid gap-2">
-                              <Label htmlFor="processingFee">Processing Fee</Label>
-                              <Input id="processingFee" type="number" defaultValue="1500" disabled />
-                          </div>
-                           <div className="grid gap-2">
-                              <Label htmlFor="orFee">OR Fee</Label>
-                              <Input id="orFee" type="number" defaultValue="1000" disabled />
-                          </div>
-                       </div>
-
-                      <div className="col-span-full mt-4">
-                        <Label className="text-lg font-semibold">Documents</Label>
-                        <div className="space-y-4 mt-2">
-                          {newDocuments.map((doc, index) => (
-                            <div key={doc.id} className="grid grid-cols-1 gap-4 p-4 border rounded-lg relative">
-                               <Button
-                                variant="ghost"
-                                size="icon"
-                                className="absolute top-1 right-1 h-6 w-6"
-                                onClick={() => handleRemoveDocument(doc.id, true)}
-                              >
-                                <Trash2 className="h-4 w-4 text-destructive" />
-                              </Button>
-                              <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor={`doc-type-${index}`} className="text-right">Type</Label>
-                                <Select
-                                  value={doc.type}
-                                  onValueChange={(value: DocumentType) => handleDocumentChange(doc.id, 'type', value, true)}
-                                >
-                                  <SelectTrigger id={`doc-type-${index}`} className="col-span-3">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {ALL_DOC_TYPES.map(type => (
-                                        <SelectItem key={type} value={type}>{type}</SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                              <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor={`doc-file-${index}`} className="text-right">File</Label>
-                                <Input id={`doc-file-${index}`} type="file" className="col-span-3" onChange={(e) => handleFileChange(doc.id, e, true)} />
-                              </div>
-                              {doc.type === 'Insurance' || doc.type === 'OR/CR' ? (
-                                <div className="grid grid-cols-4 items-center gap-4">
-                                  <Label htmlFor={`doc-expiry-${index}`} className="text-right">Expiry / Effectivity</Label>
-                                    <Popover>
-                                      <PopoverTrigger asChild>
-                                        <Button
-                                          variant={"outline"}
-                                          className={cn(
-                                            "col-span-3 justify-start text-left font-normal",
-                                            !doc.expiresAt && "text-muted-foreground"
-                                          )}
-                                        >
-                                          <CalendarIcon className="mr-2 h-4 w-4" />
-                                          {doc.expiresAt ? format(doc.expiresAt, "PPP") : <span>Pick a date</span>}
-                                        </Button>
-                                      </PopoverTrigger>
-                                      <PopoverContent className="w-auto p-0">
-                                        <Calendar
-                                          mode="single"
-                                          selected={doc.expiresAt}
-                                          onSelect={(date) => handleDocumentChange(doc.id, 'expiresAt', date, true)}
-                                          initialFocus
-                                        />
-                                      </PopoverContent>
-                                    </Popover>
-                                </div>
-                              ) : null}
-                            </div>
-                          ))}
-                          <Button variant="outline" size="sm" onClick={handleAddNewDocument}>
-                            <PlusCircle className="mr-2 h-4 w-4" /> Add Document
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </ScrollArea>
-                  <DialogFooter>
-                     <Button variant="outline" onClick={() => (document.querySelector('[aria-label="Close"]') as HTMLElement)?.click()}>Cancel</Button>
-                    <Button type="submit" onClick={() => handleAction('New motorcycle saved.')}>Save Motorcycle</Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            )}
           </div>
         </CardHeader>
         <CardContent>
@@ -506,9 +326,6 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                 <TableHead>Make & Model</TableHead>
                 <TableHead>Engine No.</TableHead>
                 <TableHead>Chassis No.</TableHead>
-                <TableHead>CSR No.</TableHead>
-                <TableHead>CR/OR No.</TableHead>
-                <TableHead>HPG Control No.</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="w-[100px]">
                   <span className="sr-only">Actions</span>
@@ -536,9 +353,6 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                     </TableCell>
                     <TableCell className="font-mono text-xs">{motorcycle.engineNumber}</TableCell>
                     <TableCell className="font-mono text-xs">{motorcycle.chassisNumber}</TableCell>
-                    <TableCell>{motorcycle.documents.find(d => d.type === 'CSR')?.url.slice(-8) || 'N/A'}</TableCell>
-                    <TableCell>{motorcycle.documents.find(d => d.type === 'OR/CR')?.url.slice(-8) || 'N/A'}</TableCell>
-                    <TableCell>{motorcycle.hpgControlNumber || 'N/A'}</TableCell>
                     <TableCell>
                       <Badge variant={statusVariant(motorcycle.status)}>{motorcycle.status}</Badge>
                     </TableCell>
@@ -871,4 +685,3 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
     </>
   );
 }
-

@@ -13,9 +13,16 @@ import { CashAdvance, Motorcycle } from "@/types";
 import { SummaryCards } from "@/components/dashboard/summary-cards";
 import { OverdueAdvances } from "@/components/dashboard/overdue-advances";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { PlusCircle } from "lucide-react";
+import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog";
+import { ReceiveLtoDocs } from "@/components/dashboard/receive-lto-docs";
+
+type ViewFilter = 'unregistered' | 'all';
 
 function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
   const [motorcycles, setMotorcycles] = useState<Motorcycle[] | null>(null);
+  const [viewFilter, setViewFilter] = useState<ViewFilter>('unregistered');
   
   useEffect(() => {
     getMotorcycles().then(setMotorcycles);
@@ -27,9 +34,31 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
   if (!user || !motorcycles) {
     return <AppLoader />;
   }
+
+  const handleDocsReceived = (updatedMotorcycles: Motorcycle[]) => {
+      // In a real app, this would be a backend call.
+      // For demo purposes, we'll just update the local state.
+      setMotorcycles(currentMotorcycles => {
+          const updatedIds = new Set(updatedMotorcycles.map(um => um.id));
+          return currentMotorcycles!.map(cm => {
+              if (updatedIds.has(cm.id)) {
+                  return updatedMotorcycles.find(um => um.id === cm.id)!;
+              }
+              return cm;
+          });
+      });
+  };
   
   const filteredMotorcycles = motorcycles.filter(m => {
+    let matchesFilter = true;
+    if (viewFilter === 'unregistered') {
+        matchesFilter = ['Incomplete', 'Ready to Register'].includes(m.status);
+    }
+    
+    if (!matchesFilter) return false;
+
     if (!searchQuery) return true;
+    
     const searchFilter =
       m.plateNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
       m.make.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -54,6 +83,25 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
                   {userBranch} - {user?.role}
               </p>
           </div>
+          <Dialog>
+            <DialogTrigger asChild>
+                <Button size="sm" className="gap-1">
+                    <PlusCircle className="h-4 w-4" />
+                    <span className="hidden sm:inline">Receive LTO Docs</span>
+                </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-7xl">
+                <ReceiveLtoDocs motorcycles={motorcycles.filter(m => m.status === 'Incomplete')} onSave={handleDocsReceived} />
+            </DialogContent>
+          </Dialog>
+      </div>
+       <div className="flex items-center gap-4">
+        <Tabs value={viewFilter} onValueChange={(value) => setViewFilter(value as ViewFilter)}>
+            <TabsList>
+                <TabsTrigger value="unregistered">Unregistered</TabsTrigger>
+                <TabsTrigger value="all">View All</TabsTrigger>
+            </TabsList>
+        </Tabs>
       </div>
       <MotorcycleTable motorcycles={filteredMotorcycles} />
     </>
@@ -127,7 +175,7 @@ function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
   );
 }
 
-function CashierDashboardContent() {
+function CashierDashboardContent({searchQuery}: {searchQuery: string}) {
     const [motorcycles, setMotorcycles] = useState<Motorcycle[]>([]);
     const [cashAdvances, setCashAdvances] = useState<CashAdvance[]>([]);
     const [loading, setLoading] = useState(true);
@@ -146,23 +194,8 @@ function CashierDashboardContent() {
         return <AppLoader />;
     }
 
-    return (
-        <div className="grid gap-8">
-             <div className="flex items-center justify-between">
-                <div>
-                    <p className="text-lg text-muted-foreground">Welcome back,</p>
-                    <h2 className="text-2xl font-bold leading-tight tracking-tighter">
-                        {user?.name}
-                    </h2>
-                    <p className="text-sm text-muted-foreground font-medium">
-                        {userBranch} - {user?.role}
-                    </p>
-                </div>
-            </div>
-            <SummaryCards motorcycles={motorcycles} cashAdvances={cashAdvances} />
-            <OverdueAdvances cashAdvances={cashAdvances} />
-        </div>
-    )
+     // Use Supervisor content for Cashier as they have same permissions
+    return <SupervisorDashboardContent searchQuery={searchQuery} />;
 }
 
 export default function DashboardPage() {
@@ -185,7 +218,7 @@ export default function DashboardPage() {
           case 'Liaison':
               return <LiaisonDashboardContent searchQuery={searchQuery} />;
           case 'Cashier':
-                return <CashierDashboardContent />;
+                return <CashierDashboardContent searchQuery={searchQuery} />;
           default:
               return <AppLoader />;
       }
@@ -196,7 +229,7 @@ export default function DashboardPage() {
       <div className="flex min-h-screen w-full flex-col bg-muted/40">
         <AppSidebar />
         <div className="flex flex-col pt-14 sm:gap-4 sm:py-4 sm:pl-14">
-          <Header title={getTitle()} onSearch={user.role !== 'Cashier' ? setSearchQuery : undefined} />
+          <Header title={getTitle()} onSearch={setSearchQuery} />
           <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
             <div className="grid auto-rows-max items-start gap-4 md:gap-8">
                 {renderContent()}
