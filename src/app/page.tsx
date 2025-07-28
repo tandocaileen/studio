@@ -42,19 +42,10 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
     return <AppLoader />;
   }
 
-  const handleStateUpdate = (updatedOrNewMotorcycles: Motorcycle | Motorcycle[]) => {
+  const handleStateUpdate = (updatedOrNewMotorcycles: Motorcycle[]) => {
       setMotorcycles(currentMotorcycles => {
-          if (Array.isArray(updatedOrNewMotorcycles)) {
-              // This handles updates from MotorcycleTable
-              const updatedIds = new Set(updatedOrNewMotorcycles.map(um => um.id));
-              return currentMotorcycles!.map(cm => {
-                  const updatedVersion = updatedOrNewMotorcycles.find(um => um.id === cm.id);
-                  return updatedVersion || cm;
-              });
-          } else {
-              // This handles adding a new motorcycle from ReceiveLtoDocs
-              return [updatedOrNewMotorcycles, ...currentMotorcycles!];
-          }
+          const updatedMap = new Map(updatedOrNewMotorcycles.map(m => [m.id, m]));
+          return currentMotorcycles!.map(cm => updatedMap.get(cm.id) || cm);
       });
   };
   
@@ -83,6 +74,10 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
     m => m.status === 'Incomplete' && endorsements.some(e => e.motorcycleIds.includes(m.id))
   );
 
+  const motorcyclesPendingDocs = motorcycles.filter(
+      m => !m.hpgControlNumber
+  );
+
   return (
     <>
       <div className="flex items-center justify-between">
@@ -95,6 +90,17 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
                   {userBranch} - {user?.role}
               </p>
           </div>
+           <Dialog>
+              <DialogTrigger asChild>
+                  <Button size="sm" className="gap-1">
+                      <PlusCircle className="h-4 w-4" />
+                      <span className="hidden sm:inline">Receive MC Docs</span>
+                  </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-4xl">
+                  <ReceiveLtoDocs motorcycles={motorcyclesPendingDocs} onSave={handleStateUpdate} />
+              </DialogContent>
+          </Dialog>
       </div>
 
        <div className="grid gap-4">
@@ -136,17 +142,6 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
                                         <TabsTrigger value="all">View All</TabsTrigger>
                                     </TabsList>
                                 </Tabs>
-                                <Dialog>
-                                    <DialogTrigger asChild>
-                                        <Button size="sm" className="gap-1 ml-auto">
-                                            <PlusCircle className="h-4 w-4" />
-                                            <span className="hidden sm:inline">Receive MC Docs</span>
-                                        </Button>
-                                    </DialogTrigger>
-                                    <DialogContent className="max-w-4xl">
-                                        <ReceiveLtoDocs onSave={handleStateUpdate} />
-                                    </DialogContent>
-                                </Dialog>
                             </div>
                             <MotorcycleTable motorcycles={filteredMotorcycles} onStateChange={handleStateUpdate} />
                         </div>
@@ -175,7 +170,7 @@ function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
     return <AppLoader />;
   }
 
-  const handleStateUpdate = (updatedMotorcycles: Motorcycle | Motorcycle[]) => {
+  const handleStateUpdate = (updatedMotorcycles: Motorcycle[]) => {
      if (Array.isArray(updatedMotorcycles)) {
         setMotorcycles(currentMotorcycles => {
             const updatedIds = new Set(updatedMotorcycles.map(um => um.id));
@@ -185,7 +180,6 @@ function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
             });
         });
       }
-      // Note: Add new motorcycle logic is not needed for Liaison view.
   };
 
   // Filter logic based on user role
@@ -303,3 +297,5 @@ export default function DashboardPage() {
     </ProtectedPage>
   );
 }
+
+    

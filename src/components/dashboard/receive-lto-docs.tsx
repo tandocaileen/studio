@@ -3,133 +3,143 @@
 
 import { Motorcycle } from "@/types";
 import React, { useState } from "react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
+import { Checkbox } from "../ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { Label } from "../ui/label";
-import { DialogFooter, DialogClose } from "../ui/dialog";
 
 type ReceiveLtoDocsProps = {
-    onSave: (newMotorcycle: Motorcycle) => void;
+    motorcycles: Motorcycle[];
+    onSave: (updatedMotorcycles: Motorcycle[]) => void;
 };
 
-export function ReceiveLtoDocs({ onSave }: ReceiveLtoDocsProps) {
-    const [formData, setFormData] = useState<Partial<Motorcycle>>({
-        status: 'Incomplete'
-    });
+export function ReceiveLtoDocs({ motorcycles, onSave }: ReceiveLtoDocsProps) {
+    const [selectedMotorcycles, setSelectedMotorcycles] = useState<Motorcycle[]>([]);
+    const [hpgControlNumbers, setHpgControlNumbers] = useState<{ [key: string]: string }>({});
     const { toast } = useToast();
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { id, value } = e.target;
-        setFormData(prev => ({ ...prev, [id]: value }));
-    };
-
-    const handleReceive = () => {
-        // Basic validation
-        if (!formData.id || !formData.customerName || !formData.plateNumber) {
-            toast({
-                title: "Missing Information",
-                description: "Please fill out at least Sale ID, Customer Name, and Plate Number.",
-                variant: "destructive"
-            });
-            return;
+    const handleSelect = (motorcycle: Motorcycle, checked: boolean | 'indeterminate') => {
+        if (checked) {
+            setSelectedMotorcycles(prev => [...prev, motorcycle]);
+        } else {
+            setSelectedMotorcycles(prev => prev.filter(m => m.id !== motorcycle.id));
         }
-
-        const newMotorcycle: Motorcycle = {
-            id: formData.id,
-            make: formData.make || '',
-            model: formData.model || '',
-            year: formData.year || new Date().getFullYear(),
-            color: formData.color || '',
-            plateNumber: formData.plateNumber,
-            engineNumber: formData.engineNumber || '',
-            chassisNumber: formData.chassisNumber || '',
-            assignedBranch: 'Main Office', // Default value
-            purchaseDate: new Date(), // Default value
-            supplier: formData.supplier || '',
-            documents: formData.hpgControlNumber ? [{
-                type: 'HPG Control Form',
-                url: formData.hpgControlNumber,
-                uploadedAt: new Date(),
-            }] : [],
-            status: 'Incomplete',
-            customerName: formData.customerName,
-            salesInvoiceNo: formData.salesInvoiceNo,
-            accountCode: formData.accountCode,
-            hpgControlNumber: formData.hpgControlNumber,
-        };
-
-        onSave(newMotorcycle);
-        toast({
-            title: "Motorcycle Received",
-            description: `Successfully added motorcycle with plate no. ${newMotorcycle.plateNumber}.`,
-        });
-        
-        // Reset form
-        setFormData({ status: 'Incomplete' });
     };
+
+    const handleSelectAll = (checked: boolean | 'indeterminate') => {
+        if (checked) {
+            setSelectedMotorcycles(motorcycles);
+        } else {
+            setSelectedMotorcycles([]);
+        }
+    };
+
+    const handleHpgInputChange = (id: string, value: string) => {
+        setHpgControlNumbers(prev => ({ ...prev, [id]: value }));
+    };
+
+    const handleSave = (motorcyclesToUpdate: Motorcycle[]) => {
+        const updatedMotorcycles = motorcyclesToUpdate.map(mc => {
+            const hpgNumber = hpgControlNumbers[mc.id];
+            if (hpgNumber) {
+                const hpgDoc = {
+                    type: 'HPG Control Form' as const,
+                    url: hpgNumber,
+                    uploadedAt: new Date()
+                };
+                
+                // Check if HPG doc already exists and update it, otherwise add it.
+                const docIndex = mc.documents.findIndex(d => d.type === 'HPG Control Form');
+                const newDocuments = [...mc.documents];
+                if (docIndex > -1) {
+                    newDocuments[docIndex] = hpgDoc;
+                } else {
+                    newDocuments.push(hpgDoc);
+                }
+                
+                return { ...mc, hpgControlNumber: hpgNumber, documents: newDocuments };
+            }
+            return mc;
+        });
+
+        onSave(updatedMotorcycles);
+        toast({
+            title: "Documents Received",
+            description: `Successfully updated ${motorcyclesToUpdate.length} motorcycle(s).`
+        });
+        setSelectedMotorcycles([]);
+        setHpgControlNumbers({});
+    };
+
+    const isAllSelected = motorcycles.length > 0 && selectedMotorcycles.length === motorcycles.length;
 
     return (
         <>
             <CardHeader>
-                <CardTitle>Receive New Motorcycle</CardTitle>
+                <CardTitle>Receive MC Docs from Main Office</CardTitle>
                 <CardDescription>
-                    Enter the details for a new motorcycle to add it to the system.
+                    Select motorcycles and input their HPG Control Number.
                 </CardDescription>
             </CardHeader>
-            <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div className="grid gap-2">
-                    <Label htmlFor="id">Sale ID</Label>
-                    <Input id="id" value={formData.id || ''} onChange={handleInputChange} placeholder="e.g., MT-001" />
-                </div>
-                 <div className="grid gap-2">
-                    <Label htmlFor="salesInvoiceNo">SI No.</Label>
-                    <Input id="salesInvoiceNo" value={formData.salesInvoiceNo || ''} onChange={handleInputChange} placeholder="e.g., SI-12345" />
-                </div>
-                 <div className="grid gap-2">
-                    <Label htmlFor="accountCode">Account Code</Label>
-                    <Input id="accountCode" value={formData.accountCode || ''} onChange={handleInputChange} placeholder="e.g., AC-CUST-01" />
-                </div>
-                 <div className="grid gap-2">
-                    <Label htmlFor="customerName">Customer Name</Label>
-                    <Input id="customerName" value={formData.customerName || ''} onChange={handleInputChange} placeholder="Juan Dela Cruz" />
-                </div>
-                <div className="grid gap-2">
-                    <Label htmlFor="plateNumber">Plate No.</Label>
-                    <Input id="plateNumber" value={formData.plateNumber || ''} onChange={handleInputChange} placeholder="ABC 1234" />
-                </div>
-                <div className="grid gap-2">
-                    <Label htmlFor="make">Make</Label>
-                    <Input id="make" value={formData.make || ''} onChange={handleInputChange} placeholder="Honda" />
-                </div>
-                 <div className="grid gap-2">
-                    <Label htmlFor="model">Model</Label>
-                    <Input id="model" value={formData.model || ''} onChange={handleInputChange} placeholder="Click 125i" />
-                </div>
-                <div className="grid gap-2">
-                    <Label htmlFor="engineNumber">Engine No.</Label>
-                    <Input id="engineNumber" value={formData.engineNumber || ''} onChange={handleInputChange} placeholder="Engine Number" />
-                </div>
-                <div className="grid gap-2">
-                    <Label htmlFor="chassisNumber">Chassis No.</Label>
-                    <Input id="chassisNumber" value={formData.chassisNumber || ''} onChange={handleInputChange} placeholder="Chassis Number" />
-                </div>
-                 <div className="grid gap-2">
-                    <Label htmlFor="hpgControlNumber">HPG Control No.</Label>
-                    <Input id="hpgControlNumber" value={formData.hpgControlNumber || ''} onChange={handleInputChange} placeholder="Enter HPG No." />
-                </div>
-                 <div className="grid gap-2">
-                    <Label htmlFor="status">Status</Label>
-                    <Input id="status" value={formData.status || 'Incomplete'} disabled />
-                </div>
+            <CardContent>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead className="w-[40px]">
+                                <Checkbox
+                                    checked={isAllSelected}
+                                    onCheckedChange={handleSelectAll}
+                                />
+                            </TableHead>
+                            <TableHead>Plate No.</TableHead>
+                            <TableHead>Customer Name</TableHead>
+                            <TableHead>Make & Model</TableHead>
+                            <TableHead>HPG Control Number</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {motorcycles.map(mc => (
+                            <TableRow key={mc.id}>
+                                <TableCell>
+                                    <Checkbox
+                                        checked={selectedMotorcycles.some(smc => smc.id === mc.id)}
+                                        onCheckedChange={(checked) => handleSelect(mc, checked)}
+                                    />
+                                </TableCell>
+                                <TableCell>{mc.plateNumber}</TableCell>
+                                <TableCell>{mc.customerName}</TableCell>
+                                <TableCell>{mc.make} {mc.model}</TableCell>
+                                <TableCell>
+                                    <Input 
+                                        placeholder="Enter HPG No."
+                                        value={hpgControlNumbers[mc.id] || ''}
+                                        onChange={(e) => handleHpgInputChange(mc.id, e.target.value)}
+                                        disabled={!selectedMotorcycles.some(smc => smc.id === mc.id)}
+                                    />
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+                {motorcycles.length === 0 && (
+                     <div className="text-center py-12 text-muted-foreground">
+                        <p>No motorcycles are pending document reception.</p>
+                    </div>
+                )}
             </CardContent>
-            <DialogFooter className="px-6 pb-6">
-                <DialogClose asChild>
-                    <Button variant="outline">Cancel</Button>
-                </DialogClose>
-                <Button onClick={handleReceive}>Receive</Button>
-            </DialogFooter>
+            <CardContent className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => handleSave(motorcycles)}>Receive All</Button>
+                <Button 
+                    onClick={() => handleSave(selectedMotorcycles)}
+                    disabled={selectedMotorcycles.length === 0}
+                >
+                    Receive Selected ({selectedMotorcycles.length})
+                </Button>
+            </CardContent>
         </>
     );
 }
+
+    

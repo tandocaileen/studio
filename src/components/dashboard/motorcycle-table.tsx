@@ -451,7 +451,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
               </DialogHeader>
               <ScrollArea className="max-h-[70vh]">
                 <div className="grid gap-4 py-4 pr-6">
-                    <h3 className="font-semibold text-lg border-b pb-2 mb-2">Motorcycle Details (Read-Only)</h3>
+                    <h3 className="font-semibold text-lg border-b pb-2 mb-2">Motorcycle Details</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="grid gap-2">
                           <Label htmlFor="edit-plateNumber">Plate No.</Label>
@@ -700,5 +700,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
     </>
   );
 }
+
+    
 
     
