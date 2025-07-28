@@ -318,13 +318,15 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[40px]">
-                   <Checkbox
-                    checked={isAllSelectedOnPage}
-                    onCheckedChange={(checked) => handleSelectAll(checked)}
-                    aria-label="Select all"
-                  />
-                </TableHead>
+                {isLiaison && (
+                  <TableHead className="w-[40px]">
+                    <Checkbox
+                      checked={isAllSelectedOnPage}
+                      onCheckedChange={(checked) => handleSelectAll(checked)}
+                      aria-label="Select all"
+                    />
+                  </TableHead>
+                )}
                 <TableHead>Sale ID</TableHead>
                 <TableHead>SI No.</TableHead>
                 <TableHead>Account Code</TableHead>
@@ -342,13 +344,15 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
             <TableBody>
               {paginatedMotorcycles.map((motorcycle) => (
                   <TableRow key={motorcycle.id} data-state={selectedMotorcycles.some(m => m.id === motorcycle.id) ? "selected" : undefined}>
-                    <TableCell>
-                      <Checkbox
-                        checked={selectedMotorcycles.some(m => m.id === motorcycle.id)}
-                        onCheckedChange={(checked) => handleSelectMotorcycle(motorcycle, checked)}
-                        aria-label={`Select motorcycle ${motorcycle.plateNumber}`}
-                      />
-                    </TableCell>
+                    {isLiaison && (
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedMotorcycles.some(m => m.id === motorcycle.id)}
+                          onCheckedChange={(checked) => handleSelectMotorcycle(motorcycle, checked)}
+                          aria-label={`Select motorcycle ${motorcycle.plateNumber}`}
+                        />
+                      </TableCell>
+                    )}
                     <TableCell>{motorcycle.id}</TableCell>
                     <TableCell>{motorcycle.salesInvoiceNo}</TableCell>
                     <TableCell>{motorcycle.accountCode}</TableCell>

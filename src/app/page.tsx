@@ -27,7 +27,7 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
   const [motorcycles, setMotorcycles] = useState<Motorcycle[] | null>(null);
   const [endorsements, setEndorsements] = useState<Endorsement[] | null>(null);
   const [viewFilter, setViewFilter] = useState<ViewFilter>('unregistered');
-  const [activeTab, setActiveTab] = useState<DashboardTab>('pending-endorsements');
+  const [activeTab, setActiveTab] = useState<DashboardTab>('all-motorcycles');
 
   useEffect(() => {
     getMotorcycles().then(setMotorcycles);
@@ -88,22 +88,12 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
                   {userBranch} - {user?.role}
               </p>
           </div>
-          <Dialog>
-            <DialogTrigger asChild>
-                <Button size="sm" className="gap-1">
-                    <PlusCircle className="h-4 w-4" />
-                    <span className="hidden sm:inline">Receive MC Docs</span>
-                </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-7xl">
-                <ReceiveLtoDocs motorcycles={motorcycles.filter(m => m.status === 'Incomplete')} onSave={handleStateUpdate} />
-            </DialogContent>
-          </Dialog>
       </div>
 
        <div className="grid gap-8">
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as DashboardTab)}>
             <TabsList>
+                <TabsTrigger value="all-motorcycles">Motorcycles List</TabsTrigger>
                 <TabsTrigger 
                   value="pending-endorsements"
                   className={cn(
@@ -113,7 +103,6 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
                 >
                   Endorsed Units with Incomplete Details ({endorsedIncompleteMotorcycles.length})
                 </TabsTrigger>
-                <TabsTrigger value="all-motorcycles">Motorcycle Fleet</TabsTrigger>
             </TabsList>
             <TabsContent value="pending-endorsements">
               <EndorsedIncompleteTable 
@@ -130,6 +119,17 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
                               <TabsTrigger value="all">View All</TabsTrigger>
                           </TabsList>
                       </Tabs>
+                       <Dialog>
+                        <DialogTrigger asChild>
+                            <Button size="sm" className="gap-1 ml-auto">
+                                <PlusCircle className="h-4 w-4" />
+                                <span className="hidden sm:inline">Receive MC Docs</span>
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-7xl">
+                            <ReceiveLtoDocs motorcycles={motorcycles.filter(m => m.status === 'Incomplete')} onSave={handleStateUpdate} />
+                        </DialogContent>
+                      </Dialog>
                   </div>
                   <MotorcycleTable motorcycles={filteredMotorcycles} onStateChange={handleStateUpdate} />
               </div>
