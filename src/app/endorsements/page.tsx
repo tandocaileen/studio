@@ -81,7 +81,11 @@ function EndorsementsContent() {
 
     const availableMotorcycles = motorcycles.filter(
         m => (m.status === 'Incomplete' || m.status === 'Ready to Register') &&
-        (m.plateNumber.toLowerCase().includes(searchQuery.toLowerCase()) || m.customerName?.toLowerCase().includes(searchQuery.toLowerCase()))
+        (m.plateNumber.toLowerCase().includes(searchQuery.toLowerCase()) || 
+         (m.customerName && m.customerName.toLowerCase().includes(searchQuery.toLowerCase())) ||
+         m.make.toLowerCase().includes(searchQuery.toLowerCase()) ||
+         m.model.toLowerCase().includes(searchQuery.toLowerCase())
+        )
     );
     
     const endorsementCode = `ENDO-${format(new Date(), 'yyyyMMdd')}-001`;
@@ -146,7 +150,7 @@ function EndorsementsContent() {
                             <CardTitle>Pending Units ({availableMotorcycles.length})</CardTitle>
                             <CardDescription>Select motorcycles to include in the endorsement.</CardDescription>
                             <Input
-                                placeholder="Search by Plate No. or Customer Name..."
+                                placeholder="Search by Plate, Customer, Make, or Model..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 className="max-w-sm"
@@ -160,6 +164,7 @@ function EndorsementsContent() {
                                             <TableHead className="w-[40px]"></TableHead>
                                             <TableHead>Customer Name</TableHead>
                                             <TableHead>Plate No.</TableHead>
+                                            <TableHead>Make & Model</TableHead>
                                             <TableHead>Engine / Chassis No.</TableHead>
                                             <TableHead>Status</TableHead>
                                         </TableRow>
@@ -177,8 +182,12 @@ function EndorsementsContent() {
                                                         aria-label={`Select ${mc.customerName}`}
                                                     />
                                                 </TableCell>
-                                                <TableCell>{mc.customerName}</TableCell>
+                                                <TableCell className="font-medium">{mc.customerName}</TableCell>
                                                 <TableCell>{mc.plateNumber}</TableCell>
+                                                <TableCell>
+                                                    <div>{mc.make}</div>
+                                                    <div className="text-xs text-muted-foreground">{mc.model}</div>
+                                                </TableCell>
                                                 <TableCell>
                                                     <div className="font-mono text-xs">{mc.engineNumber}</div>
                                                     <div className="font-mono text-xs text-muted-foreground">{mc.chassisNumber}</div>
