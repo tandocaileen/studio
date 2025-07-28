@@ -12,6 +12,7 @@ import {
   LogOut,
   Users,
   FilePenLine,
+  FileArchive,
 } from 'lucide-react';
 import {
   Tooltip,
@@ -38,7 +39,8 @@ const navItems: NavItem[] = [
   { href: '/', icon: Home, label: 'Home', allowedRoles: ['Liaison'] },
   { href: '/endorsements', icon: FilePenLine, label: 'Endorsements', allowedRoles: ['Store Supervisor', 'Cashier'] },
   { href: '/cash-advances', icon: DollarSign, label: 'Cash Advances', allowedRoles: ['Liaison', 'Cashier', 'Store Supervisor'] },
-  { href: '/liquidations', icon: Receipt, label: 'Liquidations', allowedRoles: ['Liaison'] },
+  { href: '/liquidations', icon: Receipt, label: 'Liquidations', allowedRoles: ['Store Supervisor', 'Liaison', 'Cashier'] },
+  { href: '/reports/liquidation', icon: FileArchive, label: 'Reports', allowedRoles: ['Store Supervisor', 'Liaison', 'Cashier'] },
   { href: '/users', icon: Users, label: 'Users', allowedRoles: ['Store Supervisor', 'Cashier'] },
   { href: '/settings', icon: Settings, label: 'Settings', allowedRoles: ['Store Supervisor', 'Liaison', 'Cashier'] },
   { href: '/support', icon: LifeBuoy, label: 'Support', allowedRoles: ['Store Supervisor', 'Liaison', 'Cashier'] },
@@ -59,7 +61,7 @@ export function AppSidebar() {
         className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base"
       >
         <Logo className="h-5 w-5 transition-all group-hover:scale-110" />
-        <span className="sr-only">LTO Portal</span>
+        <span className="sr-only">MotoTrack Financials</span>
       </Link>
       <TooltipProvider>
         {accessibleNavItems.map((item) => (
@@ -69,7 +71,8 @@ export function AppSidebar() {
                 href={item.href}
                 className={cn(
                   'flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8',
-                  pathname === item.href && 'bg-accent text-accent-foreground'
+                  pathname.startsWith(item.href) && item.href !== '/' && 'bg-accent text-accent-foreground',
+                  pathname === '/' && item.href === '/' && 'bg-accent text-accent-foreground'
                 )}
               >
                 <item.icon className="h-5 w-5" />
@@ -90,7 +93,7 @@ export function AppSidebar() {
           className="group flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:text-base"
         >
           <Logo className="h-5 w-5 transition-all group-hover:scale-110" />
-          <span className="sr-only">LTO Portal</span>
+          <span className="sr-only">MotoTrack Financials</span>
         </Link>
         {accessibleNavItems.map((item) => (
            <Link
@@ -98,7 +101,8 @@ export function AppSidebar() {
               href={item.href}
               className={cn(
                 'flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground',
-                pathname === item.href && 'text-foreground'
+                 pathname.startsWith(item.href) && item.href !== '/' && 'text-foreground',
+                  pathname === '/' && item.href === '/' && 'text-foreground'
               )}
             >
               <item.icon className="h-5 w-5" />

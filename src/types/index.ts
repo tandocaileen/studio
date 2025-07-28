@@ -23,7 +23,6 @@ export type Motorcycle = {
   supplier: string;
   documents: Document[];
   status: 'Incomplete' | 'Ready to Register' | 'Registered' | 'For Renewal';
-  // New fields for Store Supervisor
   customerName?: string;
   cocNumber?: string;
   policyNumber?: string;
@@ -33,7 +32,6 @@ export type Motorcycle = {
   processingFee?: number;
   orFee?: number;
   assignedLiaison?: string;
-  // Endorsement fields
   salesInvoiceNo?: string;
   accountCode?: string;
   endorsementCode?: string;
@@ -41,14 +39,15 @@ export type Motorcycle = {
 
 export type CashAdvance = {
   id: string;
-  personnel: string; // This will be the Liaison's name
+  personnel: string; 
+  personnelBranch?: string;
   purpose: string;
   amount: number;
   date: Date;
   status: 'Pending' | 'Approved' | 'Liquidated' | 'Rejected' | 'Check Voucher Released' | 'CV Received';
   receipts?: string[];
-  // New fields for Cashier & Liaison
   motorcycleId?: string;
+  motorcycleIds?: string[];
   checkVoucherNumber?: string;
   checkVoucherReleaseDate?: Date;
   ltoOrNumber?: string;

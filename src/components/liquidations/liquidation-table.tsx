@@ -13,7 +13,7 @@ import {
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FileUp, Trash2 } from 'lucide-react';
+import { FileUp, Trash2, CheckCircle, Eye } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { LiquidationItem } from '@/app/liquidations/page';
 import { ScrollArea } from '../ui/scroll-area';
@@ -22,6 +22,10 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import { cn } from '@/lib/utils';
+import { Badge } from '../ui/badge';
+import { useRouter } from 'next/navigation';
+import { CashAdvance } from '@/types';
+
 
 type LiquidationTableProps = {
   items: LiquidationItem[];
@@ -34,6 +38,8 @@ export function LiquidationTable({ items }: LiquidationTableProps) {
   const [totalLiquidation, setTotalLiquidation] = React.useState(0);
   const [shortageOverage, setShortageOverage] = React.useState(0);
   const { toast } = useToast();
+  const router = useRouter();
+
 
   const handleLiquidateClick = (item: LiquidationItem) => {
     setSelectedItem(item);
@@ -64,47 +70,96 @@ export function LiquidationTable({ items }: LiquidationTableProps) {
     setSelectedItem(null);
   }
 
+  const groupedByCA = items.reduce((acc, item) => {
+    const caId = item.cashAdvance.id;
+    if (!acc[caId]) {
+      acc[caId] = {
+        cashAdvance: item.cashAdvance,
+        items: []
+      };
+    }
+    acc[caId].items.push(item);
+    return acc;
+  }, {} as Record<string, { cashAdvance: CashAdvance, items: LiquidationItem[] }>);
+
+  
   return (
     <>
-    <Card>
-      <CardHeader>
-        <CardTitle>For Liquidation</CardTitle>
-        <CardDescription>
-          Review cash advances and attach receipts for liquidation.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <ScrollArea className="w-full whitespace-nowrap">
-            <Table>
-            <TableHeader>
-                <TableRow>
-                <TableHead>Customer Name</TableHead>
-                <TableHead>Plate No.</TableHead>
-                <TableHead>Model</TableHead>
-                <TableHead>Cash Advance</TableHead>
-                <TableHead>Action</TableHead>
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                {items.filter(item => ['Approved', 'CV Received'].includes(item.cashAdvance.status)).map(({ cashAdvance, motorcycle }) => (
-                <TableRow key={cashAdvance.id}>
-                    <TableCell>{motorcycle?.customerName || 'N/A'}</TableCell>
-                    <TableCell>{motorcycle?.plateNumber || 'N/A'}</TableCell>
-                    <TableCell>{motorcycle ? `${motorcycle.make} ${motorcycle.model}` : 'N/A'}</TableCell>
-                    <TableCell className="text-right">₱{cashAdvance.amount.toLocaleString()}</TableCell>
-                    <TableCell>
-                    <Button variant="outline" size="sm" onClick={() => handleLiquidateClick({cashAdvance, motorcycle})}>
-                        <FileUp className="mr-2 h-4 w-4" />
-                        Liquidate
-                    </Button>
-                    </TableCell>
-                </TableRow>
-                ))}
-            </TableBody>
-            </Table>
-        </ScrollArea>
-      </CardContent>
-    </Card>
+    <div className="grid gap-4">
+    {Object.values(groupedByCA).map(({ cashAdvance, items: groupItems }) => {
+        const isFullyLiquidated = groupItems.every(i => i.cashAdvance.status === 'Liquidated');
+        const totalCAAmount = cashAdvance.amount;
+        const totalLiquidatedAmount = groupItems.reduce((sum, i) => sum + (i.cashAdvance.totalLiquidation || 0), 0);
+
+        return (
+            <Card key={cashAdvance.id}>
+                <CardHeader>
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <CardTitle className="text-lg">CA #{cashAdvance.id}</CardTitle>
+                            <CardDescription>Purpose: {cashAdvance.purpose}</CardDescription>
+                            <CardDescription>Liaison: {cashAdvance.personnel} | Date: {new Date(cashAdvance.date).toLocaleDateString()}</CardDescription>
+                        </div>
+                        <div className="text-right">
+                           <Badge variant={isFullyLiquidated ? 'default' : 'outline'}>
+                                {isFullyLiquidated ? <CheckCircle className="mr-2 h-4 w-4 text-green-400" /> : null}
+                                {isFullyLiquidated ? 'Fully Liquidated' : 'Partially Liquidated'}
+                            </Badge>
+                             <p className="text-sm font-semibold mt-2">
+                                ₱{totalLiquidatedAmount.toLocaleString()} / ₱{totalCAAmount.toLocaleString()}
+                            </p>
+                        </div>
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Customer</TableHead>
+                                <TableHead>Plate No.</TableHead>
+                                <TableHead>Model</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead className="text-right">Amount</TableHead>
+                                <TableHead>Action</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {groupItems.map(({ cashAdvance: mcCA, motorcycle }, index) => (
+                                <TableRow key={`${mcCA.id}-${index}`}>
+                                    <TableCell>{motorcycle?.customerName || 'N/A'}</TableCell>
+                                    <TableCell>{motorcycle?.plateNumber || 'N/A'}</TableCell>
+                                    <TableCell>{motorcycle ? `${motorcycle.make} ${motorcycle.model}` : 'N/A'}</TableCell>
+                                    <TableCell><Badge variant={mcCA.status === 'Liquidated' ? 'secondary' : 'outline'}>{mcCA.status}</Badge></TableCell>
+                                    <TableCell className="text-right">₱{mcCA.amount.toLocaleString()}</TableCell>
+                                    <TableCell>
+                                        <Button 
+                                            variant="outline" 
+                                            size="sm" 
+                                            onClick={() => handleLiquidateClick({ cashAdvance, motorcycle })}
+                                            disabled={mcCA.status === 'Liquidated'}
+                                        >
+                                            <FileUp className="mr-2 h-4 w-4" />
+                                            Liquidate
+                                        </Button>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                     <div className="flex justify-end mt-4">
+                        <Button 
+                            onClick={() => router.push(`/reports/liquidation/${cashAdvance.id}`)}
+                            disabled={!isFullyLiquidated}
+                        >
+                            <Eye className="mr-2 h-4 w-4" />
+                            View Full Report
+                        </Button>
+                    </div>
+                </CardContent>
+            </Card>
+        )
+    })}
+    </div>
 
     <Dialog open={!!selectedItem} onOpenChange={(open) => !open && setSelectedItem(null)}>
         <DialogContent className="sm:max-w-4xl max-w-[90vw] max-h-[90vh]">
@@ -116,7 +171,6 @@ export function LiquidationTable({ items }: LiquidationTableProps) {
             </DialogHeader>
             <ScrollArea className="max-h-[70vh] -mx-6 px-6">
                 <div className="py-4 grid gap-8">
-                     {/* Auto-generated Section */}
                     <div className="grid gap-4 p-4 border rounded-lg bg-muted/40">
                         <h3 className="font-semibold text-lg">Cash Advance Details</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -135,7 +189,6 @@ export function LiquidationTable({ items }: LiquidationTableProps) {
                         </div>
                     </div>
 
-                    {/* Liquidation Input Section */}
                     <div className="grid gap-4 p-4 border rounded-lg">
                         <h3 className="font-semibold text-lg">Liquidation Details</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

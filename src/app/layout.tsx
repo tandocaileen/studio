@@ -6,8 +6,8 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { AuthProvider } from '@/context/AuthContext';
 
 export const metadata: Metadata = {
-  title: 'LTO Portal',
-  description: 'LTO Monitoring and Financial Management App',
+  title: 'MotoTrack Financials',
+  description: 'Motorcycle LTO Monitoring and Financial Management App',
 };
 
 export default function RootLayout({

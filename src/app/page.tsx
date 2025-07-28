@@ -28,6 +28,7 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
   }
   
   const filteredMotorcycles = motorcycles.filter(m => {
+    if (!searchQuery) return true;
     const searchFilter =
       m.plateNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
       m.make.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -79,6 +80,8 @@ function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
     const isUnregistered = ['Incomplete', 'Ready to Register'].includes(m.status);
 
     if (!(isUserAssigned && isUnregistered)) return false;
+    
+    if (!searchQuery) return true;
 
     // Search query filtering
     const searchFilter =
@@ -145,14 +148,17 @@ function CashierDashboardContent() {
             </div>
             <SummaryCards motorcycles={motorcycles} cashAdvances={cashAdvances} />
             <OverdueAdvances cashAdvances={cashAdvances} />
-            <MotorcycleTable motorcycles={motorcycles} />
         </div>
     )
 }
 
 export default function DashboardPage() {
   const [searchQuery, setSearchQuery] = useState('');
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+
+  if (loading || !user) {
+    return <AppLoader />
+  }
 
   const getTitle = () => {
     if (user?.role === 'Liaison') return 'Home';
@@ -177,7 +183,7 @@ export default function DashboardPage() {
       <div className="flex min-h-screen w-full flex-col bg-muted/40">
         <AppSidebar />
         <div className="flex flex-col pt-14 sm:gap-4 sm:py-4 sm:pl-14">
-          <Header title={getTitle()} onSearch={setSearchQuery} />
+          <Header title={getTitle()} onSearch={user.role !== 'Cashier' ? setSearchQuery : undefined} />
           <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
             <div className="grid auto-rows-max items-start gap-4 md:gap-8">
                 {renderContent()}
