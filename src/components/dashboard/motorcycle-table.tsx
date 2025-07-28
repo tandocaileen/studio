@@ -327,6 +327,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                     />
                   </TableHead>
                 )}
+                 {!isLiaison && (isSupervisor || isCashier) && <TableHead className="w-[40px]"></TableHead>}
                 <TableHead>Sale ID</TableHead>
                 <TableHead>SI No.</TableHead>
                 <TableHead>Account Code</TableHead>
@@ -353,6 +354,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                         />
                       </TableCell>
                     )}
+                    {!isLiaison && (isSupervisor || isCashier) && <TableCell></TableCell>}
                     <TableCell>{motorcycle.id}</TableCell>
                     <TableCell>{motorcycle.salesInvoiceNo}</TableCell>
                     <TableCell>{motorcycle.accountCode}</TableCell>
@@ -515,7 +517,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                       </div>
                     </div>
 
-                    <h3 className="font-semibold text-lg border-b pb-2 mt-4 mb-2">Insurance &amp; Control (Editable)</h3>
+                    <h3 className="font-semibold text-lg border-b pb-2 mt-4 mb-2">Insurance &amp; Control</h3>
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="grid gap-2">
                             <Label htmlFor="edit-cocNumber">COC No.</Label>
@@ -698,3 +700,5 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
     </>
   );
 }
+
+    
