@@ -129,7 +129,7 @@ export function LiquidationTable({ items }: LiquidationTableProps) {
                                 <Input value={selectedItem?.motorcycle?.plateNumber || 'N/A'} disabled />
                             </div>
                              <div className="col-span-full grid gap-2">
-                                <Label>Total Cash Advance Received</Label>
+                                <Label>Total Cash Advance Received for this MC</Label>
                                 <Input className="font-bold text-lg" value={`₱${(selectedItem?.cashAdvance.amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}`} disabled />
                             </div>
                         </div>
