@@ -92,60 +92,58 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
       </div>
 
        <div className="grid gap-4">
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as DashboardTab)}>
-            <Card>
-                 <CardHeader className="p-0 border-b">
-                    <TabsList className="bg-transparent p-0">
-                        <TabsTrigger 
-                          value="all-motorcycles" 
-                          className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none rounded-none"
-                        >
-                          Motorcycles List
-                        </TabsTrigger>
-                        <TabsTrigger 
-                          value="pending-endorsements"
-                          className={cn(
-                            'data-[state=active]:border-b-2 data-[state=active]:border-destructive data-[state=active]:shadow-none data-[state=active]:text-destructive rounded-none',
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as DashboardTab)} className="w-full">
+            <div className="flex justify-start border-b">
+                <TabsList className="bg-transparent p-0 gap-4">
+                    <TabsTrigger 
+                        value="all-motorcycles" 
+                        className="data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none border-b-2 border-transparent pb-3"
+                    >
+                        Motorcycles List
+                    </TabsTrigger>
+                    <TabsTrigger 
+                        value="pending-endorsements"
+                        className={cn(
+                            'data-[state=active]:border-destructive data-[state=active]:text-destructive data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none border-b-2 border-transparent pb-3',
                             endorsedIncompleteMotorcycles.length > 0 && 'text-destructive'
-                          )}
-                        >
-                          Endorsed Units with Incomplete Details ({endorsedIncompleteMotorcycles.length})
-                        </TabsTrigger>
-                    </TabsList>
-                </CardHeader>
-                <CardContent className="p-0">
-                    <TabsContent value="pending-endorsements" className="mt-0">
-                        <EndorsedIncompleteTable 
-                            motorcycles={endorsedIncompleteMotorcycles}
-                            onUpdate={handleStateUpdate}
-                        />
-                    </TabsContent>
-                    <TabsContent value="all-motorcycles" className="mt-0">
-                    <div className="p-6">
-                        <div className="flex items-center gap-4 mb-4">
-                            <Tabs value={viewFilter} onValueChange={(value) => setViewFilter(value as ViewFilter)}>
-                                <TabsList>
-                                    <TabsTrigger value="unregistered">Unregistered</TabsTrigger>
-                                    <TabsTrigger value="all">View All</TabsTrigger>
-                                </TabsList>
-                            </Tabs>
-                            <Dialog>
-                                <DialogTrigger asChild>
-                                    <Button size="sm" className="gap-1 ml-auto">
-                                        <PlusCircle className="h-4 w-4" />
-                                        <span className="hidden sm:inline">Receive MC Docs</span>
-                                    </Button>
-                                </DialogTrigger>
-                                <DialogContent className="max-w-7xl">
-                                    <ReceiveLtoDocs motorcycles={motorcycles.filter(m => m.status === 'Incomplete')} onSave={handleStateUpdate} />
-                                </DialogContent>
-                            </Dialog>
-                        </div>
-                        <MotorcycleTable motorcycles={filteredMotorcycles} onStateChange={handleStateUpdate} />
+                        )}
+                    >
+                        Endorsed Units with Incomplete Details ({endorsedIncompleteMotorcycles.length})
+                    </TabsTrigger>
+                </TabsList>
+            </div>
+            <TabsContent value="pending-endorsements">
+                <EndorsedIncompleteTable 
+                    motorcycles={endorsedIncompleteMotorcycles}
+                    onUpdate={handleStateUpdate}
+                />
+            </TabsContent>
+            <TabsContent value="all-motorcycles">
+            <Card>
+                <CardContent className="p-6">
+                    <div className="flex items-center gap-4 mb-4">
+                        <Tabs value={viewFilter} onValueChange={(value) => setViewFilter(value as ViewFilter)}>
+                            <TabsList>
+                                <TabsTrigger value="unregistered">Unregistered</TabsTrigger>
+                                <TabsTrigger value="all">View All</TabsTrigger>
+                            </TabsList>
+                        </Tabs>
+                        <Dialog>
+                            <DialogTrigger asChild>
+                                <Button size="sm" className="gap-1 ml-auto">
+                                    <PlusCircle className="h-4 w-4" />
+                                    <span className="hidden sm:inline">Receive MC Docs</span>
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-7xl">
+                                <ReceiveLtoDocs motorcycles={motorcycles.filter(m => m.status === 'Incomplete')} onSave={handleStateUpdate} />
+                            </DialogContent>
+                        </Dialog>
                     </div>
-                    </TabsContent>
+                    <MotorcycleTable motorcycles={filteredMotorcycles} onStateChange={handleStateUpdate} />
                 </CardContent>
             </Card>
+            </TabsContent>
         </Tabs>
       </div>
     </>
