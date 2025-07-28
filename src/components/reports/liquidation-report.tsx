@@ -25,12 +25,14 @@ export const LiquidationReport = React.forwardRef<HTMLDivElement, LiquidationRep
     const totalCA = motorcycles.reduce((sum, mc) => sum + getMcAdvanceAmount(mc), 0);
     const totalLiquidation = motorcycles.reduce((sum, mc) => sum + (mc.liquidationDetails?.totalLiquidation || 0), 0);
     const totalShortageOverage = totalCA - totalLiquidation;
+
+    const isFullyLiquidated = motorcycles.every(mc => !!mc.liquidationDetails);
     
     return (
         <div ref={ref} className="bg-white text-black p-8 font-sans text-xs">
             <header className="text-center mb-6">
                 <h1 className="text-lg font-bold">STO NINO DE CEBU FINANCE CORPORATION</h1>
-                <h2 className="text-md font-semibold">LTO Cash Advance and Liquidation Report</h2>
+                <h2 className="text-md font-semibold">LTO Cash Advance and {isFullyLiquidated ? 'Liquidation Report' : 'Initial Liquidation Report'}</h2>
             </header>
             
             <div className="grid grid-cols-3 gap-4 mb-4">
@@ -123,3 +125,4 @@ export const LiquidationReport = React.forwardRef<HTMLDivElement, LiquidationRep
 });
 
 LiquidationReport.displayName = 'LiquidationReport';
+
