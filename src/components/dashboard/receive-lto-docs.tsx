@@ -6,7 +6,6 @@ import React, { useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
-import { Input } from "../ui/input";
 import { Checkbox } from "../ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { DialogClose } from "@radix-ui/react-dialog";
@@ -16,15 +15,8 @@ type ReceiveLtoDocsProps = {
     onSave: (updatedMotorcycles: Motorcycle[]) => void;
 };
 
-type EditableDetails = {
-    salesInvoiceNo?: string;
-    accountCode?: string;
-    hpgControlNumber?: string;
-}
-
 export function ReceiveLtoDocs({ motorcycles, onSave }: ReceiveLtoDocsProps) {
     const [selectedMotorcycles, setSelectedMotorcycles] = useState<Motorcycle[]>([]);
-    const [details, setDetails] = useState<{ [key: string]: EditableDetails }>({});
     const { toast } = useToast();
 
     const handleSelect = (motorcycle: Motorcycle, checked: boolean | 'indeterminate') => {
@@ -43,32 +35,14 @@ export function ReceiveLtoDocs({ motorcycles, onSave }: ReceiveLtoDocsProps) {
         }
     };
 
-    const handleInputChange = (id: string, field: keyof EditableDetails, value: string) => {
-        setDetails(prev => ({
-            ...prev,
-            [id]: {
-                 ...prev[id],
-                 [field]: value
-            }
-        }));
-    };
-
-    const handleSave = (motorcyclesToUpdate: Motorcycle[]) => {
-        const updatedMotorcycles = motorcyclesToUpdate.map(mc => {
-            const newDetails = details[mc.id];
-            if (newDetails) {
-                return { ...mc, ...newDetails };
-            }
-            return mc;
-        });
-
-        onSave(updatedMotorcycles);
+    const handleReceive = () => {
+        // In a real app, this would likely update a status or log the reception event.
+        // For this demo, we'll just show a confirmation toast.
         toast({
             title: "Documents Received",
-            description: `Successfully updated ${motorcyclesToUpdate.length} motorcycle(s).`
+            description: `Confirmed reception for ${selectedMotorcycles.length} motorcycle(s).`
         });
         setSelectedMotorcycles([]);
-        setDetails({});
     };
 
     const isAllSelected = motorcycles.length > 0 && selectedMotorcycles.length === motorcycles.length;
@@ -78,7 +52,7 @@ export function ReceiveLtoDocs({ motorcycles, onSave }: ReceiveLtoDocsProps) {
             <CardHeader>
                 <CardTitle>Receive MC Docs & Details from NIVI</CardTitle>
                 <CardDescription>
-                    Select motorcycles and input their details.
+                    Select the motorcycles for which you have received physical documents and details.
                 </CardDescription>
             </CardHeader>
             <CardContent className="max-h-[60vh] overflow-y-auto">
@@ -92,7 +66,7 @@ export function ReceiveLtoDocs({ motorcycles, onSave }: ReceiveLtoDocsProps) {
                                 />
                             </TableHead>
                             <TableHead>MT No.</TableHead>
-                            <TableHead>MC Name</TableHead>
+                            <TableHead>Make</TableHead>
                             <TableHead>Model</TableHead>
                             <TableHead>Engine No.</TableHead>
                             <TableHead>Chassis No.</TableHead>
@@ -115,30 +89,9 @@ export function ReceiveLtoDocs({ motorcycles, onSave }: ReceiveLtoDocsProps) {
                                 <TableCell>{mc.model}</TableCell>
                                 <TableCell>{mc.engineNumber}</TableCell>
                                 <TableCell>{mc.chassisNumber}</TableCell>
-                                <TableCell>
-                                    <Input
-                                        placeholder="Enter SI No."
-                                        value={details[mc.id]?.salesInvoiceNo || mc.salesInvoiceNo || ''}
-                                        onChange={(e) => handleInputChange(mc.id, 'salesInvoiceNo', e.target.value)}
-                                        disabled={!selectedMotorcycles.some(smc => smc.id === mc.id)}
-                                    />
-                                </TableCell>
-                                <TableCell>
-                                    <Input
-                                        placeholder="Enter Account Code"
-                                        value={details[mc.id]?.accountCode || mc.accountCode || ''}
-                                        onChange={(e) => handleInputChange(mc.id, 'accountCode', e.target.value)}
-                                        disabled={!selectedMotorcycles.some(smc => smc.id === mc.id)}
-                                    />
-                                </TableCell>
-                                <TableCell>
-                                    <Input
-                                        placeholder="Enter HPG No."
-                                        value={details[mc.id]?.hpgControlNumber || mc.hpgControlNumber || ''}
-                                        onChange={(e) => handleInputChange(mc.id, 'hpgControlNumber', e.target.value)}
-                                        disabled={!selectedMotorcycles.some(smc => smc.id === mc.id)}
-                                    />
-                                </TableCell>
+                                <TableCell>{mc.salesInvoiceNo || 'N/A'}</TableCell>
+                                <TableCell>{mc.accountCode || 'N/A'}</TableCell>
+                                <TableCell>{mc.hpgControlNumber || 'N/A'}</TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
@@ -155,7 +108,7 @@ export function ReceiveLtoDocs({ motorcycles, onSave }: ReceiveLtoDocsProps) {
                 </DialogClose>
                 <DialogClose asChild>
                     <Button
-                        onClick={() => handleSave(selectedMotorcycles)}
+                        onClick={handleReceive}
                         disabled={selectedMotorcycles.length === 0}
                     >
                         Receive Selected ({selectedMotorcycles.length})
