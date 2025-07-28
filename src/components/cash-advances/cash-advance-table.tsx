@@ -29,7 +29,7 @@ import { Label } from '../ui/label';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { CashAdvanceDocument } from './cash-advance-document';
+import { CashAdvanceRequestDocument } from './cash-advance-request-document';
 import { generatePdf } from '@/lib/pdf';
 import type { EnrichedCashAdvance } from '@/app/cash-advances/page';
 import { useAuth } from '@/context/AuthContext';
@@ -43,7 +43,7 @@ const ITEMS_PER_PAGE = 10;
 
 export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTableProps) {
   const [advances, setAdvances] = React.useState(initialAdvances);
-  const [previewingAdvance, setPreviewingAdvance] = React.useState<CashAdvance | null>(null);
+  const [previewingAdvance, setPreviewingAdvance] = React.useState<EnrichedCashAdvance | null>(null);
   const { toast } = useToast();
   const documentRef = React.useRef(null);
   const { user } = useAuth();
@@ -67,8 +67,8 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
         toast({ title: 'Error', description: 'Cannot download PDF. No document to download.', variant: 'destructive' });
         return;
     };
-    await generatePdf(documentRef.current, `cash_advance_${previewingAdvance.id}.pdf`);
-    toast({ title: 'Download Started', description: `Downloading PDF for CA #${previewingAdvance.id}`});
+    await generatePdf(documentRef.current, `cash_advance_${previewingAdvance.cashAdvance.id}.pdf`);
+    toast({ title: 'Download Started', description: `Downloading PDF for CA #${previewingAdvance.cashAdvance.id}`});
   }
 
   const getStatusColor = (status: CashAdvance['status']): string => {
@@ -90,6 +90,29 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
+
+  const getPrimaryCustomer = (advance: EnrichedCashAdvance) => {
+    if (advance.motorcycles && advance.motorcycles.length > 0) {
+      const customer = advance.motorcycles[0].customerName;
+      if (advance.motorcycles.length > 1) {
+        return `${customer} + ${advance.motorcycles.length - 1} more`;
+      }
+      return customer;
+    }
+    return advance.cashAdvance.personnel;
+  }
+  
+  const getPrimaryMotorcycle = (advance: EnrichedCashAdvance) => {
+     if (advance.motorcycles && advance.motorcycles.length > 0) {
+      const mc = advance.motorcycles[0];
+      const model = `${mc.make} ${mc.model}`;
+      if (advance.motorcycles.length > 1) {
+        return `${model} + ${advance.motorcycles.length - 1} more`;
+      }
+      return model;
+    }
+    return advance.cashAdvance.purpose;
+  }
 
   return (
     <>
@@ -117,20 +140,20 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedAdvances.map(({ cashAdvance: ca, motorcycle }) => (
-              <TableRow key={ca.id}>
+            {paginatedAdvances.map((advance) => (
+              <TableRow key={advance.cashAdvance.id}>
                  <TableCell className="font-medium">
-                  {isCashierOrSupervisor ? ca.personnel : (motorcycle?.customerName || ca.personnel)}
+                  {isCashierOrSupervisor ? advance.cashAdvance.personnel : getPrimaryCustomer(advance)}
                 </TableCell>
                 <TableCell className="max-w-[300px] truncate">
-                  {isCashierOrSupervisor ? ca.purpose : (motorcycle ? `${motorcycle.make} ${motorcycle.model}` : ca.purpose)}
+                  {isCashierOrSupervisor ? advance.cashAdvance.purpose : getPrimaryMotorcycle(advance)}
                 </TableCell>
-                <TableCell className="text-right">₱{ca.amount.toLocaleString()}</TableCell>
-                <TableCell>{format(new Date(ca.date), 'MMM dd, yyyy')}</TableCell>
+                <TableCell className="text-right">₱{advance.cashAdvance.amount.toLocaleString()}</TableCell>
+                <TableCell>{format(new Date(advance.cashAdvance.date), 'MMM dd, yyyy')}</TableCell>
                 <TableCell>
                   <Badge variant="outline" className="capitalize">
-                     <span className={`mr-2 inline-block h-2 w-2 rounded-full ${getStatusColor(ca.status)}`}></span>
-                    {ca.status}
+                     <span className={`mr-2 inline-block h-2 w-2 rounded-full ${getStatusColor(advance.cashAdvance.status)}`}></span>
+                    {advance.cashAdvance.status}
                   </Badge>
                 </TableCell>
                 <TableCell>
@@ -143,33 +166,33 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                       <DropdownMenuItem onClick={() => setPreviewingAdvance(ca)}>
+                       <DropdownMenuItem onClick={() => setPreviewingAdvance(advance)}>
                         <Eye className="mr-2 h-4 w-4" />
                         <span>Preview/Print</span>
                       </DropdownMenuItem>
                       {isCashierOrSupervisor && (
                         <>
                            <DropdownMenuSeparator />
-                          <DropdownMenuItem disabled={ca.status !== 'Pending'} onClick={() => handleAction(`Approved advance for ${ca.personnel}.`)}>
+                          <DropdownMenuItem disabled={advance.cashAdvance.status !== 'Pending'} onClick={() => handleAction(`Approved advance for ${advance.cashAdvance.personnel}.`)}>
                             <Check className="mr-2 h-4 w-4" />
                             <span>Approve</span>
                           </DropdownMenuItem>
-                          <DropdownMenuItem disabled={ca.status !== 'Approved'} onClick={() => handleAction(`CV released for ${ca.personnel}.`)}>
+                          <DropdownMenuItem disabled={advance.cashAdvance.status !== 'Approved'} onClick={() => handleAction(`CV released for ${advance.cashAdvance.personnel}.`)}>
                             <FileCheck className="mr-2 h-4 w-4" />
                             <span>Release CV</span>
                           </DropdownMenuItem>
-                          <DropdownMenuItem disabled={ca.status !== 'Check Voucher Released'} onClick={() => handleAction(`Marked as CV Received for ${ca.personnel}.`)}>
+                          <DropdownMenuItem disabled={advance.cashAdvance.status !== 'Check Voucher Released'} onClick={() => handleAction(`Marked as CV Received for ${advance.cashAdvance.personnel}.`)}>
                             <Banknote className="mr-2 h-4 w-4" />
                             <span>Mark as CV Received</span>
                           </DropdownMenuItem>
-                           <DropdownMenuItem className="text-destructive" disabled={ca.status !== 'Pending'} onClick={() => handleAction(`Rejected advance for ${ca.personnel}.`)}>
+                           <DropdownMenuItem className="text-destructive" disabled={advance.cashAdvance.status !== 'Pending'} onClick={() => handleAction(`Rejected advance for ${advance.cashAdvance.personnel}.`)}>
                             <X className="mr-2 h-4 w-4" />
                             <span>Reject</span>
                           </DropdownMenuItem>
                         </>
                       )}
                       {user?.role === 'Liaison' && (
-                         <DropdownMenuItem disabled={!['Approved', 'CV Received'].includes(ca.status)} onClick={() => handleAction(`Liquidated advance for ${ca.personnel}.`)}>
+                         <DropdownMenuItem disabled={!['Approved', 'CV Received'].includes(advance.cashAdvance.status)} onClick={() => handleAction(`Liquidated advance for ${advance.cashAdvance.personnel}.`)}>
                             <FileUp className="mr-2 h-4 w-4" />
                             <span>Liquidate</span>
                         </DropdownMenuItem>
@@ -224,7 +247,13 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
                 </DialogDescription>
             </DialogHeader>
             <div className="mt-4 max-h-[70vh] overflow-y-auto p-2">
-                {previewingAdvance && <CashAdvanceDocument ref={documentRef} advance={previewingAdvance} />}
+                {previewingAdvance && (
+                    <CashAdvanceRequestDocument 
+                        ref={documentRef} 
+                        advance={previewingAdvance.cashAdvance} 
+                        motorcycles={previewingAdvance.motorcycles} 
+                    />
+                )}
             </div>
             <DialogFooter>
                 <Button variant="outline" onClick={() => setPreviewingAdvance(null)}>Close</Button>
@@ -239,4 +268,3 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
     </>
   );
 }
-

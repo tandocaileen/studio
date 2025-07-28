@@ -15,7 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export type EnrichedCashAdvance = {
     cashAdvance: CashAdvance;
-    motorcycle?: Motorcycle;
+    motorcycles: Motorcycle[];
 }
 
 type DateRange = '7d' | '30d' | 'all';
@@ -30,8 +30,15 @@ function CashAdvancesContent({ searchQuery }: { searchQuery: string }) {
     useEffect(() => {
         Promise.all([getCashAdvances(), getMotorcycles()]).then(([cashAdvances, motorcycles]) => {
             const enriched: EnrichedCashAdvance[] = cashAdvances.map(ca => {
-                const motorcycle = motorcycles.find(m => m.id === ca.motorcycleId);
-                return { cashAdvance: ca, motorcycle };
+                const associatedMotorcycles = ca.motorcycleIds
+                    ? motorcycles.filter(m => ca.motorcycleIds!.includes(m.id))
+                    // Fallback for older CAs with single motorcycleId
+                    : (ca.motorcycleId ? [motorcycles.find(m => m.id === ca.motorcycleId)!] : []);
+
+                return { 
+                    cashAdvance: ca, 
+                    motorcycles: associatedMotorcycles.filter(Boolean) as Motorcycle[]
+                };
             });
             setAdvances(enriched);
         });
@@ -58,17 +65,17 @@ function CashAdvancesContent({ searchQuery }: { searchQuery: string }) {
 
 
     const filteredBySearch = getFilteredByDate().filter(item => {
-        const { cashAdvance, motorcycle } = item;
+        const { cashAdvance, motorcycles } = item;
         const query = searchQuery.toLowerCase();
 
         if (user.role === 'Liaison' && cashAdvance.personnel !== user.name) {
             return false;
         }
 
-        if (motorcycle) { 
-            if (motorcycle.customerName?.toLowerCase().includes(query)) return true;
-            if (motorcycle.model.toLowerCase().includes(query)) return true;
-             if (motorcycle.plateNumber?.toLowerCase().includes(query)) return true;
+        if (motorcycles && motorcycles.length > 0) { 
+            if (motorcycles.some(m => m.customerName?.toLowerCase().includes(query))) return true;
+            if (motorcycles.some(m => m.model.toLowerCase().includes(query))) return true;
+            if (motorcycles.some(m => m.plateNumber?.toLowerCase().includes(query))) return true;
         }
         if (cashAdvance.purpose.toLowerCase().includes(query)) return true;
         if (cashAdvance.personnel.toLowerCase().includes(query)) return true;

@@ -30,7 +30,7 @@ export const CashAdvanceDocument = React.forwardRef<HTMLDivElement, CashAdvanceD
                             <span className="font-bold">Payee:</span> {advance.personnel}
                         </p>
                         <p className="text-sm">
-                           <span className="font-bold">Position:</span> Liaison Supervisor
+                           <span className="font-bold">Position:</span> Liaison
                         </p>
                     </div>
                     <div className="text-right">
