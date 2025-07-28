@@ -10,7 +10,7 @@ import { getCashAdvances, getMotorcycles } from '@/lib/data';
 import { CashAdvance, Motorcycle } from '@/types';
 import { useAuth } from '@/context/AuthContext';
 import { AppLoader } from '@/components/layout/loader';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
