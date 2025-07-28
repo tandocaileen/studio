@@ -179,17 +179,11 @@ function CreateEndorsementContent() {
                                     <TableHeader className="sticky top-0 bg-background">
                                         <TableRow>
                                             <TableHead className="w-[40px]"></TableHead>
-                                            <TableHead>Sale ID</TableHead>
-                                            <TableHead>SI No.</TableHead>
-                                            <TableHead>Account Code</TableHead>
                                             <TableHead>Customer Name</TableHead>
                                             <TableHead>Plate No.</TableHead>
                                             <TableHead>Make & Model</TableHead>
                                             <TableHead>Engine No.</TableHead>
                                             <TableHead>Chassis No.</TableHead>
-                                            <TableHead>CSR No.</TableHead>
-                                            <TableHead>CR/OR No.</TableHead>
-                                            <TableHead>HPG Control No.</TableHead>
                                             <TableHead>Status</TableHead>
                                         </TableRow>
                                     </TableHeader>
@@ -206,9 +200,6 @@ function CreateEndorsementContent() {
                                                         aria-label={`Select ${mc.customerName}`}
                                                     />
                                                 </TableCell>
-                                                <TableCell>{mc.id}</TableCell>
-                                                <TableCell>{mc.salesInvoiceNo}</TableCell>
-                                                <TableCell>{mc.accountCode}</TableCell>
                                                 <TableCell className="font-medium">{mc.customerName}</TableCell>
                                                 <TableCell>{mc.plateNumber}</TableCell>
                                                 <TableCell>
@@ -217,10 +208,7 @@ function CreateEndorsementContent() {
                                                 </TableCell>
                                                 <TableCell className="font-mono text-xs">{mc.engineNumber}</TableCell>
                                                 <TableCell className="font-mono text-xs">{mc.chassisNumber}</TableCell>
-                                                <TableCell>{mc.documents.find(d => d.type === 'CSR')?.url.slice(-8) || 'N/A'}</TableCell>
-                                                <TableCell>{mc.documents.find(d => d.type === 'OR/CR')?.url.slice(-8) || 'N/A'}</TableCell>
-                                                <TableCell>{mc.hpgControlNumber || 'N/A'}</TableCell>
-                                                <TableCell><Badge variant={mc.status === 'Incomplete' ? 'outline' : 'default'}>{mc.status}</Badge></TableCell>
+                                                <TableCell><Badge variant="default">{mc.status}</Badge></TableCell>
                                             </TableRow>
                                         ))}
                                     </TableBody>
