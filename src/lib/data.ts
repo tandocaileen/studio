@@ -195,56 +195,60 @@ const motorcycles: Motorcycle[] = [
 
 const cashAdvances: CashAdvance[] = [
   {
-    id: 'ca1',
-    motorcycleId: '2', // NMAX For Renewal
+    id: 'ca-070124-001',
     personnel: 'Liaison B',
-    purpose: 'OR/CR Renewal for 456 DEF',
+    purpose: 'Renewal for 1 unit',
     amount: 2500,
     date: addDays(today, -40),
     status: 'Pending',
+    motorcycleIds: ['2']
   },
   {
-    id: 'ca2',
-    motorcycleId: '1', // Click 125i
+    id: 'ca-070124-002',
     personnel: 'Liaison A',
-    purpose: 'Minor Repair for 123 ABC',
-    amount: 1200,
-    date: new Date('2024-03-01'),
+    purpose: 'Registration for 2 units',
+    amount: 5250,
+    date: addDays(today, -30),
     status: 'Liquidated',
-    receipts: ['#'],
-    totalLiquidation: 1150,
-    shortageOverage: -50
+    motorcycleIds: ['1', '3'],
+    totalLiquidation: 5250,
+    checkVoucherNumber: 'CV-2024-06-010',
+    checkVoucherReleaseDate: addDays(today, -28),
+    ltoOrNumber: 'LTO-OR-123, LTO-OR-456',
+    ltoOrAmount: 4000,
+    ltoProcessFee: 1250,
+    liquidationRemarks: 'Fully Liquidated',
   },
   {
-    id: 'ca3',
-    motorcycleId: '5', // PCX160 Ready to Register
+    id: 'ca-070124-003',
     personnel: 'Demo Liaison',
-    purpose: 'New motorcycle registration for 212 MNO',
-    amount: 5000,
-    date: new Date('2024-02-15'),
+    purpose: 'New registration for 1 unit',
+    amount: 2600,
+    date: addDays(today, -20),
     status: 'Approved',
+    motorcycleIds: ['5']
   },
   {
-    id: 'ca4',
-    motorcycleId: '3', // Burgman
-    personnel: 'Liaison A',
-    purpose: 'Insurance payment for 789 GHI',
-    amount: 3500,
+    id: 'ca-070124-004',
+    personnel: 'Demo Liaison',
+    purpose: 'Registration for 2 units',
+    amount: 5000,
     date: addDays(today, -5),
     status: 'Check Voucher Released',
-    checkVoucherNumber: 'CV-2024-05-001',
+    checkVoucherNumber: 'CV-2024-07-001',
     checkVoucherReleaseDate: addDays(today, -5),
+    motorcycleIds: ['6', '7']
   },
-    {
-    id: 'ca5',
-    motorcycleId: '2', // NMAX For Renewal
+  {
+    id: 'ca-070124-005',
     personnel: 'Liaison B',
-    purpose: 'Renewal for AAA 111',
+    purpose: 'Renewal for 1 unit',
     amount: 2800,
     date: addDays(today, -2),
     status: 'CV Received',
-    checkVoucherNumber: 'CV-2024-05-002',
+    checkVoucherNumber: 'CV-2024-07-002',
     checkVoucherReleaseDate: addDays(today, -2),
+    motorcycleIds: ['2']
   },
 ];
 

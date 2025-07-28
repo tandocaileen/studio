@@ -40,7 +40,6 @@ const navItems: NavItem[] = [
   { href: '/endorsements', icon: FilePenLine, label: 'Endorsements', allowedRoles: ['Store Supervisor', 'Cashier'] },
   { href: '/cash-advances', icon: DollarSign, label: 'Cash Advances', allowedRoles: ['Liaison', 'Cashier', 'Store Supervisor'] },
   { href: '/liquidations', icon: Receipt, label: 'Liquidations', allowedRoles: ['Store Supervisor', 'Liaison', 'Cashier'] },
-  { href: '/reports/liquidation', icon: FileArchive, label: 'Reports', allowedRoles: ['Store Supervisor', 'Liaison', 'Cashier'] },
   { href: '/users', icon: Users, label: 'Users', allowedRoles: ['Store Supervisor', 'Cashier'] },
   { href: '/settings', icon: Settings, label: 'Settings', allowedRoles: ['Store Supervisor', 'Liaison', 'Cashier'] },
   { href: '/support', icon: LifeBuoy, label: 'Support', allowedRoles: ['Store Supervisor', 'Liaison', 'Cashier'] },
