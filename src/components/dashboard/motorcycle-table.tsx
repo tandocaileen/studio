@@ -312,11 +312,11 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[40px]">
-                   {!isLiaison && <Checkbox
+                   <Checkbox
                     checked={selectedMotorcycles.length === motorcycles.length && motorcycles.length > 0}
                     onCheckedChange={(checked) => handleSelectAll(checked)}
                     aria-label="Select all"
-                  />}
+                  />
                 </TableHead>
                 <TableHead>Sale ID</TableHead>
                 <TableHead>SI No.</TableHead>
