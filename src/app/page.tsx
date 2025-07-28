@@ -42,13 +42,19 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
     return <AppLoader />;
   }
 
-  const handleStateUpdate = (updatedMotorcycles: Motorcycle[]) => {
+  const handleStateUpdate = (updatedOrNewMotorcycles: Motorcycle | Motorcycle[]) => {
       setMotorcycles(currentMotorcycles => {
-          const updatedIds = new Set(updatedMotorcycles.map(um => um.id));
-          return currentMotorcycles!.map(cm => {
-              const updatedVersion = updatedMotorcycles.find(um => um.id === cm.id);
-              return updatedVersion || cm;
-          });
+          if (Array.isArray(updatedOrNewMotorcycles)) {
+              // This handles updates from MotorcycleTable
+              const updatedIds = new Set(updatedOrNewMotorcycles.map(um => um.id));
+              return currentMotorcycles!.map(cm => {
+                  const updatedVersion = updatedOrNewMotorcycles.find(um => um.id === cm.id);
+                  return updatedVersion || cm;
+              });
+          } else {
+              // This handles adding a new motorcycle from ReceiveLtoDocs
+              return [updatedOrNewMotorcycles, ...currentMotorcycles!];
+          }
       });
   };
   
@@ -137,8 +143,8 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
                                             <span className="hidden sm:inline">Receive MC Docs</span>
                                         </Button>
                                     </DialogTrigger>
-                                    <DialogContent className="max-w-7xl">
-                                        <ReceiveLtoDocs motorcycles={motorcycles.filter(m => m.status === 'Incomplete')} onSave={handleStateUpdate} />
+                                    <DialogContent className="max-w-4xl">
+                                        <ReceiveLtoDocs onSave={handleStateUpdate} />
                                     </DialogContent>
                                 </Dialog>
                             </div>
@@ -169,14 +175,17 @@ function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
     return <AppLoader />;
   }
 
-  const handleStateUpdate = (updatedMotorcycles: Motorcycle[]) => {
-      setMotorcycles(currentMotorcycles => {
-          const updatedIds = new Set(updatedMotorcycles.map(um => um.id));
-          return currentMotorcycles!.map(cm => {
-              const updatedVersion = updatedMotorcycles.find(um => um.id === cm.id);
-              return updatedVersion || cm;
-          });
-      });
+  const handleStateUpdate = (updatedMotorcycles: Motorcycle | Motorcycle[]) => {
+     if (Array.isArray(updatedMotorcycles)) {
+        setMotorcycles(currentMotorcycles => {
+            const updatedIds = new Set(updatedMotorcycles.map(um => um.id));
+            return currentMotorcycles!.map(cm => {
+                const updatedVersion = updatedMotorcycles.find(um => um.id === cm.id);
+                return updatedVersion || cm;
+            });
+        });
+      }
+      // Note: Add new motorcycle logic is not needed for Liaison view.
   };
 
   // Filter logic based on user role

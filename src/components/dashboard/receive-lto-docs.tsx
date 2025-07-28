@@ -2,180 +2,134 @@
 'use client';
 
 import { Motorcycle } from "@/types";
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { ScrollArea } from "../ui/scroll-area";
-import { Checkbox } from "../ui/checkbox";
+import { Label } from "../ui/label";
+import { DialogFooter, DialogClose } from "../ui/dialog";
 
 type ReceiveLtoDocsProps = {
-    motorcycles: Motorcycle[];
-    onSave: (updatedMotorcycles: Motorcycle[]) => void;
+    onSave: (newMotorcycle: Motorcycle) => void;
 };
 
-type HpgState = {
-    [mcId: string]: string;
-};
-
-export function ReceiveLtoDocs({ motorcycles, onSave }: ReceiveLtoDocsProps) {
-    const [hpgState, setHpgState] = useState<HpgState>({});
-    const [searchQuery, setSearchQuery] = useState('');
-    const [selectedMotorcycles, setSelectedMotorcycles] = useState<Motorcycle[]>([]);
+export function ReceiveLtoDocs({ onSave }: ReceiveLtoDocsProps) {
+    const [formData, setFormData] = useState<Partial<Motorcycle>>({
+        status: 'Incomplete'
+    });
     const { toast } = useToast();
 
-    const filteredMotorcycles = useMemo(() => {
-        if (!searchQuery) return motorcycles;
-        return motorcycles.filter(mc =>
-            mc.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            mc.plateNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            mc.engineNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            mc.chassisNumber.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-    }, [motorcycles, searchQuery]);
-
-    const handleHpgChange = (mcId: string, value: string) => {
-        setHpgState(prev => ({
-            ...prev,
-            [mcId]: value
-        }));
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { id, value } = e.target;
+        setFormData(prev => ({ ...prev, [id]: value }));
     };
 
-    const handleSelect = (motorcycle: Motorcycle, checked: boolean | 'indeterminate') => {
-        if (checked) {
-            setSelectedMotorcycles(prev => [...prev, motorcycle]);
-        } else {
-            setSelectedMotorcycles(prev => prev.filter(m => m.id !== motorcycle.id));
-        }
-    };
-
-    const handleSelectAll = (checked: boolean | 'indeterminate') => {
-        if (checked) {
-            setSelectedMotorcycles(filteredMotorcycles);
-        } else {
-            setSelectedMotorcycles([]);
-        }
-    };
-    
-    const handleClear = () => {
-        setHpgState({});
-        setSelectedMotorcycles([]);
-    };
-
-    const handleSave = () => {
-        if (selectedMotorcycles.length === 0) {
-            toast({ title: "No Motorcycles Selected", description: "Please select at least one motorcycle to receive.", variant: "destructive" });
+    const handleReceive = () => {
+        // Basic validation
+        if (!formData.id || !formData.customerName || !formData.plateNumber) {
+            toast({
+                title: "Missing Information",
+                description: "Please fill out at least Sale ID, Customer Name, and Plate Number.",
+                variant: "destructive"
+            });
             return;
         }
-        
-        const updatedMotorcycles: Motorcycle[] = [];
-        selectedMotorcycles.forEach(mc => {
-            const hpgControlNumber = hpgState[mc.id] || mc.hpgControlNumber;
-            // Only update if there is a HPG number entered or it was selected
-            if (hpgControlNumber) {
-                const newDocs = [...mc.documents];
-                const hpgDocIndex = newDocs.findIndex(d => d.type === 'HPG Control Form');
-                
-                if (hpgDocIndex > -1) {
-                    newDocs[hpgDocIndex] = { ...newDocs[hpgDocIndex], url: hpgControlNumber };
-                } else {
-                     newDocs.push({
-                        type: 'HPG Control Form',
-                        url: hpgControlNumber,
-                        uploadedAt: new Date(),
-                    });
-                }
-                
-                updatedMotorcycles.push({ ...mc, documents: newDocs, hpgControlNumber, status: 'Ready to Register' });
-            }
+
+        const newMotorcycle: Motorcycle = {
+            id: formData.id,
+            make: formData.make || '',
+            model: formData.model || '',
+            year: formData.year || new Date().getFullYear(),
+            color: formData.color || '',
+            plateNumber: formData.plateNumber,
+            engineNumber: formData.engineNumber || '',
+            chassisNumber: formData.chassisNumber || '',
+            assignedBranch: 'Main Office', // Default value
+            purchaseDate: new Date(), // Default value
+            supplier: formData.supplier || '',
+            documents: formData.hpgControlNumber ? [{
+                type: 'HPG Control Form',
+                url: formData.hpgControlNumber,
+                uploadedAt: new Date(),
+            }] : [],
+            status: 'Incomplete',
+            customerName: formData.customerName,
+            salesInvoiceNo: formData.salesInvoiceNo,
+            accountCode: formData.accountCode,
+            hpgControlNumber: formData.hpgControlNumber,
+        };
+
+        onSave(newMotorcycle);
+        toast({
+            title: "Motorcycle Received",
+            description: `Successfully added motorcycle with plate no. ${newMotorcycle.plateNumber}.`,
         });
-
-        if (updatedMotorcycles.length === 0) {
-            toast({ title: "No Changes to Save", description: "No HPG Control Numbers were entered for the selected motorcycles.", variant: "destructive" });
-            return;
-        }
-
-        onSave(updatedMotorcycles);
-        toast({ title: "Documents Received", description: `${updatedMotorcycles.length} motorcycle record(s) have been updated.` });
-        handleClear();
+        
+        // Reset form
+        setFormData({ status: 'Incomplete' });
     };
-
-    const isAllSelected = filteredMotorcycles.length > 0 && selectedMotorcycles.length === filteredMotorcycles.length;
 
     return (
-        <Card className="border-0 shadow-none">
+        <>
             <CardHeader>
-                <CardTitle>Receive MC Docs</CardTitle>
-                <div className="flex items-center gap-4 pt-4">
-                    <Button variant="outline" onClick={handleClear}>Clear</Button>
-                    <Button onClick={handleSave}>Save</Button>
-                    <Input
-                        placeholder="Search MT No, Plate, Engine, Chassis..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="max-w-sm ml-auto"
-                    />
-                </div>
+                <CardTitle>Receive New Motorcycle</CardTitle>
+                <CardDescription>
+                    Enter the details for a new motorcycle to add it to the system.
+                </CardDescription>
             </CardHeader>
-            <CardContent>
-                <ScrollArea className="h-[60vh] mt-4">
-                    <Table>
-                        <TableHeader className="sticky top-0 bg-background">
-                            <TableRow>
-                                <TableHead className="w-12">
-                                    <Checkbox
-                                        checked={isAllSelected}
-                                        onCheckedChange={handleSelectAll}
-                                        aria-label="Select all"
-                                    />
-                                </TableHead>
-                                <TableHead>Sale ID</TableHead>
-                                <TableHead>Make &amp; Model</TableHead>
-                                <TableHead>Engine No.</TableHead>
-                                <TableHead>Chassis No.</TableHead>
-                                <TableHead>HPG Control No.</TableHead>
-                                <TableHead>Status</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {filteredMotorcycles.map(mc => {
-                                const isSelected = selectedMotorcycles.some(m => m.id === mc.id);
-                                return (
-                                <TableRow key={mc.id} data-state={isSelected ? "selected" : ""}>
-                                    <TableCell>
-                                        <Checkbox
-                                            checked={isSelected}
-                                            onCheckedChange={(checked) => handleSelect(mc, checked)}
-                                        />
-                                    </TableCell>
-                                    <TableCell>{mc.id}</TableCell>
-                                    <TableCell>{mc.make} {mc.model}</TableCell>
-                                    <TableCell>{mc.engineNumber}</TableCell>
-                                    <TableCell>{mc.chassisNumber}</TableCell>
-                                    <TableCell>
-                                        <Input
-                                            value={hpgState[mc.id] || mc.hpgControlNumber || ''}
-                                            onChange={(e) => handleHpgChange(mc.id, e.target.value)}
-                                            placeholder="Enter HPG No."
-                                            className="w-48"
-                                        />
-                                    </TableCell>
-                                    <TableCell>N/A</TableCell>
-                                </TableRow>
-                            )})}
-                        </TableBody>
-                    </Table>
-                </ScrollArea>
-                {filteredMotorcycles.length === 0 && (
-                    <div className="text-center py-12 text-muted-foreground">
-                        <p>No incomplete motorcycles found, or no results for your search.</p>
-                    </div>
-                )}
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid gap-2">
+                    <Label htmlFor="id">Sale ID</Label>
+                    <Input id="id" value={formData.id || ''} onChange={handleInputChange} placeholder="e.g., MT-001" />
+                </div>
+                 <div className="grid gap-2">
+                    <Label htmlFor="salesInvoiceNo">SI No.</Label>
+                    <Input id="salesInvoiceNo" value={formData.salesInvoiceNo || ''} onChange={handleInputChange} placeholder="e.g., SI-12345" />
+                </div>
+                 <div className="grid gap-2">
+                    <Label htmlFor="accountCode">Account Code</Label>
+                    <Input id="accountCode" value={formData.accountCode || ''} onChange={handleInputChange} placeholder="e.g., AC-CUST-01" />
+                </div>
+                 <div className="grid gap-2">
+                    <Label htmlFor="customerName">Customer Name</Label>
+                    <Input id="customerName" value={formData.customerName || ''} onChange={handleInputChange} placeholder="Juan Dela Cruz" />
+                </div>
+                <div className="grid gap-2">
+                    <Label htmlFor="plateNumber">Plate No.</Label>
+                    <Input id="plateNumber" value={formData.plateNumber || ''} onChange={handleInputChange} placeholder="ABC 1234" />
+                </div>
+                <div className="grid gap-2">
+                    <Label htmlFor="make">Make</Label>
+                    <Input id="make" value={formData.make || ''} onChange={handleInputChange} placeholder="Honda" />
+                </div>
+                 <div className="grid gap-2">
+                    <Label htmlFor="model">Model</Label>
+                    <Input id="model" value={formData.model || ''} onChange={handleInputChange} placeholder="Click 125i" />
+                </div>
+                <div className="grid gap-2">
+                    <Label htmlFor="engineNumber">Engine No.</Label>
+                    <Input id="engineNumber" value={formData.engineNumber || ''} onChange={handleInputChange} placeholder="Engine Number" />
+                </div>
+                <div className="grid gap-2">
+                    <Label htmlFor="chassisNumber">Chassis No.</Label>
+                    <Input id="chassisNumber" value={formData.chassisNumber || ''} onChange={handleInputChange} placeholder="Chassis Number" />
+                </div>
+                 <div className="grid gap-2">
+                    <Label htmlFor="hpgControlNumber">HPG Control No.</Label>
+                    <Input id="hpgControlNumber" value={formData.hpgControlNumber || ''} onChange={handleInputChange} placeholder="Enter HPG No." />
+                </div>
+                 <div className="grid gap-2">
+                    <Label htmlFor="status">Status</Label>
+                    <Input id="status" value={formData.status || 'Incomplete'} disabled />
+                </div>
             </CardContent>
-        </Card>
+            <DialogFooter className="px-6 pb-6">
+                <DialogClose asChild>
+                    <Button variant="outline">Cancel</Button>
+                </DialogClose>
+                <Button onClick={handleReceive}>Receive</Button>
+            </DialogFooter>
+        </>
     );
 }
-
-    
