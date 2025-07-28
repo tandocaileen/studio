@@ -107,7 +107,7 @@ export function ReceiveLtoDocs({ motorcycles, onSave }: ReceiveLtoDocsProps) {
     return (
         <Card className="border-0 shadow-none">
             <CardHeader>
-                <CardTitle>Master File &gt; MC Docs Receiving From NIVI</CardTitle>
+                <CardTitle>Receive MC Docs</CardTitle>
                 <div className="flex items-center gap-4 pt-4">
                     <Button variant="outline" onClick={handleClear}>Clear</Button>
                     <Button onClick={handleSave}>Save</Button>

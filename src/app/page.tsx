@@ -4,12 +4,12 @@
 import { Header } from "@/components/layout/header";
 import { AppSidebar } from "@/components/layout/sidebar";
 import { MotorcycleTable } from "@/components/dashboard/motorcycle-table";
-import { getCashAdvances, getMotorcycles } from "@/lib/data";
+import { getCashAdvances, getEndorsements, getMotorcycles } from "@/lib/data";
 import React, { useState, useEffect } from "react";
 import { AppLoader } from "@/components/layout/loader";
 import { ProtectedPage } from "@/components/auth/protected-page";
 import { useAuth } from "@/context/AuthContext";
-import { CashAdvance, Motorcycle } from "@/types";
+import { CashAdvance, Endorsement, Motorcycle } from "@/types";
 import { SummaryCards } from "@/components/dashboard/summary-cards";
 import { OverdueAdvances } from "@/components/dashboard/overdue-advances";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -17,21 +17,24 @@ import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
 import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog";
 import { ReceiveLtoDocs } from "@/components/dashboard/receive-lto-docs";
+import { EndorsedIncompleteTable } from "@/components/dashboard/endorsed-incomplete-table";
 
 type ViewFilter = 'unregistered' | 'all';
 
 function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
   const [motorcycles, setMotorcycles] = useState<Motorcycle[] | null>(null);
+  const [endorsements, setEndorsements] = useState<Endorsement[] | null>(null);
   const [viewFilter, setViewFilter] = useState<ViewFilter>('unregistered');
   
   useEffect(() => {
     getMotorcycles().then(setMotorcycles);
+    getEndorsements().then(setEndorsements);
   }, []);
 
   const { user } = useAuth();
   const userBranch = "Main Office"; 
 
-  if (!user || !motorcycles) {
+  if (!user || !motorcycles || !endorsements) {
     return <AppLoader />;
   }
 
@@ -70,6 +73,10 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
     return searchFilter;
   });
 
+  const endorsedIncompleteMotorcycles = endorsements.flatMap(e => e.motorcycleIds)
+    .map(id => motorcycles.find(m => m.id === id))
+    .filter((m): m is Motorcycle => !!m && m.status === 'Incomplete');
+
 
   return (
     <>
@@ -95,15 +102,22 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
             </DialogContent>
           </Dialog>
       </div>
-       <div className="flex items-center gap-4">
-        <Tabs value={viewFilter} onValueChange={(value) => setViewFilter(value as ViewFilter)}>
-            <TabsList>
-                <TabsTrigger value="unregistered">Unregistered</TabsTrigger>
-                <TabsTrigger value="all">View All</TabsTrigger>
-            </TabsList>
-        </Tabs>
+
+       <div className="grid gap-8">
+        <EndorsedIncompleteTable motorcycles={endorsedIncompleteMotorcycles} />
+
+        <div>
+            <div className="flex items-center gap-4 mb-4">
+                <Tabs value={viewFilter} onValueChange={(value) => setViewFilter(value as ViewFilter)}>
+                    <TabsList>
+                        <TabsTrigger value="unregistered">Unregistered</TabsTrigger>
+                        <TabsTrigger value="all">View All</TabsTrigger>
+                    </TabsList>
+                </Tabs>
+            </div>
+            <MotorcycleTable motorcycles={filteredMotorcycles} />
+        </div>
       </div>
-      <MotorcycleTable motorcycles={filteredMotorcycles} />
     </>
   );
 }
