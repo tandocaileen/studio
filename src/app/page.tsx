@@ -93,18 +93,19 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
 
        <div className="grid gap-4">
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as DashboardTab)} className="w-full">
-            <div className="flex justify-start">
+            <div className="flex justify-start border-b">
                 <TabsList className="bg-transparent p-0 gap-4">
                     <TabsTrigger 
                         value="all-motorcycles" 
-                        className="data-[state=active]:bg-muted data-[state=active]:shadow-none rounded-t-md"
+                        className="data-[state=active]:bg-card relative top-px data-[state=active]:border-t data-[state=active]:border-x data-[state=active]:shadow-none rounded-t-md text-base p-3"
                     >
                         Motorcycles List
                     </TabsTrigger>
                     <TabsTrigger 
                         value="pending-endorsements"
                         className={cn(
-                            'data-[state=active]:bg-destructive/10 data-[state=active]:text-destructive data-[state=active]:shadow-none rounded-t-md',
+                            'data-[state=active]:bg-card relative top-px data-[state=active]:border-t data-[state=active]:border-x data-[state=active]:shadow-none rounded-t-md text-base p-3',
+                            'data-[state=active]:text-destructive',
                             endorsedIncompleteMotorcycles.length > 0 && 'text-destructive'
                         )}
                     >
@@ -112,7 +113,7 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
                     </TabsTrigger>
                 </TabsList>
             </div>
-            <Card>
+            <Card className="rounded-t-none border-t-0">
                 <CardContent className="p-0">
                     <TabsContent value="pending-endorsements" className="m-0">
                         <EndorsedIncompleteTable 
