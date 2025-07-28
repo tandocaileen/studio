@@ -1,6 +1,6 @@
 
 
-import type { Motorcycle, CashAdvance, LiaisonUser } from '@/types';
+import type { Motorcycle, CashAdvance, LiaisonUser, Endorsement } from '@/types';
 
 const today = new Date();
 const addDays = (date: Date, days: number) => {
@@ -276,6 +276,12 @@ const liaisonUsers: LiaisonUser[] = [
     { id: '3', name: 'Liaison B', assignedBranch: 'West Branch', processingFee: 1600, orFee: 1100 },
 ];
 
+const endorsements: Endorsement[] = [
+    { id: 'ENDO-20240720-001', transactionDate: addDays(today, -10), liaisonId: '1', liaisonName: 'Demo Liaison', motorcycleIds: ['4', '5'], remarks: 'Please prioritize processing for these units.'},
+    { id: 'ENDO-20240722-001', transactionDate: addDays(today, -8), liaisonId: '2', liaisonName: 'Liaison A', motorcycleIds: ['1', '3']},
+    { id: 'ENDO-20240725-001', transactionDate: addDays(today, -5), liaisonId: '1', liaisonName: 'Demo Liaison', motorcycleIds: ['6', '7'], remarks: 'For registration.'},
+]
+
 export async function getMotorcycles() {
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 500));
@@ -295,4 +301,9 @@ export function getBranches() {
 export async function getLiaisons() {
     await new Promise(resolve => setTimeout(resolve, 500));
     return liaisonUsers;
+}
+
+export async function getEndorsements() {
+    await new Promise(resolve => setTimeout(resolve, 500));
+    return endorsements;
 }

@@ -76,3 +76,12 @@ export type LiaisonUser = {
     processingFee: number;
     orFee: number;
 }
+
+export type Endorsement = {
+    id: string;
+    transactionDate: Date;
+    liaisonId: string;
+    liaisonName: string;
+    remarks?: string;
+    motorcycleIds: string[];
+}

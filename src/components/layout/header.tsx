@@ -7,6 +7,7 @@ import {
   Moon,
   Sun,
   LogOut,
+  ArrowLeft
 } from 'lucide-react';
 
 import {
@@ -32,18 +33,20 @@ import { useTheme } from 'next-themes';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 import { Sheet, SheetContent, SheetTrigger } from '../ui/sheet';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Logo } from '../icons';
 import { cn } from '@/lib/utils';
 
 type HeaderProps = {
   title: string;
   onSearch?: (query: string) => void;
+  showBack?: boolean;
 };
 
-export function Header({ title, onSearch }: HeaderProps) {
+export function Header({ title, onSearch, showBack = false }: HeaderProps) {
   const { setTheme } = useTheme();
   const { user, logout } = useAuth();
+  const router = useRouter();
 
   const userPosition = user?.role;
 
@@ -52,19 +55,27 @@ export function Header({ title, onSearch }: HeaderProps) {
        <div className="sm:hidden">
         {/* Mobile sidebar trigger is in the sidebar component */}
       </div>
-      <Breadcrumb className="hidden md:flex">
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink asChild>
-              <a href="#">LTO Portal</a>
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>{title}</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
+      <div className="flex items-center gap-4">
+        {showBack && (
+            <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => router.back()}>
+                <ArrowLeft className="h-4 w-4" />
+                <span className="sr-only">Back</span>
+            </Button>
+        )}
+        <Breadcrumb className="hidden md:flex">
+            <BreadcrumbList>
+            <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                <a href="#">LTO Portal</a>
+                </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+                <BreadcrumbPage>{title}</BreadcrumbPage>
+            </BreadcrumbItem>
+            </BreadcrumbList>
+        </Breadcrumb>
+      </div>
       <div className="relative ml-auto flex-1 md:grow-0">
         {onSearch && (
           <>
