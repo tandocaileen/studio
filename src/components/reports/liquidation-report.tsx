@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import React from "react";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "../ui/table";
 import { Separator } from "../ui/separator";
+import { cn } from "@/lib/utils";
 
 type LiquidationReportProps = {
     reportData: {
@@ -70,7 +71,10 @@ export const LiquidationReport = React.forwardRef<HTMLDivElement, LiquidationRep
                         const mcShortageOverage = mcAdvance - (liq?.totalLiquidation || 0);
 
                         return (
-                        <TableRow key={mc.id}>
+                        <TableRow 
+                            key={mc.id}
+                            className={cn(!liq && !isFullyLiquidated && "bg-red-100 text-red-900 font-bold")}
+                        >
                             <TableCell className="border p-1">{index + 1}</TableCell>
                             <TableCell className="border p-1">{mc.salesInvoiceNo}</TableCell>
                             <TableCell className="border p-1">{mc.customerName}</TableCell>
@@ -96,6 +100,12 @@ export const LiquidationReport = React.forwardRef<HTMLDivElement, LiquidationRep
                 </TableFooter>
             </Table>
             
+            {!isFullyLiquidated && (
+                <div className="mt-4">
+                    <p className="text-red-600 font-semibold text-xs">* Rows highlighted in red are not yet liquidated.</p>
+                </div>
+            )}
+
              <div className="flex justify-between mt-8">
                 <div className="w-1/3">
                     <p><strong>Total Expenses:</strong> <span className="font-mono">{totalLiquidation.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span></p>
@@ -125,4 +135,5 @@ export const LiquidationReport = React.forwardRef<HTMLDivElement, LiquidationRep
 });
 
 LiquidationReport.displayName = 'LiquidationReport';
+
 
