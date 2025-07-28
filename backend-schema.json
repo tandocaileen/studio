@@ -1,0 +1,116 @@
+
+{
+  "collections": {
+    "users": {
+      "description": "Stores information about all users, including their roles and specific details for liaisons.",
+      "document_id_format": "user_id (e.g., Firebase Authentication UID)",
+      "example_document": {
+        "name": "Bryle Nikko Hamili",
+        "email": "bryle.h@example.com",
+        "role": "Liaison",
+        "assignedBranch": "CEBU",
+        "liaisonFees": {
+          "processingFee": 300.00,
+          "orFee": 1526.43
+        },
+        "isActive": true
+      }
+    },
+    "motorcycles": {
+      "description": "The central collection, tracking every motorcycle unit from reception to final registration.",
+      "document_id_format": "motorcycle_id (a unique identifier, e.g., 'mc-0001')",
+      "example_document": {
+        "make": "Honda",
+        "model": "Click 125i",
+        "year": 2023,
+        "plateNumber": "123 ABC",
+        "engineNumber": "E12345678",
+        "chassisNumber": "C12345678",
+        "customerName": "Juan Dela Cruz",
+        "purchaseDate": "Firestore.Timestamp",
+        "supplier": "Honda Prestige",
+        "status": "Processing",
+        "niviDetails": {
+          "salesInvoiceNo": "SI-00123",
+          "accountCode": "AC-JDC-001",
+          "receivedAt": "Firestore.Timestamp"
+        },
+        "insuranceAndControl": {
+          "cocNumber": "COC-123",
+          "policyNumber": "POL-123",
+          "insuranceType": "TPL",
+          "hpgControlNumber": "HPG-CTRL-001",
+          "sarCode": "SAR-123"
+        },
+        "associations": {
+          "assignedLiaisonId": "user_id_ref",
+          "endorsementId": "endorsement_id_ref",
+          "cashAdvanceId": "cash_advance_id_ref"
+        },
+        "liquidation": {
+          "ltoOrNumber": "LTO-OR-123",
+          "ltoOrAmount": 1800,
+          "ltoProcessFee": 300,
+          "totalLiquidation": 2100,
+          "shortageOverage": 26.43,
+          "remarks": "Full Liquidation",
+          "liquidatedBy": "user_id_ref",
+          "liquidationDate": "Firestore.Timestamp"
+        }
+      },
+      "sub_collections": {
+        "documents": {
+          "description": "Storing documents in a sub-collection is more scalable.",
+          "document_id_format": "document_id (unique)",
+          "example_document": {
+            "type": "OR/CR",
+            "storageUrl": "gs://bucket-name/path/to/file.pdf",
+            "uploadedAt": "Firestore.Timestamp",
+            "expiresAt": "Firestore.Timestamp"
+          }
+        }
+      }
+    },
+    "endorsements": {
+      "description": "Tracks the formal assignment of motorcycles to liaisons.",
+      "document_id_format": "endorsement_id (e.g., 'ENDO-20240720-001')",
+      "example_document": {
+        "transactionDate": "Firestore.Timestamp",
+        "liaisonId": "user_id_ref",
+        "liaisonName": "Bryle Nikko Hamili",
+        "remarks": "Please prioritize processing.",
+        "motorcycleIds": [
+          "mc-0001",
+          "mc-0002"
+        ],
+        "createdBy": "supervisor_user_id_ref"
+      }
+    },
+    "cash_advances": {
+      "description": "Manages all financial requests and their lifecycle.",
+      "document_id_format": "cash_advance_id (e.g., 'ca-070124-001')",
+      "example_document": {
+        "liaisonId": "user_id_ref",
+        "liaisonName": "Bryle Nikko Hamili",
+        "purpose": "Cash advance for registration of 2 units.",
+        "amount": 4102.86,
+        "requestedDate": "Firestore.Timestamp",
+        "status": "Liquidated",
+        "motorcycleIds": [
+          "mc-0001",
+          "mc-0002"
+        ],
+        "voucherDetails": {
+          "checkVoucherNumber": "CV-2024-06-010",
+          "releaseDate": "Firestore.Timestamp",
+          "receivedDate": "Firestore.Timestamp"
+        },
+        "approvalDetails": {
+          "approvedBy": "cashier_user_id_ref",
+          "approvedDate": "Firestore.Timestamp",
+          "rejectionReason": null
+        }
+      }
+    }
+  }
+}
