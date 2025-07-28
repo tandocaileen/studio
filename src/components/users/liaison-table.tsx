@@ -17,7 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { AppLoader } from '../layout/loader';
 import { Button } from '../ui/button';
 
-const ITEMS_PER_PAGE = 5;
+const ITEMS_PER_PAGE = 10;
 
 export function LiaisonTable() {
   const [liaisons, setLiaisons] = React.useState<LiaisonUser[] | null>(null);
@@ -26,8 +26,11 @@ export function LiaisonTable() {
   const [currentPage, setCurrentPage] = React.useState(1);
 
   React.useEffect(() => {
-      getLiaisons().then(setLiaisons);
-      setBranches(getBranches());
+      getLiaisons().then(liaisons => setLiaisons(liaisons.filter(l => l.name !== 'Demo Liaison')));
+      getLiaisons().then(liaisons => {
+        const uniqueBranches = [...new Set(liaisons.map(l => l.assignedBranch))];
+        setBranches(uniqueBranches);
+      });
   }, []);
 
   const handleAction = (message: string) => {
@@ -64,8 +67,8 @@ export function LiaisonTable() {
               <TableRow>
                 <TableHead>Name</TableHead>
                 <TableHead>Assigned Branch</TableHead>
-                <TableHead className="text-right">Default Processing Fee</TableHead>
-                <TableHead className="text-right">Default OR Fee</TableHead>
+                <TableHead className="text-right">Processing Fee</TableHead>
+                <TableHead className="text-right">OR Fee</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -73,8 +76,8 @@ export function LiaisonTable() {
                 <TableRow key={liaison.id}>
                   <TableCell className="font-medium">{liaison.name}</TableCell>
                   <TableCell>{liaison.assignedBranch}</TableCell>
-                  <TableCell className="text-right">₱{liaison.processingFee.toLocaleString()}</TableCell>
-                  <TableCell className="text-right">₱{liaison.orFee.toLocaleString()}</TableCell>
+                  <TableCell className="text-right">₱{liaison.processingFee.toLocaleString('en-US', { minimumFractionDigits: 2 })}</TableCell>
+                  <TableCell className="text-right">₱{liaison.orFee.toLocaleString('en-US', { minimumFractionDigits: 2 })}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

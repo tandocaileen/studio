@@ -19,7 +19,7 @@ const motorcycles: Motorcycle[] = [
     plateNumber: '123 ABC',
     engineNumber: 'E12345678',
     chassisNumber: 'C12345678',
-    assignedBranch: 'Main Office',
+    assignedBranch: 'CEBU',
     purchaseDate: new Date('2023-01-15'),
     supplier: 'Honda Prestige',
     status: 'Liquidated',
@@ -29,9 +29,9 @@ const motorcycles: Motorcycle[] = [
       { type: 'Insurance', url: '#', uploadedAt: new Date('2023-01-20'), expiresAt: addDays(today, 25) },
     ],
     customerName: 'Juan Dela Cruz',
-    assignedLiaison: 'Liaison A',
-    processingFee: 1500,
-    orFee: 1000,
+    assignedLiaison: 'BRYLE NIKKO HAMILI',
+    processingFee: 300.00,
+    orFee: 1826.43,
     salesInvoiceNo: 'SI-00123',
     accountCode: 'AC-JDC-001',
     hpgControlNumber: 'HPG-CTRL-001',
@@ -41,12 +41,12 @@ const motorcycles: Motorcycle[] = [
     liquidationDetails: {
       parentCaId: 'ca-070124-002',
       ltoOrNumber: 'LTO-OR-123',
-      ltoOrAmount: 1200,
-      ltoProcessFee: 1300,
-      totalLiquidation: 2500,
-      shortageOverage: 0,
+      ltoOrAmount: 1800,
+      ltoProcessFee: 300,
+      totalLiquidation: 2100,
+      shortageOverage: 26.43,
       remarks: 'Full Liquidation',
-      liquidatedBy: 'Liaison A',
+      liquidatedBy: 'BRYLE NIKKO HAMILI',
       liquidationDate: addDays(today, -25)
     }
   },
@@ -59,7 +59,7 @@ const motorcycles: Motorcycle[] = [
     plateNumber: '456 DEF',
     engineNumber: 'E87654321',
     chassisNumber: 'C87654321',
-    assignedBranch: 'East Branch',
+    assignedBranch: 'SAN FERNANDO',
     purchaseDate: new Date('2022-05-20'),
     supplier: 'Yamaha Motors',
     status: 'For Renewal',
@@ -69,9 +69,9 @@ const motorcycles: Motorcycle[] = [
       { type: 'Insurance', url: '#', uploadedAt: new Date('2022-05-25'), expiresAt: addDays(today, 5) },
     ],
     customerName: 'Maria Clara',
-    assignedLiaison: 'Liaison B',
-    processingFee: 1500,
-    orFee: 1000,
+    assignedLiaison: 'RODEL PASTRANO',
+    processingFee: 300.00,
+    orFee: 1885.18,
     salesInvoiceNo: 'SI-00124',
     accountCode: 'AC-MCL-001',
     hpgControlNumber: 'HPG-CTRL-002',
@@ -88,7 +88,7 @@ const motorcycles: Motorcycle[] = [
     plateNumber: '789 GHI',
     engineNumber: 'E11223344',
     chassisNumber: 'C11223344',
-    assignedBranch: 'West Branch',
+    assignedBranch: 'ILOILO',
     purchaseDate: new Date('2023-03-10'),
     supplier: 'Suzuki Philippines',
     status: 'Liquidated',
@@ -98,9 +98,9 @@ const motorcycles: Motorcycle[] = [
       { type: 'Insurance', url: '#', uploadedAt: new Date('2023-03-15'), expiresAt: addDays(today, 150) },
     ],
     customerName: 'Jose Rizal',
-    assignedLiaison: 'Liaison A',
-    processingFee: 1600,
-    orFee: 1100,
+    assignedLiaison: 'BENJO SEQUIERO',
+    processingFee: 150.00,
+    orFee: 1826.43,
     salesInvoiceNo: 'SI-00125',
     accountCode: 'AC-JRZ-001',
     hpgControlNumber: 'HPG-CTRL-003',
@@ -110,12 +110,12 @@ const motorcycles: Motorcycle[] = [
      liquidationDetails: {
       parentCaId: 'ca-070124-002',
       ltoOrNumber: 'LTO-OR-456',
-      ltoOrAmount: 1300,
-      ltoProcessFee: 1450,
-      totalLiquidation: 2750,
-      shortageOverage: 0,
+      ltoOrAmount: 1800,
+      ltoProcessFee: 150,
+      totalLiquidation: 1950,
+      shortageOverage: 26.43,
       remarks: 'Full Liquidation',
-      liquidatedBy: 'Liaison A',
+      liquidatedBy: 'BENJO SEQUIERO',
       liquidationDate: addDays(today, -25)
     }
   },
@@ -218,22 +218,22 @@ const motorcycles: Motorcycle[] = [
 const cashAdvances: CashAdvance[] = [
   {
     id: 'ca-070124-001',
-    personnel: 'Liaison B',
+    personnel: 'RODEL PASTRANO',
     purpose: 'Renewal for 1 unit',
-    amount: 2500,
+    amount: 2185.18,
     date: addDays(today, -40),
     status: 'Pending',
     motorcycleIds: ['2']
   },
   {
     id: 'ca-070124-002',
-    personnel: 'Liaison A',
+    personnel: 'BRYLE NIKKO HAMILI',
     purpose: 'Registration for 2 units',
-    amount: 5250,
+    amount: 4102.86,
     date: addDays(today, -30),
     status: 'Liquidated',
     motorcycleIds: ['1', '3'],
-    totalLiquidation: 5250,
+    totalLiquidation: 4050,
     checkVoucherNumber: 'CV-2024-06-010',
     checkVoucherReleaseDate: addDays(today, -28),
   },
@@ -259,9 +259,9 @@ const cashAdvances: CashAdvance[] = [
   },
   {
     id: 'ca-070124-005',
-    personnel: 'Liaison B',
+    personnel: 'RODEL PASTRANO',
     purpose: 'Renewal for 1 unit',
-    amount: 2800,
+    amount: 2185.18,
     date: addDays(today, -2),
     status: 'CV Received',
     checkVoucherNumber: 'CV-2024-07-002',
@@ -271,15 +271,27 @@ const cashAdvances: CashAdvance[] = [
 ];
 
 const liaisonUsers: LiaisonUser[] = [
-    { id: '1', name: 'Demo Liaison', assignedBranch: 'Main Office', processingFee: 1500, orFee: 1000 },
-    { id: '2', name: 'Liaison A', assignedBranch: 'East Branch', processingFee: 1550, orFee: 1050 },
-    { id: '3', name: 'Liaison B', assignedBranch: 'West Branch', processingFee: 1600, orFee: 1100 },
+    { id: '1', name: 'JINKY JOY AGBALOG', assignedBranch: 'LA UNION', processingFee: 300.00, orFee: 2115.18 },
+    { id: '2', name: 'BABY LIEZELL CAUILAN', assignedBranch: 'ILAGAN', processingFee: 250.00, orFee: 2310.18 },
+    { id: '3', name: 'RODEL PASTRANO', assignedBranch: 'SAN FERNANDO', processingFee: 300.00, orFee: 1885.18 },
+    { id: '4', name: 'JUNIEFE AQUINO', assignedBranch: 'CALAMBA', processingFee: 200.00, orFee: 2359.43 },
+    { id: '5', name: 'LYNLYN GENEZA', assignedBranch: 'CALAPAN', processingFee: 250.00, orFee: 2351.43 },
+    { id: '6', name: 'RUSHEL MORGA', assignedBranch: 'LEGAZPI', processingFee: 250.00, orFee: 2160.18 },
+    { id: '7', name: 'BENJO SEQUIERO', assignedBranch: 'ILOILO', processingFee: 150.00, orFee: 1826.43 },
+    { id: '8', name: 'BRYLE NIKKO HAMILI', assignedBranch: 'CEBU', processingFee: 300.00, orFee: 1826.43 },
+    { id: '9', name: 'ALLAN ANTONI', assignedBranch: 'TACLOBAN', processingFee: 100.00, orFee: 1655.18 },
+    { id: '10', name: 'RODERICK GUTIERREZ', assignedBranch: 'ZAMBOANGA', processingFee: 250.00, orFee: 1742.68 },
+    { id: '11', name: 'JASSRAY PAMISA', assignedBranch: 'CDO', processingFee: 100.00, orFee: 1846.43 },
+    { id: '12', name: 'ALI VIN SALEH COLINA', assignedBranch: 'DAVAO', processingFee: 244.82, orFee: 1836.43 },
+    { id: '13', name: 'EMILY AMADEO', assignedBranch: 'MARBEL', processingFee: 130.00, orFee: 1896.43 },
+    { id: '14', name: 'GEORGETH YEE', assignedBranch: 'BUENAVISTA', processingFee: 150.00, orFee: 1846.43 },
+    { id: '15', name: 'Demo Liaison', assignedBranch: 'Main Office', processingFee: 1500, orFee: 1000 },
 ];
 
 const endorsements: Endorsement[] = [
-    { id: 'ENDO-20240720-001', transactionDate: addDays(today, -10), liaisonId: '1', liaisonName: 'Demo Liaison', motorcycleIds: ['4', '5'], remarks: 'Please prioritize processing for these units.'},
-    { id: 'ENDO-20240722-001', transactionDate: addDays(today, -8), liaisonId: '2', liaisonName: 'Liaison A', motorcycleIds: ['1', '3']},
-    { id: 'ENDO-20240725-001', transactionDate: addDays(today, -5), liaisonId: '1', liaisonName: 'Demo Liaison', motorcycleIds: ['6', '7'], remarks: 'For registration.'},
+    { id: 'ENDO-20240720-001', transactionDate: addDays(today, -10), liaisonId: '15', liaisonName: 'Demo Liaison', motorcycleIds: ['4', '5'], remarks: 'Please prioritize processing for these units.'},
+    { id: 'ENDO-20240722-001', transactionDate: addDays(today, -8), liaisonId: '8', liaisonName: 'BRYLE NIKKO HAMILI', motorcycleIds: ['1', '3']},
+    { id: 'ENDO-20240725-001', transactionDate: addDays(today, -5), liaisonId: '15', liaisonName: 'Demo Liaison', motorcycleIds: ['6', '7'], remarks: 'For registration.'},
 ]
 
 export async function getMotorcycles() {
@@ -295,7 +307,7 @@ export async function getCashAdvances() {
 }
 
 export function getBranches() {
-  return [...new Set(motorcycles.map(m => m.assignedBranch))];
+  return [...new Set(liaisonUsers.map(l => l.assignedBranch))];
 }
 
 export async function getLiaisons() {
