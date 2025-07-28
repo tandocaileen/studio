@@ -2,56 +2,40 @@
 'use client';
 
 import * as React from 'react';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Motorcycle, Document } from '@/types';
-import { MoreHorizontal, Truck } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Motorcycle } from '@/types';
 import { MotorcycleTable } from './motorcycle-table';
 
 
 type EndorsedIncompleteTableProps = {
   motorcycles: Motorcycle[];
+  onUpdate: (updatedMotorcycles: Motorcycle[]) => void;
 };
 
-export function EndorsedIncompleteTable({ motorcycles }: EndorsedIncompleteTableProps) {
+export function EndorsedIncompleteTable({ motorcycles, onUpdate }: EndorsedIncompleteTableProps) {
   
   if (motorcycles.length === 0) {
-    return null;
+    return (
+        <Card className="border-dashed">
+            <CardContent className="p-6">
+                <div className="text-center py-12 text-muted-foreground">
+                    <p>No endorsed units are pending details.</p>
+                </div>
+            </CardContent>
+        </Card>
+    );
   }
 
   return (
     <Card className="border-destructive bg-destructive/5">
       <CardHeader>
-        <CardTitle>Endorsed Units with Incomplete Details</CardTitle>
+        <CardTitle>Action Required: Endorsed Units with Incomplete Details</CardTitle>
         <CardDescription>
           These units have been endorsed but require insurance and control details before a CA can be generated.
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {/* We can reuse the main motorcycle table component, but we'll need to pass a handler to update state on edit */}
-        <MotorcycleTable motorcycles={motorcycles} />
+        <MotorcycleTable motorcycles={motorcycles} onStateChange={onUpdate} />
       </CardContent>
     </Card>
   );

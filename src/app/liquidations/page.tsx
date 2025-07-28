@@ -86,8 +86,34 @@ export default function LiquidationsPage() {
     }
 
     const handleFinalSubmit = () => {
-        if (!selectedCA) return;
-        console.log("Submitting Liquidation Data: ", formData);
+        if (!selectedCA || !motorcycles) return;
+        
+        const mcToUpdateId = selectedCA.motorcycles[0].id;
+        const formDetails = formData[mcToUpdateId];
+
+        const updatedMotorcycles = motorcycles.map(mc => {
+            if (mc.id === mcToUpdateId) {
+                return {
+                    ...mc,
+                    status: 'For Review',
+                    liquidationDetails: {
+                        parentCaId: selectedCA.cashAdvance.id,
+                        ltoOrNumber: formDetails.ltoOrNumber,
+                        ltoOrAmount: formDetails.ltoOrAmount,
+                        ltoProcessFee: formDetails.ltoProcessFee,
+                        totalLiquidation: formDetails.ltoOrAmount + formDetails.ltoProcessFee,
+                        shortageOverage: getMcAdvanceAmount(mc) - (formDetails.ltoOrAmount + formDetails.ltoProcessFee),
+                        remarks: formDetails.remarks,
+                        liquidatedBy: user?.name || '',
+                        liquidationDate: new Date()
+                    }
+                };
+            }
+            return mc;
+        });
+
+        setMotorcycles(updatedMotorcycles);
+
         toast({
             title: 'Liquidation Submitted',
             description: `Liquidation for selected motorcycle has been submitted for review.`
@@ -103,7 +129,7 @@ export default function LiquidationsPage() {
 
     const getMcAdvanceAmount = (mc: Motorcycle): number => {
         const ca = cashAdvances.find(c => c.motorcycleIds?.includes(mc.id));
-        if (!ca || !ca.motorcycleIds) return mc.processingFee! + mc.orFee!;
+        if (!ca || !ca.motorcycleIds) return (mc.processingFee || 0) + (mc.orFee || 0);
         return ca.amount / ca.motorcycleIds.length;
     };
     
@@ -125,7 +151,7 @@ export default function LiquidationsPage() {
     const pendingLiquidationMotorcycles = allMotorcyclesForLiaison.filter(mc => {
         const ca = cashAdvances.find(c => c.motorcycleIds?.includes(mc.id));
         const isReadyForLiq = ['Approved', 'CV Received'].includes(ca!.status);
-        const isNotLiquidated = mc.status !== 'Liquidated';
+        const isNotLiquidated = mc.status !== 'For Review';
         return isReadyForLiq && isNotLiquidated;
     });
 
@@ -141,7 +167,7 @@ export default function LiquidationsPage() {
 
     const filteredGroupedItems = groupedItems.filter(item => {
         if(isLiaison && item.cashAdvance.personnel !== user.name) return false;
-        return ['Approved', 'CV Received', 'Liquidated'].includes(item.cashAdvance.status);
+        return ['Approved', 'CV Received', 'Liquidated', 'Processing'].includes(item.cashAdvance.status) || item.motorcycles.some(m => m.status === 'For Review');
     });
 
     return (
@@ -192,7 +218,7 @@ export default function LiquidationsPage() {
                                                     const ca = cashAdvances.find(c => c.motorcycleIds?.includes(mc.id));
                                                     if (!ca) return null;
                                                     
-                                                    const isLiquidated = mc.status === 'Liquidated';
+                                                    const isLiquidated = mc.status === 'For Review';
 
                                                     return (
                                                         <TableRow key={mc.id}>
@@ -203,11 +229,11 @@ export default function LiquidationsPage() {
                                                             <TableCell className="text-right">₱{getMcAdvanceAmount(mc).toLocaleString()}</TableCell>
                                                             <TableCell>
                                                                 <Badge variant={isLiquidated ? 'default' : 'outline'}>
-                                                                    {isLiquidated ? "Liquidated" : "Pending"}
+                                                                    {isLiquidated ? "For Review" : "Pending"}
                                                                 </Badge>
                                                             </TableCell>
                                                             <TableCell>
-                                                                {isLiaison && !isLiquidated ? (
+                                                                {isLiaison && !isLiquidated && mc.status === 'Processing' ? (
                                                                     <Button size="sm" onClick={() => handleLiquidateClick(mc, ca)}>
                                                                         <FileUp className="mr-2 h-4 w-4" />
                                                                         Liquidate
@@ -234,7 +260,7 @@ export default function LiquidationsPage() {
                             <TabsContent value="ca">
                                  <div className="grid gap-4">
                                     {filteredGroupedItems.map((group) => {
-                                        const liquidatedCount = group.motorcycles.filter(m => m.status === 'Liquidated').length;
+                                        const liquidatedCount = group.motorcycles.filter(m => m.status === 'For Review').length;
                                         const isFullyLiquidated = liquidatedCount === group.motorcycles.length;
                                         const isPartiallyLiquidated = liquidatedCount > 0 && !isFullyLiquidated;
                                         

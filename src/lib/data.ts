@@ -22,7 +22,7 @@ const motorcycles: Motorcycle[] = [
     assignedBranch: 'CEBU',
     purchaseDate: new Date('2023-01-15'),
     supplier: 'Honda Prestige',
-    status: 'Liquidated',
+    status: 'For Review',
     documents: [
       { type: 'OR/CR', url: '#/doc/orcr123', uploadedAt: new Date('2023-01-20'), expiresAt: addDays(today, 300) },
       { type: 'COC', url: '#', uploadedAt: new Date('2023-01-20') },
@@ -38,6 +38,7 @@ const motorcycles: Motorcycle[] = [
     cocNumber: 'COC-123',
     policyNumber: 'POL-123',
     sarCode: 'SAR-123',
+    insuranceType: 'TPL',
     liquidationDetails: {
       parentCaId: 'ca-070124-002',
       ltoOrNumber: 'LTO-OR-123',
@@ -77,7 +78,8 @@ const motorcycles: Motorcycle[] = [
     hpgControlNumber: 'HPG-CTRL-002',
     cocNumber: 'COC-456',
     policyNumber: 'POL-456',
-    sarCode: 'SAR-456'
+    sarCode: 'SAR-456',
+    insuranceType: 'TPL',
   },
   {
     id: '3',
@@ -91,7 +93,7 @@ const motorcycles: Motorcycle[] = [
     assignedBranch: 'ILOILO',
     purchaseDate: new Date('2023-03-10'),
     supplier: 'Suzuki Philippines',
-    status: 'Liquidated',
+    status: 'For Review',
     documents: [
       { type: 'OR/CR', url: '#/doc/orcr789', uploadedAt: new Date('2023-03-15'), expiresAt: addDays(today, 400) },
       { type: 'COC', url: '#', uploadedAt: new Date('2023-03-15') },
@@ -107,6 +109,7 @@ const motorcycles: Motorcycle[] = [
     cocNumber: 'COC-789',
     policyNumber: 'POL-789',
     sarCode: 'SAR-789',
+    insuranceType: 'TPL',
      liquidationDetails: {
       parentCaId: 'ca-070124-002',
       ltoOrNumber: 'LTO-OR-456',
@@ -139,7 +142,6 @@ const motorcycles: Motorcycle[] = [
     orFee: 1000,
     salesInvoiceNo: 'SI-00126',
     accountCode: 'AC-ABF-001',
-    hpgControlNumber: 'HPG-CTRL-004',
   },
   {
     id: '5',
@@ -159,12 +161,15 @@ const motorcycles: Motorcycle[] = [
         { type: 'Insurance', url: '#', uploadedAt: new Date('2023-08-05'), expiresAt: addDays(today, 360) },
     ],
     customerName: 'Gabriela Silang',
-    assignedLiaison: 'Demo Liaison',
     processingFee: 1550,
     orFee: 1050,
     salesInvoiceNo: 'SI-00127',
     accountCode: 'AC-GSL-001',
     hpgControlNumber: 'HPG-CTRL-005',
+    cocNumber: 'COC-PCX',
+    policyNumber: 'POL-PCX',
+    sarCode: 'SAR-PCX',
+    insuranceType: 'TPL',
   },
    {
     id: '6',
@@ -178,7 +183,7 @@ const motorcycles: Motorcycle[] = [
     assignedBranch: 'Main Office',
     purchaseDate: new Date('2024-05-10'),
     supplier: 'Yamaha Motors',
-    status: 'Ready to Register',
+    status: 'Endorsed',
     documents: [
       { type: 'COC', url: '#', uploadedAt: new Date('2024-05-15') },
       { type: 'Insurance', url: '#', uploadedAt: new Date('2024-05-15'), expiresAt: addDays(today, 365) },
@@ -191,6 +196,10 @@ const motorcycles: Motorcycle[] = [
     salesInvoiceNo: 'SI-00128',
     accountCode: 'AC-APM-001',
     hpgControlNumber: 'HPG-CTRL-006',
+    cocNumber: 'COC-AEROX',
+    policyNumber: 'POL-AEROX',
+    sarCode: 'SAR-AEROX',
+    insuranceType: 'TPL',
   },
   {
     id: '7',
@@ -204,7 +213,7 @@ const motorcycles: Motorcycle[] = [
     assignedBranch: 'East Branch',
     purchaseDate: new Date('2024-06-01'),
     supplier: 'Honda Prestige',
-    status: 'Incomplete',
+    status: 'Processing',
     documents: [],
     customerName: 'Emilio Aguinaldo',
     assignedLiaison: 'Demo Liaison',
@@ -212,6 +221,11 @@ const motorcycles: Motorcycle[] = [
     orFee: 1000,
     salesInvoiceNo: 'SI-00129',
     accountCode: 'AC-EAG-001',
+    hpgControlNumber: 'HPG-CTRL-007',
+    cocNumber: 'COC-ADV',
+    policyNumber: 'POL-ADV',
+    sarCode: 'SAR-ADV',
+    insuranceType: 'TPL',
   }
 ];
 
@@ -271,25 +285,25 @@ const cashAdvances: CashAdvance[] = [
 ];
 
 const liaisonUsers: LiaisonUser[] = [
-    { id: '1', name: 'JINKY JOY AGBALOG', assignedBranch: 'LA UNION', processingFee: 300.00, orFee: 2115.18 },
-    { id: '2', name: 'BABY LIEZELL CAUILAN', assignedBranch: 'ILAGAN', processingFee: 250.00, orFee: 2310.18 },
-    { id: '3', name: 'RODEL PASTRANO', assignedBranch: 'SAN FERNANDO', processingFee: 300.00, orFee: 1885.18 },
-    { id: '4', name: 'JUNIEFE AQUINO', assignedBranch: 'CALAMBA', processingFee: 200.00, orFee: 2359.43 },
-    { id: '5', name: 'LYNLYN GENEZA', assignedBranch: 'CALAPAN', processingFee: 250.00, orFee: 2351.43 },
-    { id: '6', name: 'RUSHEL MORGA', assignedBranch: 'LEGAZPI', processingFee: 250.00, orFee: 2160.18 },
-    { id: '7', name: 'BENJO SEQUIERO', assignedBranch: 'ILOILO', processingFee: 150.00, orFee: 1826.43 },
-    { id: '8', name: 'BRYLE NIKKO HAMILI', assignedBranch: 'CEBU', processingFee: 300.00, orFee: 1826.43 },
-    { id: '9', name: 'ALLAN ANTONI', assignedBranch: 'TACLOBAN', processingFee: 100.00, orFee: 1655.18 },
-    { id: '10', name: 'RODERICK GUTIERREZ', assignedBranch: 'ZAMBOANGA', processingFee: 250.00, orFee: 1742.68 },
-    { id: '11', name: 'JASSRAY PAMISA', assignedBranch: 'CDO', processingFee: 100.00, orFee: 1846.43 },
-    { id: '12', name: 'ALI VIN SALEH COLINA', assignedBranch: 'DAVAO', processingFee: 244.82, orFee: 1836.43 },
-    { id: '13', name: 'EMILY AMADEO', assignedBranch: 'MARBEL', processingFee: 130.00, orFee: 1896.43 },
-    { id: '14', name: 'GEORGETH YEE', assignedBranch: 'BUENAVISTA', processingFee: 150.00, orFee: 1846.43 },
+    { id: '1', name: 'JINKY JOY AGBALOG', assignedBranch: 'LA UNION', processingFee: 300.00, orFee: 2115.18-300 },
+    { id: '2', name: 'BABY LIEZELL CAUILAN', assignedBranch: 'ILAGAN', processingFee: 250.00, orFee: 2310.18-250 },
+    { id: '3', name: 'RODEL PASTRANO', assignedBranch: 'SAN FERNANDO', processingFee: 300.00, orFee: 1885.18-300 },
+    { id: '4', name: 'JUNIEFE AQUINO', assignedBranch: 'CALAMBA', processingFee: 200.00, orFee: 2359.43-200 },
+    { id: '5', name: 'LYNLYN GENEZA', assignedBranch: 'CALAPAN', processingFee: 250.00, orFee: 2351.43-250 },
+    { id: '6', name: 'RUSHEL MORGA', assignedBranch: 'LEGAZPI', processingFee: 250.00, orFee: 2160.18-250 },
+    { id: '7', name: 'BENJO SEQUIERO', assignedBranch: 'ILOILO', processingFee: 150.00, orFee: 1826.43-150 },
+    { id: '8', name: 'BRYLE NIKKO HAMILI', assignedBranch: 'CEBU', processingFee: 300.00, orFee: 1826.43-300 },
+    { id: '9', name: 'ALLAN ANTONI', assignedBranch: 'TACLOBAN', processingFee: 100.00, orFee: 1655.18-100 },
+    { id: '10', name: 'RODERICK GUTIERREZ', assignedBranch: 'ZAMBOANGA', processingFee: 250.00, orFee: 1742.68-250 },
+    { id: '11', name: 'JASSRAY PAMISA', assignedBranch: 'CDO', processingFee: 100.00, orFee: 1846.43-100 },
+    { id: '12', name: 'ALI VIN SALEH COLINA', assignedBranch: 'DAVAO', processingFee: 244.82, orFee: 1836.43-244.82 },
+    { id: '13', name: 'EMILY AMADEO', assignedBranch: 'MARBEL', processingFee: 130.00, orFee: 1896.43-130 },
+    { id: '14', name: 'GEORGETH YEE', assignedBranch: 'BUENAVISTA', processingFee: 150.00, orFee: 1846.43-150 },
     { id: '15', name: 'Demo Liaison', assignedBranch: 'Main Office', processingFee: 1500, orFee: 1000 },
 ];
 
 const endorsements: Endorsement[] = [
-    { id: 'ENDO-20240720-001', transactionDate: addDays(today, -10), liaisonId: '15', liaisonName: 'Demo Liaison', motorcycleIds: ['4', '5'], remarks: 'Please prioritize processing for these units.'},
+    { id: 'ENDO-20240720-001', transactionDate: addDays(today, -10), liaisonId: '15', liaisonName: 'Demo Liaison', motorcycleIds: ['4'], remarks: 'Please prioritize processing for this unit.'},
     { id: 'ENDO-20240722-001', transactionDate: addDays(today, -8), liaisonId: '8', liaisonName: 'BRYLE NIKKO HAMILI', motorcycleIds: ['1', '3']},
     { id: 'ENDO-20240725-001', transactionDate: addDays(today, -5), liaisonId: '15', liaisonName: 'Demo Liaison', motorcycleIds: ['6', '7'], remarks: 'For registration.'},
 ]
@@ -297,13 +311,13 @@ const endorsements: Endorsement[] = [
 export async function getMotorcycles() {
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 500));
-  return motorcycles;
+  return JSON.parse(JSON.stringify(motorcycles)).map((m: any) => ({...m, purchaseDate: new Date(m.purchaseDate), documents: m.documents.map((d:any) => ({...d, uploadedAt: new Date(d.uploadedAt), expiresAt: d.expiresAt ? new Date(d.expiresAt) : undefined}))}));
 }
 
 export async function getCashAdvances() {
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 500));
-  return cashAdvances;
+  return JSON.parse(JSON.stringify(cashAdvances)).map((c: any) => ({...c, date: new Date(c.date)}));
 }
 
 export function getBranches() {
@@ -317,5 +331,5 @@ export async function getLiaisons() {
 
 export async function getEndorsements() {
     await new Promise(resolve => setTimeout(resolve, 500));
-    return endorsements;
+    return JSON.parse(JSON.stringify(endorsements)).map((e: any) => ({...e, transactionDate: new Date(e.transactionDate)}));
 }

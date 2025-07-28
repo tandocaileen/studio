@@ -62,15 +62,23 @@ function CreateEndorsementContent() {
     }
 
     const handleConfirmEndorsement = () => {
+        // In a real app, you would update the backend here.
+        // For the demo, we'll update the statuses locally.
+        const updatedMotorcycles = motorcycles?.map(mc => {
+            if (selectedMotorcycles.some(sm => sm.id === mc.id)) {
+                return { ...mc, status: 'Endorsed', assignedLiaison: selectedLiaison?.name };
+            }
+            return mc;
+        });
+        setMotorcycles(updatedMotorcycles || []);
+        
         toast({ title: 'Endorsement Created!', description: `${selectedMotorcycles.length} unit(s) have been endorsed to ${selectedLiaison?.name}.` });
         
-        // In a real app, you would update the backend here.
-        // For the demo, we'll just clear the state.
         setSelectedMotorcycles([]);
         setSelectedLiaison(null);
         setRemarks('');
         setIsSummaryOpen(false);
-        // This is a bit of a hack to reset the select component visually
+
         const trigger = document.getElementById('receiving-liaison-trigger');
         if (trigger) {
             // @ts-ignore
@@ -83,7 +91,7 @@ function CreateEndorsementContent() {
     }
 
     const availableMotorcycles = motorcycles.filter(
-        m => (m.status === 'Incomplete' || m.status === 'Ready to Register') &&
+        m => m.status === 'Ready to Register' &&
         (m.plateNumber.toLowerCase().includes(searchQuery.toLowerCase()) || 
          (m.customerName && m.customerName.toLowerCase().includes(searchQuery.toLowerCase())) ||
          m.make.toLowerCase().includes(searchQuery.toLowerCase()) ||

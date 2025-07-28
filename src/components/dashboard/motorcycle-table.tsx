@@ -48,6 +48,7 @@ import { CashAdvancePreview } from './cash-advance-preview';
 
 type MotorcycleTableProps = {
   motorcycles: Motorcycle[];
+  onStateChange?: (updatedMotorcycles: Motorcycle[]) => void;
 };
 
 type NewDocument = {
@@ -62,7 +63,7 @@ type NewDocument = {
 const ALL_DOC_TYPES: DocumentType[] = ['OR/CR', 'COC', 'Insurance', 'CSR', 'HPG Control Form'];
 const ITEMS_PER_PAGE = 10;
 
-export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleTableProps) {
+export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange }: MotorcycleTableProps) {
   const [motorcycles, setMotorcycles] = React.useState(initialMotorcycles);
   const [selectedMotorcycles, setSelectedMotorcycles] = React.useState<Motorcycle[]>([]);
   const [editingMotorcycle, setEditingMotorcycle] = React.useState<Motorcycle | null>(null);
@@ -110,10 +111,10 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
       return;
     }
 
-    if (selectedMotorcycles.some(m => m.status === 'Incomplete')) {
+    if (selectedMotorcycles.some(m => m.status !== 'Endorsed')) {
         toast({
             title: 'Cannot Generate Cash Advance',
-            description: 'Please unselect motorcycles with an "Incomplete" status.',
+            description: 'Please only select motorcycles with an "Endorsed" status.',
             variant: 'destructive',
         });
         return;
@@ -148,8 +149,13 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
       });
 
       console.log('Cash advance generated: ', result);
-      // Here you would typically send this 'result' object to your backend to save it.
-      // For the demo, we'll just show a success message.
+      
+      const updatedMotorcycles = motorcycles.map(m => 
+          selectedMotorcycles.some(sm => sm.id === m.id) ? { ...m, status: 'Processing' } : m
+      );
+      setMotorcycles(updatedMotorcycles);
+      if (onStateChange) onStateChange(updatedMotorcycles);
+      
       toast({
         title: 'Cash Advance Request Submitted',
         description: `Successfully submitted CA request ${result.id} for ${result.motorcycleIds.length} units.`,
@@ -186,16 +192,13 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
 
   const statusVariant = (status: Motorcycle['status']): 'default' | 'secondary' | 'destructive' | 'outline' => {
     switch (status) {
-      case 'Registered':
-        return 'secondary';
-      case 'For Renewal':
-        return 'destructive';
-      case 'Ready to Register':
-        return 'default';
-      case 'Incomplete':
-        return 'outline';
-      default:
-        return 'default';
+      case 'Ready to Register': return 'default';
+      case 'Endorsed': return 'secondary';
+      case 'Processing': return 'default';
+      case 'For Review': return 'secondary';
+      case 'For Renewal': return 'destructive';
+      case 'Incomplete': return 'outline';
+      default: return 'outline';
     }
   };
 
@@ -223,12 +226,10 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
   const handleSaveEdit = () => {
     if (!editingMotorcycle) return;
 
-    // Here you would handle the logic to save the updated motorcycle data
-    // and upload/delete documents. For this demo, we'll just update the local state.
-
     const updatedMotorcycle = {
       ...editingMotorcycle,
       ...editedData,
+      status: 'Ready to Register', // Change status upon saving details
       documents: editedDocuments.map(doc => ({
         type: doc.type,
         url: doc.url || '#',
@@ -236,10 +237,13 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
         expiresAt: doc.expiresAt,
       })) as Document[],
     };
-
-    setMotorcycles(motorcycles.map(m => 
+    
+    const updatedMotorcycles = motorcycles.map(m => 
       m.id === editingMotorcycle.id ? updatedMotorcycle : m
-    ));
+    );
+
+    setMotorcycles(updatedMotorcycles);
+    if (onStateChange) onStateChange(updatedMotorcycles);
 
     handleAction(`Motorcycle ${updatedMotorcycle.plateNumber} details updated.`);
     handleCancelEdit();
@@ -277,7 +281,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
     }
   };
 
-  const isGenerateCaDisabled = selectedMotorcycles.length === 0 || selectedMotorcycles.some(m => m.status === 'Incomplete');
+  const isGenerateCaDisabled = selectedMotorcycles.length === 0 || selectedMotorcycles.some(m => m.status !== 'Endorsed');
 
   const totalPages = Math.ceil(motorcycles.length / ITEMS_PER_PAGE);
   const paginatedMotorcycles = motorcycles.slice(
@@ -491,14 +495,16 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                       </div>
                       <div className="grid gap-2">
                         <Label htmlFor="status">Status</Label>
-                        <Select value={editedData.status} onValueChange={(value) => handleSelectChange('status', value)} disabled={!canEditInsuranceAndControl}>
+                        <Select value={editedData.status} onValueChange={(value) => handleSelectChange('status', value)} disabled>
                           <SelectTrigger>
                             <SelectValue/>
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="Incomplete">Incomplete</SelectItem>
                             <SelectItem value="Ready to Register">Ready to Register</SelectItem>
-                            <SelectItem value="Registered">Registered</SelectItem>
+                            <SelectItem value="Endorsed">Endorsed</SelectItem>
+                            <SelectItem value="Processing">Processing</SelectItem>
+                            <SelectItem value="For Review">For Review</SelectItem>
                             <SelectItem value="For Renewal">For Renewal</SelectItem>
                           </SelectContent>
                         </Select>
@@ -688,7 +694,3 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
     </>
   );
 }
-
-    
-
-    

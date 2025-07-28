@@ -12,42 +12,41 @@ import { useAuth } from "@/context/AuthContext";
 import { CashAdvance, Endorsement, Motorcycle } from "@/types";
 import { SummaryCards } from "@/components/dashboard/summary-cards";
 import { OverdueAdvances } from "@/components/dashboard/overdue-advances";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
 import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog";
 import { ReceiveLtoDocs } from "@/components/dashboard/receive-lto-docs";
 import { EndorsedIncompleteTable } from "@/components/dashboard/endorsed-incomplete-table";
+import { cn } from "@/lib/utils";
 
 type ViewFilter = 'unregistered' | 'all';
+type DashboardTab = 'pending-endorsements' | 'all-motorcycles';
 
 function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
   const [motorcycles, setMotorcycles] = useState<Motorcycle[] | null>(null);
   const [endorsements, setEndorsements] = useState<Endorsement[] | null>(null);
   const [viewFilter, setViewFilter] = useState<ViewFilter>('unregistered');
-  
+  const [activeTab, setActiveTab] = useState<DashboardTab>('pending-endorsements');
+
   useEffect(() => {
     getMotorcycles().then(setMotorcycles);
     getEndorsements().then(setEndorsements);
   }, []);
 
   const { user } = useAuth();
-  const userBranch = "Main Office"; 
+  const userBranch = "Main Office";
 
   if (!user || !motorcycles || !endorsements) {
     return <AppLoader />;
   }
 
-  const handleDocsReceived = (updatedMotorcycles: Motorcycle[]) => {
-      // In a real app, this would be a backend call.
-      // For demo purposes, we'll just update the local state.
+  const handleStateUpdate = (updatedMotorcycles: Motorcycle[]) => {
       setMotorcycles(currentMotorcycles => {
           const updatedIds = new Set(updatedMotorcycles.map(um => um.id));
           return currentMotorcycles!.map(cm => {
-              if (updatedIds.has(cm.id)) {
-                  return updatedMotorcycles.find(um => um.id === cm.id)!;
-              }
-              return cm;
+              const updatedVersion = updatedMotorcycles.find(um => um.id === cm.id);
+              return updatedVersion || cm;
           });
       });
   };
@@ -55,7 +54,7 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
   const filteredMotorcycles = motorcycles.filter(m => {
     let matchesFilter = true;
     if (viewFilter === 'unregistered') {
-        matchesFilter = ['Incomplete', 'Ready to Register'].includes(m.status);
+        matchesFilter = !['For Review'].includes(m.status);
     }
     
     if (!matchesFilter) return false;
@@ -73,10 +72,9 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
     return searchFilter;
   });
 
-  const endorsedIncompleteMotorcycles = endorsements.flatMap(e => e.motorcycleIds)
-    .map(id => motorcycles.find(m => m.id === id))
-    .filter((m): m is Motorcycle => !!m && m.status === 'Incomplete');
-
+  const endorsedIncompleteMotorcycles = motorcycles.filter(
+    m => m.status === 'Incomplete' && endorsements.some(e => e.motorcycleIds.includes(m.id))
+  );
 
   return (
     <>
@@ -98,25 +96,45 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
                 </Button>
             </DialogTrigger>
             <DialogContent className="max-w-7xl">
-                <ReceiveLtoDocs motorcycles={motorcycles.filter(m => m.status === 'Incomplete')} onSave={handleDocsReceived} />
+                <ReceiveLtoDocs motorcycles={motorcycles.filter(m => m.status === 'Incomplete')} onSave={handleStateUpdate} />
             </DialogContent>
           </Dialog>
       </div>
 
        <div className="grid gap-8">
-        <EndorsedIncompleteTable motorcycles={endorsedIncompleteMotorcycles} />
-
-        <div>
-            <div className="flex items-center gap-4 mb-4">
-                <Tabs value={viewFilter} onValueChange={(value) => setViewFilter(value as ViewFilter)}>
-                    <TabsList>
-                        <TabsTrigger value="unregistered">Unregistered</TabsTrigger>
-                        <TabsTrigger value="all">View All</TabsTrigger>
-                    </TabsList>
-                </Tabs>
-            </div>
-            <MotorcycleTable motorcycles={filteredMotorcycles} />
-        </div>
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as DashboardTab)}>
+            <TabsList>
+                <TabsTrigger 
+                  value="pending-endorsements"
+                  className={cn(
+                    'data-[state=active]:bg-destructive/10 data-[state=active]:text-destructive-foreground',
+                    endorsedIncompleteMotorcycles.length > 0 && 'text-destructive'
+                  )}
+                >
+                  Endorsed Units with Incomplete Details ({endorsedIncompleteMotorcycles.length})
+                </TabsTrigger>
+                <TabsTrigger value="all-motorcycles">Motorcycle Fleet</TabsTrigger>
+            </TabsList>
+            <TabsContent value="pending-endorsements">
+              <EndorsedIncompleteTable 
+                motorcycles={endorsedIncompleteMotorcycles}
+                onUpdate={handleStateUpdate}
+              />
+            </TabsContent>
+            <TabsContent value="all-motorcycles">
+              <div>
+                  <div className="flex items-center gap-4 mb-4">
+                      <Tabs value={viewFilter} onValueChange={(value) => setViewFilter(value as ViewFilter)}>
+                          <TabsList>
+                              <TabsTrigger value="unregistered">Unregistered</TabsTrigger>
+                              <TabsTrigger value="all">View All</TabsTrigger>
+                          </TabsList>
+                      </Tabs>
+                  </div>
+                  <MotorcycleTable motorcycles={filteredMotorcycles} onStateChange={handleStateUpdate} />
+              </div>
+            </TabsContent>
+        </Tabs>
       </div>
     </>
   );
@@ -138,14 +156,24 @@ function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
     return <AppLoader />;
   }
 
+  const handleStateUpdate = (updatedMotorcycles: Motorcycle[]) => {
+      setMotorcycles(currentMotorcycles => {
+          const updatedIds = new Set(updatedMotorcycles.map(um => um.id));
+          return currentMotorcycles!.map(cm => {
+              const updatedVersion = updatedMotorcycles.find(um => um.id === cm.id);
+              return updatedVersion || cm;
+          });
+      });
+  };
+
   // Filter logic based on user role
   const filteredMotorcycles = motorcycles.filter(m => {
     const isUserAssigned = m.assignedLiaison === user.name;
     if (!isUserAssigned) return false;
 
     if (viewFilter === 'pending') {
-        const isUnregistered = ['Incomplete', 'Ready to Register'].includes(m.status);
-        if(!isUnregistered) return false;
+        const isPending = ['Endorsed', 'Processing'].includes(m.status);
+        if(!isPending) return false;
     }
     
     if (!searchQuery) return true;
@@ -184,7 +212,7 @@ function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
             </TabsList>
         </Tabs>
       </div>
-      <MotorcycleTable motorcycles={filteredMotorcycles} />
+      <MotorcycleTable motorcycles={filteredMotorcycles} onStateChange={handleStateUpdate} />
     </>
   );
 }
@@ -194,7 +222,6 @@ function CashierDashboardContent({searchQuery}: {searchQuery: string}) {
     const [cashAdvances, setCashAdvances] = useState<CashAdvance[]>([]);
     const [loading, setLoading] = useState(true);
     const { user } = useAuth();
-    const userBranch = "Main Office";
 
     useEffect(() => {
         Promise.all([getMotorcycles(), getCashAdvances()]).then(([motorcycleData, cashAdvanceData]) => {
