@@ -63,7 +63,7 @@ const motorcycles: Motorcycle[] = [
     assignedBranch: 'SAN FERNANDO',
     purchaseDate: new Date('2022-05-20'),
     supplier: 'Yamaha Motors',
-    status: 'For Renewal',
+    status: 'Ready to Register',
     documents: [
       { type: 'OR/CR', url: '#/doc/orcr456', uploadedAt: new Date('2022-05-25'), expiresAt: addDays(today, -10) },
       { type: 'COC', url: '#', uploadedAt: new Date('2022-05-25') },

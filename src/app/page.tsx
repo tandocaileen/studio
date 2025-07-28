@@ -52,7 +52,7 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
   const filteredMotorcycles = motorcycles.filter(m => {
     let matchesFilter = true;
     if (viewFilter === 'unregistered') {
-        matchesFilter = !['For Review'].includes(m.status);
+        matchesFilter = ['Incomplete', 'Ready to Register'].includes(m.status);
     }
     
     if (!matchesFilter) return false;
@@ -90,17 +90,6 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
                   {userBranch} - {user?.role}
               </p>
           </div>
-           <Dialog>
-              <DialogTrigger asChild>
-                  <Button size="sm" className="gap-1">
-                      <PlusCircle className="h-4 w-4" />
-                      <span className="hidden sm:inline">Receive MC Docs</span>
-                  </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-4xl">
-                  <ReceiveLtoDocs motorcycles={motorcyclesPendingDocs} onSave={handleStateUpdate} />
-              </DialogContent>
-          </Dialog>
       </div>
 
        <div className="grid gap-4">
@@ -135,13 +124,24 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
                     </TabsContent>
                     <TabsContent value="all-motorcycles" className="m-0">
                         <div className="p-6">
-                            <div className="flex items-center gap-4 mb-4">
+                             <div className="flex items-center justify-between mb-4">
                                 <Tabs value={viewFilter} onValueChange={(value) => setViewFilter(value as ViewFilter)}>
                                     <TabsList>
                                         <TabsTrigger value="unregistered">Unregistered</TabsTrigger>
                                         <TabsTrigger value="all">View All</TabsTrigger>
                                     </TabsList>
                                 </Tabs>
+                                <Dialog>
+                                    <DialogTrigger asChild>
+                                        <Button size="sm" className="gap-1">
+                                            <PlusCircle className="h-4 w-4" />
+                                            <span className="hidden sm:inline">Receive MC Docs</span>
+                                        </Button>
+                                    </DialogTrigger>
+                                    <DialogContent className="max-w-4xl">
+                                        <ReceiveLtoDocs motorcycles={motorcyclesPendingDocs} onSave={handleStateUpdate} />
+                                    </DialogContent>
+                                </Dialog>
                             </div>
                             <MotorcycleTable motorcycles={filteredMotorcycles} onStateChange={handleStateUpdate} />
                         </div>
@@ -297,5 +297,3 @@ export default function DashboardPage() {
     </ProtectedPage>
   );
 }
-
-    

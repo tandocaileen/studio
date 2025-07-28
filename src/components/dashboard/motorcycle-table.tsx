@@ -196,7 +196,6 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
       case 'Endorsed': return 'secondary';
       case 'Processing': return 'default';
       case 'For Review': return 'secondary';
-      case 'For Renewal': return 'destructive';
       case 'Incomplete': return 'outline';
       default: return 'outline';
     }
@@ -446,7 +445,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                     View / Edit Details - {editingMotorcycle?.plateNumber}
                   </DialogTitle>
                   <DialogDescription>
-                      {canEditInsuranceAndControl ? 'Update the insurance and control details for this unit.' : 'Viewing details for this unit.'}
+                      Update the insurance and control details for this unit.
                   </DialogDescription>
               </DialogHeader>
               <ScrollArea className="max-h-[70vh]">
@@ -511,7 +510,6 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                             <SelectItem value="Endorsed">Endorsed</SelectItem>
                             <SelectItem value="Processing">Processing</SelectItem>
                             <SelectItem value="For Review">For Review</SelectItem>
-                            <SelectItem value="For Renewal">For Renewal</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
