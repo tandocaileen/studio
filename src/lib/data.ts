@@ -266,4 +266,3 @@ export async function getLiaisons() {
     return liaisonUsers;
 }
 
-    

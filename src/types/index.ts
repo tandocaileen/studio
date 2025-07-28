@@ -66,5 +66,3 @@ export type LiaisonUser = {
     processingFee: number;
     orFee: number;
 }
-
-    

@@ -77,6 +77,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
   
   const isLiaison = user?.role === 'Liaison';
   const isSupervisor = user?.role === 'Store Supervisor';
+  const isCashier = user?.role === 'Cashier';
 
   const handleAction = (message: string) => {
     toast({
@@ -817,4 +818,3 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
     </>
   );
 }
-

@@ -65,54 +65,9 @@ export function LiaisonTable() {
           <div>
             <CardTitle>Liaisons</CardTitle>
             <CardDescription>
-              Manage liaison personnel, their assigned branches, and fees.
+              View liaison personnel, their assigned branches, and fees.
             </CardDescription>
           </div>
-          <Dialog>
-            <DialogTrigger asChild>
-                <Button size="sm" className="gap-1">
-                    <PlusCircle className="h-4 w-4" />
-                    Add Liaison
-                </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                    <DialogTitle>Add New Liaison</DialogTitle>
-                    <DialogDescription>
-                        Fill in the details for the new liaison.
-                    </DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                    <div className="grid gap-2">
-                        <Label htmlFor="name">Name</Label>
-                        <Input id="name" placeholder="e.g., John Doe" />
-                    </div>
-                     <div className="grid gap-2">
-                        <Label htmlFor="branch">Branch Assigned</Label>
-                        <Select>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select a branch" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {branches.map(branch => <SelectItem key={branch} value={branch}>{branch}</SelectItem>)}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                     <div className="grid gap-2">
-                        <Label htmlFor="processing-fee">Processing Fee</Label>
-                        <Input id="processing-fee" type="number" placeholder="e.g., 1500" />
-                    </div>
-                     <div className="grid gap-2">
-                        <Label htmlFor="or-fee">OR Fee</Label>
-                        <Input id="or-fee" type="number" placeholder="e.g., 1000" />
-                    </div>
-                </div>
-                 <DialogFooter>
-                    <Button variant="outline" onClick={() => (document.querySelector('[aria-label="Close"]') as HTMLElement)?.click()}>Cancel</Button>
-                    <Button type="submit" onClick={() => handleAction('New liaison added.')}>Save Liaison</Button>
-                </DialogFooter>
-            </DialogContent>
-          </Dialog>
         </CardHeader>
         <CardContent>
           <Table>
@@ -122,9 +77,6 @@ export function LiaisonTable() {
                 <TableHead>Assigned Branch</TableHead>
                 <TableHead className="text-right">Processing Fee</TableHead>
                 <TableHead className="text-right">OR Fee</TableHead>
-                <TableHead>
-                  <span className="sr-only">Actions</span>
-                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -134,27 +86,6 @@ export function LiaisonTable() {
                   <TableCell>{liaison.assignedBranch}</TableCell>
                   <TableCell className="text-right">₱{liaison.processingFee.toLocaleString()}</TableCell>
                   <TableCell className="text-right">₱{liaison.orFee.toLocaleString()}</TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button aria-haspopup="true" size="icon" variant="ghost">
-                          <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">Toggle menu</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
