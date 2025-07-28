@@ -24,8 +24,9 @@ import { cn } from '@/lib/utils';
 import { Badge } from '../ui/badge';
 import { useRouter } from 'next/navigation';
 import { CashAdvance, Motorcycle } from '@/types';
-import { getMotorcycles } from '@/lib/data';
+import { getCashAdvances, getMotorcycles } from '@/lib/data';
 import { AppLoader } from '../layout/loader';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 
 type GroupedLiquidation = {
@@ -212,7 +213,7 @@ export function LiquidationTable({ items }: LiquidationTableProps) {
             </ScrollArea>
              <div className="grid grid-cols-2 gap-4 mt-4 font-medium p-4 border rounded-lg">
                 <div>
-                    <p>Total CA Amount:</p>
+                    <p>Total Cash Advance Received for this MC:</p>
                     <p>Total Liquidation:</p>
                     <p className={cn(grandTotalShortageOverage < 0 ? 'text-destructive' : 'text-green-600')}>Shortage / Overage:</p>
                 </div>
@@ -310,4 +311,3 @@ export function LiquidationsContent({ searchQuery }: LiquidationsContentProps) {
         </div>
     )
 }
-
