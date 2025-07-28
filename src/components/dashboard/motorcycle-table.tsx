@@ -18,7 +18,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Document, Motorcycle, DocumentType } from '@/types';
@@ -61,6 +61,7 @@ type NewDocument = {
 };
 
 const ALL_DOC_TYPES: DocumentType[] = ['OR/CR', 'COC', 'Insurance', 'CSR', 'HPG Control Form'];
+const ITEMS_PER_PAGE = 10;
 
 export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleTableProps) {
   const [motorcycles, setMotorcycles] = React.useState(initialMotorcycles);
@@ -72,6 +73,12 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
   const [newDocuments, setNewDocuments] = React.useState<NewDocument[]>([]);
   const [isPreviewingCa, setIsPreviewingCa] = React.useState(false);
   const [liaisons, setLiaisons] = React.useState<any[]>([]);
+  const [currentPage, setCurrentPage] = React.useState(1);
+  
+  React.useEffect(() => {
+    setMotorcycles(initialMotorcycles);
+    setCurrentPage(1);
+  }, [initialMotorcycles]);
 
   React.useEffect(() => {
     getLiaisons().then(setLiaisons);
@@ -271,6 +278,12 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
   };
 
   const isGenerateCaDisabled = selectedMotorcycles.length === 0 || selectedMotorcycles.some(m => m.status === 'Incomplete');
+
+  const totalPages = Math.ceil(motorcycles.length / ITEMS_PER_PAGE);
+  const paginatedMotorcycles = motorcycles.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
 
 
   return (
@@ -503,7 +516,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
               </TableRow>
             </TableHeader>
             <TableBody>
-              {motorcycles.map((motorcycle) => (
+              {paginatedMotorcycles.map((motorcycle) => (
                   <TableRow key={motorcycle.id} data-state={selectedMotorcycles.some(m => m.id === motorcycle.id) ? "selected" : undefined}>
                     <TableCell>
                       <Checkbox
@@ -564,7 +577,38 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
               ))}
             </TableBody>
           </Table>
+           {motorcycles.length === 0 && (
+              <div className="text-center p-8 text-muted-foreground">No motorcycles to display.</div>
+            )}
         </CardContent>
+         <CardFooter>
+            <div className="flex items-center justify-between w-full">
+                <div className="text-xs text-muted-foreground">
+                    Showing {Math.min(paginatedMotorcycles.length, motorcycles.length)} of {motorcycles.length} motorcycles.
+                </div>
+                <div className="flex items-center gap-2">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}
+                    >
+                        Previous
+                    </Button>
+                    <span className="text-sm font-medium">
+                        Page {currentPage} of {totalPages}
+                    </span>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                        disabled={currentPage === totalPages}
+                    >
+                        Next
+                    </Button>
+                </div>
+            </div>
+        </CardFooter>
       </Card>
       
       {/* Edit Motorcycle Dialog */}
@@ -827,3 +871,4 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
     </>
   );
 }
+

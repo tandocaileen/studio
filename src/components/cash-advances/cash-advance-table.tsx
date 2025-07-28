@@ -18,7 +18,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CashAdvance } from '@/types';
@@ -39,12 +39,21 @@ type CashAdvanceTableProps = {
   advances: EnrichedCashAdvance[];
 };
 
+const ITEMS_PER_PAGE = 10;
+
 export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTableProps) {
   const [advances, setAdvances] = React.useState(initialAdvances);
   const [previewingAdvance, setPreviewingAdvance] = React.useState<CashAdvance | null>(null);
   const { toast } = useToast();
   const documentRef = React.useRef(null);
   const { user } = useAuth();
+  const [currentPage, setCurrentPage] = React.useState(1);
+
+  React.useEffect(() => {
+    setAdvances(initialAdvances);
+    setCurrentPage(1);
+  }, [initialAdvances]);
+
 
   const handleAction = (message: string) => {
     toast({
@@ -76,6 +85,12 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
 
   const isCashierOrSupervisor = user?.role === 'Cashier' || user?.role === 'Store Supervisor';
 
+  const totalPages = Math.ceil(advances.length / ITEMS_PER_PAGE);
+  const paginatedAdvances = advances.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
   return (
     <>
     <Card>
@@ -102,7 +117,7 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
             </TableRow>
           </TableHeader>
           <TableBody>
-            {advances.map(({ cashAdvance: ca, motorcycle }) => (
+            {paginatedAdvances.map(({ cashAdvance: ca, motorcycle }) => (
               <TableRow key={ca.id}>
                  <TableCell className="font-medium">
                   {isCashierOrSupervisor ? ca.personnel : (motorcycle?.customerName || ca.personnel)}
@@ -166,7 +181,38 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
             ))}
           </TableBody>
         </Table>
+         {advances.length === 0 && (
+              <div className="text-center p-8 text-muted-foreground">No cash advances to display.</div>
+          )}
       </CardContent>
+       <CardFooter>
+            <div className="flex items-center justify-between w-full">
+                <div className="text-xs text-muted-foreground">
+                    Showing {Math.min(paginatedAdvances.length, advances.length)} of {advances.length} cash advances.
+                </div>
+                <div className="flex items-center gap-2">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}
+                    >
+                        Previous
+                    </Button>
+                    <span className="text-sm font-medium">
+                        Page {currentPage} of {totalPages}
+                    </span>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                        disabled={currentPage === totalPages}
+                    >
+                        Next
+                    </Button>
+                </div>
+            </div>
+        </CardFooter>
     </Card>
     
     <Dialog open={!!previewingAdvance} onOpenChange={(open) => !open && setPreviewingAdvance(null)}>
@@ -193,3 +239,4 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
     </>
   );
 }
+

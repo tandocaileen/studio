@@ -5,7 +5,7 @@ import * as React from 'react';
 import { Header } from "@/components/layout/header";
 import { AppSidebar } from "@/components/layout/sidebar";
 import { ProtectedPage } from '@/components/auth/protected-page';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { getLiaisons, getMotorcycles } from '@/lib/data';
 import { LiaisonUser, Motorcycle } from '@/types';
 import { AppLoader } from '@/components/layout/loader';
@@ -23,6 +23,8 @@ import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
+const ITEMS_PER_PAGE = 10;
+
 function EndorsementsContent() {
     const [motorcycles, setMotorcycles] = React.useState<Motorcycle[] | null>(null);
     const [liaisons, setLiaisons] = React.useState<LiaisonUser[] | null>(null);
@@ -32,6 +34,7 @@ function EndorsementsContent() {
     const [searchQuery, setSearchQuery] = React.useState('');
     const [isSummaryOpen, setIsSummaryOpen] = React.useState(false);
     const { toast } = useToast();
+    const [currentPage, setCurrentPage] = React.useState(1);
 
     React.useEffect(() => {
         getMotorcycles().then(setMotorcycles);
@@ -86,6 +89,12 @@ function EndorsementsContent() {
          m.make.toLowerCase().includes(searchQuery.toLowerCase()) ||
          m.model.toLowerCase().includes(searchQuery.toLowerCase())
         )
+    );
+
+    const totalPages = Math.ceil(availableMotorcycles.length / ITEMS_PER_PAGE);
+    const paginatedMotorcycles = availableMotorcycles.slice(
+        (currentPage - 1) * ITEMS_PER_PAGE,
+        currentPage * ITEMS_PER_PAGE
     );
     
     const endorsementCode = `ENDO-${format(new Date(), 'yyyyMMdd')}-001`;
@@ -177,7 +186,7 @@ function EndorsementsContent() {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {availableMotorcycles.map(mc => (
+                                        {paginatedMotorcycles.map(mc => (
                                             <TableRow 
                                                 key={mc.id}
                                                 data-state={selectedMotorcycles.some(m => m.id === mc.id) ? "selected" : undefined}
@@ -210,6 +219,34 @@ function EndorsementsContent() {
                                 </Table>
                             </ScrollArea>
                         </CardContent>
+                         <CardFooter>
+                            <div className="flex items-center justify-between w-full">
+                                <div className="text-xs text-muted-foreground">
+                                    Showing {paginatedMotorcycles.length} of {availableMotorcycles.length} units.
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                        disabled={currentPage === 1}
+                                    >
+                                        Previous
+                                    </Button>
+                                    <span className="text-sm font-medium">
+                                        Page {currentPage} of {totalPages}
+                                    </span>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                        disabled={currentPage === totalPages}
+                                    >
+                                        Next
+                                    </Button>
+                                </div>
+                            </div>
+                        </CardFooter>
                     </Card>
                 </div>
             </div>
@@ -265,7 +302,7 @@ function EndorsementsContent() {
 
 export default function EndorsementsPage() {
     return (
-        <ProtectedPage allowedRoles={['Store Supervisor']}>
+        <ProtectedPage allowedRoles={['Store Supervisor', 'Cashier']}>
             <div className="flex min-h-screen w-full flex-col bg-muted/40">
                 <AppSidebar />
                 <div className="flex flex-col pt-14 sm:gap-4 sm:py-4 sm:pl-14">
@@ -279,4 +316,3 @@ export default function EndorsementsPage() {
     );
 }
 
-    
