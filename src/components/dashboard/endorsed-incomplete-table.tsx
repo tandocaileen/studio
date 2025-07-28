@@ -29,7 +29,7 @@ export function EndorsedIncompleteTable({ motorcycles, onUpdate }: EndorsedIncom
   return (
     <Card className="border-destructive bg-destructive/5">
       <CardHeader>
-        <CardTitle>Action Required: Endorsed Units with Incomplete Details</CardTitle>
+        <CardTitle>Endorsed Units with Incomplete Details</CardTitle>
         <CardDescription>
           These units have been endorsed but require insurance and control details before a CA can be generated.
         </CardDescription>
