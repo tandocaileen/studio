@@ -48,7 +48,7 @@ import { CashAdvancePreview } from './cash-advance-preview';
 
 type MotorcycleTableProps = {
   motorcycles: Motorcycle[];
-  onStateChange?: (updatedMotorcycles: Motorcycle[]) => void;
+  onStateChange?: (updatedMotorcycles: Motorcycle | Motorcycle[]) => void;
 };
 
 type NewDocument = {
@@ -239,7 +239,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
         uploadedAt: new Date(),
         expiresAt: doc.expiresAt,
       }))
-    ] as Document[];
+    ].filter(doc => doc.url && doc.url !=='#') as Document[];
 
     const updatedMotorcycle = {
       ...editingMotorcycle,
@@ -650,6 +650,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                               <Select
                                 value={doc.type}
                                 onValueChange={(value: DocumentType) => handleDocumentChange(doc.id, 'type', value, true)}
+                                disabled={!canEditInsuranceAndControl}
                               >
                                 <SelectTrigger id={`new-doc-type-${index}`} className="col-span-3">
                                   <SelectValue />
@@ -663,7 +664,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                             </div>
                              <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor={`new-doc-file-${index}`} className="text-right">File</Label>
-                                <Input id={`new-doc-file-${index}`} type="file" className="col-span-3" onChange={(e) => handleFileChange(doc.id, e, true)} />
+                                <Input id={`new-doc-file-${index}`} type="file" className="col-span-3" onChange={(e) => handleFileChange(doc.id, e, true)} disabled={!canEditInsuranceAndControl}/>
                             </div>
                              {doc.type === 'Insurance' || doc.type === 'OR/CR' ? (
                               <div className="grid grid-cols-4 items-center gap-4">
@@ -676,6 +677,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                                           "col-span-3 justify-start text-left font-normal",
                                           !doc.expiresAt && "text-muted-foreground"
                                         )}
+                                        disabled={!canEditInsuranceAndControl}
                                       >
                                         <CalendarIcon className="mr-2 h-4 w-4" />
                                         {doc.expiresAt ? format(new Date(doc.expiresAt), "PPP") : <span>Pick a date</span>}

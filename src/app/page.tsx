@@ -42,10 +42,15 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
     return <AppLoader />;
   }
 
-  const handleStateUpdate = (updatedOrNewMotorcycles: Motorcycle[]) => {
+  const handleStateUpdate = (updatedOrNewMotorcycles: Motorcycle | Motorcycle[]) => {
       setMotorcycles(currentMotorcycles => {
-          const updatedMap = new Map(updatedOrNewMotorcycles.map(m => [m.id, m]));
-          return currentMotorcycles!.map(cm => updatedMap.get(cm.id) || cm);
+          if (Array.isArray(updatedOrNewMotorcycles)) {
+               const updatedMap = new Map(updatedOrNewMotorcycles.map(m => [m.id, m]));
+               return currentMotorcycles!.map(cm => updatedMap.get(cm.id) || cm);
+          } else {
+              // It's a single new motorcycle
+              return [...currentMotorcycles!, updatedOrNewMotorcycles];
+          }
       });
   };
   
@@ -75,7 +80,7 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
   );
 
   const motorcyclesPendingDocs = motorcycles.filter(
-      m => !m.hpgControlNumber
+      m => !m.hpgControlNumber || !m.salesInvoiceNo || !m.accountCode
   );
 
   return (

@@ -9,15 +9,22 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Checkbox } from "../ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
+import { DialogClose } from "@radix-ui/react-dialog";
 
 type ReceiveLtoDocsProps = {
     motorcycles: Motorcycle[];
     onSave: (updatedMotorcycles: Motorcycle[]) => void;
 };
 
+type EditableDetails = {
+    salesInvoiceNo?: string;
+    accountCode?: string;
+    hpgControlNumber?: string;
+}
+
 export function ReceiveLtoDocs({ motorcycles, onSave }: ReceiveLtoDocsProps) {
     const [selectedMotorcycles, setSelectedMotorcycles] = useState<Motorcycle[]>([]);
-    const [hpgControlNumbers, setHpgControlNumbers] = useState<{ [key: string]: string }>({});
+    const [details, setDetails] = useState<{ [key: string]: EditableDetails }>({});
     const { toast } = useToast();
 
     const handleSelect = (motorcycle: Motorcycle, checked: boolean | 'indeterminate') => {
@@ -36,30 +43,21 @@ export function ReceiveLtoDocs({ motorcycles, onSave }: ReceiveLtoDocsProps) {
         }
     };
 
-    const handleHpgInputChange = (id: string, value: string) => {
-        setHpgControlNumbers(prev => ({ ...prev, [id]: value }));
+    const handleInputChange = (id: string, field: keyof EditableDetails, value: string) => {
+        setDetails(prev => ({ 
+            ...prev, 
+            [id]: {
+                 ...prev[id], 
+                 [field]: value 
+            } 
+        }));
     };
 
     const handleSave = (motorcyclesToUpdate: Motorcycle[]) => {
         const updatedMotorcycles = motorcyclesToUpdate.map(mc => {
-            const hpgNumber = hpgControlNumbers[mc.id];
-            if (hpgNumber) {
-                const hpgDoc = {
-                    type: 'HPG Control Form' as const,
-                    url: hpgNumber,
-                    uploadedAt: new Date()
-                };
-                
-                // Check if HPG doc already exists and update it, otherwise add it.
-                const docIndex = mc.documents.findIndex(d => d.type === 'HPG Control Form');
-                const newDocuments = [...mc.documents];
-                if (docIndex > -1) {
-                    newDocuments[docIndex] = hpgDoc;
-                } else {
-                    newDocuments.push(hpgDoc);
-                }
-                
-                return { ...mc, hpgControlNumber: hpgNumber, documents: newDocuments };
+            const newDetails = details[mc.id];
+            if (newDetails) {
+                return { ...mc, ...newDetails };
             }
             return mc;
         });
@@ -70,7 +68,7 @@ export function ReceiveLtoDocs({ motorcycles, onSave }: ReceiveLtoDocsProps) {
             description: `Successfully updated ${motorcyclesToUpdate.length} motorcycle(s).`
         });
         setSelectedMotorcycles([]);
-        setHpgControlNumbers({});
+        setDetails({});
     };
 
     const isAllSelected = motorcycles.length > 0 && selectedMotorcycles.length === motorcycles.length;
@@ -78,14 +76,14 @@ export function ReceiveLtoDocs({ motorcycles, onSave }: ReceiveLtoDocsProps) {
     return (
         <>
             <CardHeader>
-                <CardTitle>Receive MC Docs from Main Office</CardTitle>
+                <CardTitle>Receive MC Docs & Details from NIVI</CardTitle>
                 <CardDescription>
-                    Select motorcycles and input their HPG Control Number.
+                    Select motorcycles and input their details.
                 </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="max-h-[60vh] overflow-y-auto">
                 <Table>
-                    <TableHeader>
+                    <TableHeader className="sticky top-0 bg-background">
                         <TableRow>
                             <TableHead className="w-[40px]">
                                 <Checkbox
@@ -93,29 +91,45 @@ export function ReceiveLtoDocs({ motorcycles, onSave }: ReceiveLtoDocsProps) {
                                     onCheckedChange={handleSelectAll}
                                 />
                             </TableHead>
-                            <TableHead>Plate No.</TableHead>
                             <TableHead>Customer Name</TableHead>
                             <TableHead>Make & Model</TableHead>
+                            <TableHead>SI No.</TableHead>
+                            <TableHead>Account Code</TableHead>
                             <TableHead>HPG Control Number</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {motorcycles.map(mc => (
-                            <TableRow key={mc.id}>
+                            <TableRow key={mc.id} data-state={selectedMotorcycles.some(smc => smc.id === mc.id) ? 'selected' : ''}>
                                 <TableCell>
                                     <Checkbox
                                         checked={selectedMotorcycles.some(smc => smc.id === mc.id)}
                                         onCheckedChange={(checked) => handleSelect(mc, checked)}
                                     />
                                 </TableCell>
-                                <TableCell>{mc.plateNumber}</TableCell>
                                 <TableCell>{mc.customerName}</TableCell>
                                 <TableCell>{mc.make} {mc.model}</TableCell>
                                 <TableCell>
                                     <Input 
+                                        placeholder="Enter SI No."
+                                        value={details[mc.id]?.salesInvoiceNo || mc.salesInvoiceNo || ''}
+                                        onChange={(e) => handleInputChange(mc.id, 'salesInvoiceNo', e.target.value)}
+                                        disabled={!selectedMotorcycles.some(smc => smc.id === mc.id)}
+                                    />
+                                </TableCell>
+                                <TableCell>
+                                    <Input 
+                                        placeholder="Enter Account Code"
+                                        value={details[mc.id]?.accountCode || mc.accountCode || ''}
+                                        onChange={(e) => handleInputChange(mc.id, 'accountCode', e.target.value)}
+                                        disabled={!selectedMotorcycles.some(smc => smc.id === mc.id)}
+                                    />
+                                </TableCell>
+                                <TableCell>
+                                    <Input 
                                         placeholder="Enter HPG No."
-                                        value={hpgControlNumbers[mc.id] || ''}
-                                        onChange={(e) => handleHpgInputChange(mc.id, e.target.value)}
+                                        value={details[mc.id]?.hpgControlNumber || mc.hpgControlNumber || ''}
+                                        onChange={(e) => handleInputChange(mc.id, 'hpgControlNumber', e.target.value)}
                                         disabled={!selectedMotorcycles.some(smc => smc.id === mc.id)}
                                     />
                                 </TableCell>
@@ -129,14 +143,18 @@ export function ReceiveLtoDocs({ motorcycles, onSave }: ReceiveLtoDocsProps) {
                     </div>
                 )}
             </CardContent>
-            <CardContent className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => handleSave(motorcycles)}>Receive All</Button>
-                <Button 
-                    onClick={() => handleSave(selectedMotorcycles)}
-                    disabled={selectedMotorcycles.length === 0}
-                >
-                    Receive Selected ({selectedMotorcycles.length})
-                </Button>
+            <CardContent className="flex justify-end gap-2 pt-6">
+                <DialogClose asChild>
+                    <Button variant="outline">Cancel</Button>
+                </DialogClose>
+                <DialogClose asChild>
+                    <Button 
+                        onClick={() => handleSave(selectedMotorcycles)}
+                        disabled={selectedMotorcycles.length === 0}
+                    >
+                        Receive Selected ({selectedMotorcycles.length})
+                    </Button>
+                </DialogClose>
             </CardContent>
         </>
     );
