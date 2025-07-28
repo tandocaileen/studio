@@ -39,7 +39,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { Checkbox } from '../ui/checkbox';
-import { generateCashAdvance, GenerateCashAdvanceInput } from '@/ai/flows/cash-advance-flow';
+import { generateCashAdvance } from '@/ai/flows/cash-advance-flow';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { Calendar } from '../ui/calendar';
 import { cn } from '@/lib/utils';
@@ -118,11 +118,13 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
     
     toast({
         title: 'AI is working...',
-        description: 'Generating cash advance requests for selected motorcycles.'
+        description: 'Generating cash advance request for selected motorcycles.'
     });
 
     try {
-      const motorcyclesForAI: GenerateCashAdvanceInput['motorcycles'] = selectedMotorcycles.map(m => ({
+      if (!user) throw new Error("User not found");
+
+      const motorcyclesForAI = selectedMotorcycles.map(m => ({
         ...m,
         purchaseDate: m.purchaseDate.toISOString(),
         documents: m.documents.map(d => ({
@@ -133,11 +135,17 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
         }))
       }));
 
-      const result = await generateCashAdvance({ motorcycles: motorcyclesForAI });
+      const result = await generateCashAdvance({ 
+          motorcycles: motorcyclesForAI,
+          liaison: user.name,
+      });
+
       console.log('Cash advance generated: ', result);
+      // Here you would typically send this 'result' object to your backend to save it.
+      // For the demo, we'll just show a success message.
       toast({
-        title: 'Cash Advance Generated',
-        description: `Successfully generated ${result.cashAdvances.length} cash advance requests.`,
+        title: 'Cash Advance Request Submitted',
+        description: `Successfully submitted CA request ${result.id} for ${result.motorcycleIds.length} units.`,
       });
     } catch(e) {
         console.error(e);

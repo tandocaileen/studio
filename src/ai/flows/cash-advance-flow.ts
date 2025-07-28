@@ -1,6 +1,6 @@
 'use server';
 /**
- * @fileOverview A flow for generating cash advance requests for motorcycles needing renewal.
+ * @fileOverview A flow for generating a single cash advance request for multiple motorcycles.
  *
  * - generateCashAdvance - A function that handles the cash advance generation process.
  * - GenerateCashAdvanceInput - The input type for the generateCashAdvance function.
@@ -23,38 +23,37 @@ const MotorcycleSchema = z.object({
   purchaseDate: z.string().describe('The purchase date of the motorcycle.'),
   supplier: z.string(),
   documents: z.array(z.object({
-    type: z.enum(['OR/CR', 'COC', 'Insurance']),
+    type: z.enum(['OR/CR', 'COC', 'Insurance', 'CSR', 'HPG Control Form']),
     url: z.string(),
     uploadedAt: z.string().describe('The upload date of the document.'),
     expiresAt: z.string().optional().describe('The expiration date of the document.'),
   })),
   status: z.enum(['Incomplete', 'Ready to Register', 'Registered', 'For Renewal']),
-});
-
-
-const CashAdvanceSchema = z.object({
-    id: z.string(),
-    personnel: z.string().describe("The personnel responsible for the cash advance. Default to 'System Generated'"),
-    purpose: z.string().describe('The purpose of the cash advance. This should be descriptive, e.g., "OR/CR Renewal for Plate No. [plateNumber]"'),
-    amount: z.number().describe('The estimated amount for the renewal. Use a reasonable default like 2500 if unsure.'),
-    date: z.string().describe('The date of the cash advance request.'),
-    status: z.enum(['Pending', 'Approved', 'Liquidated', 'Rejected']),
-    receipts: z.array(z.string()).optional(),
+  processingFee: z.number().optional(),
+  orFee: z.number().optional(),
+  customerName: z.string().optional(),
+  assignedLiaison: z.string().optional(),
 });
 
 
 const GenerateCashAdvanceInputSchema = z.object({
   motorcycles: z.array(MotorcycleSchema).describe("An array of motorcycle objects that need cash advances for renewal."),
+  liaison: z.string().describe("The name of the liaison requesting the cash advance."),
 });
 export type GenerateCashAdvanceInput = z.infer<typeof GenerateCashAdvanceInputSchema>;
 
 const GenerateCashAdvanceOutputSchema = z.object({
-  cashAdvances: z.array(CashAdvanceSchema).describe("An array of generated cash advance objects."),
+    id: z.string().describe("A unique ID for the cash advance, e.g., 'ca-MMDDYY-001'"),
+    personnel: z.string().describe("The personnel responsible for the cash advance."),
+    purpose: z.string().describe('A summarized purpose for the cash advance, e.g., "Cash advance for registration of 3 units."'),
+    amount: z.number().describe('The total combined amount for all motorcycles (processingFee + orFee).'),
+    date: z.string().describe("The date of the cash advance request in ISO format."),
+    status: z.enum(['Pending', 'Approved', 'Liquidated', 'Rejected', 'Check Voucher Released', 'CV Received']),
+    motorcycleIds: z.array(z.string()).describe("An array of IDs of the motorcycles included in this cash advance."),
 });
 export type GenerateCashAdvanceOutput = z.infer<typeof GenerateCashAdvanceOutputSchema>;
 
 export async function generateCashAdvance(input: GenerateCashAdvanceInput): Promise<GenerateCashAdvanceOutput> {
-  // Genkit flows expect plain JSON objects, so we need to make sure dates are strings.
   const sanitizedInput = {
     ...input,
     motorcycles: input.motorcycles.map(m => ({
@@ -75,15 +74,23 @@ const prompt = ai.definePrompt({
   input: { schema: GenerateCashAdvanceInputSchema },
   output: { schema: GenerateCashAdvanceOutputSchema },
   prompt: `
-    You are an AI assistant that helps generate cash advance requests for vehicle document renewals.
-    Based on the provided list of motorcycles, create a cash advance request for each one.
-    The purpose should clearly state that it's for renewal and include the plate number.
-    Set the status to 'Pending' and the date to today's date in ISO format.
+    You are an AI assistant that creates a single, consolidated cash advance request for multiple vehicle registrations.
+    
+    Instructions:
+    1.  Calculate the total amount by summing the 'processingFee' and 'orFee' for every motorcycle in the list.
+    2.  Create a single cash advance object.
+    3.  The purpose should be a summary, like "Cash advance for registration of X units".
+    4.  The personnel should be the requesting liaison.
+    5.  Collect all motorcycle IDs into the 'motorcycleIds' array.
+    6.  Set the status to 'Pending' and the date to today's date in ISO format.
+    7.  Generate a unique ID for the cash advance following the format 'ca-MMDDYY-XXX'.
 
-    Motorcycles needing renewal:
+    Motorcycles for processing:
     {{#each motorcycles}}
-    - Plate: {{plateNumber}}, Make: {{make}}, Model: {{model}}, Status: {{status}}
+    - ID: {{id}}, Plate: {{plateNumber}}, Processing Fee: {{processingFee}}, OR Fee: {{orFee}}
     {{/each}}
+
+    Requesting Liaison: {{liaison}}
   `,
 });
 
@@ -97,16 +104,13 @@ const generateCashAdvanceFlow = ai.defineFlow(
     const { output } = await prompt(input);
     
     if (!output) {
-        return { cashAdvances: [] };
+        throw new Error("AI failed to generate a cash advance response.");
     }
 
     // Ensure the date field in the output is a valid ISO string.
     const datedOutput = {
         ...output,
-        cashAdvances: output.cashAdvances.map(ca => ({
-            ...ca,
-            date: new Date().toISOString()
-        }))
+        date: new Date().toISOString()
     };
 
     return datedOutput;

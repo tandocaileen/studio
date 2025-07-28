@@ -13,92 +13,104 @@ import {
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FileUp, Trash2, CheckCircle, Eye } from 'lucide-react';
+import { FileUp, Eye, CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import type { LiquidationItem } from '@/app/liquidations/page';
 import { ScrollArea } from '../ui/scroll-area';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import { cn } from '@/lib/utils';
 import { Badge } from '../ui/badge';
 import { useRouter } from 'next/navigation';
-import { CashAdvance } from '@/types';
+import { CashAdvance, Motorcycle } from '@/types';
+import { getMotorcycles } from '@/lib/data';
+import { AppLoader } from '../layout/loader';
 
+
+type GroupedLiquidation = {
+    cashAdvance: CashAdvance;
+    motorcycles: Motorcycle[];
+}
 
 type LiquidationTableProps = {
-  items: LiquidationItem[];
+  items: GroupedLiquidation[];
 };
 
+type LiquidationFormData = {
+    [motorcycleId: string]: {
+        ltoOrNumber: string;
+        ltoOrAmount: number;
+        ltoProcessFee: number;
+        totalLiquidation: number;
+        shortageOverage: number;
+        remarks: string;
+        receiptFile?: File | null;
+    }
+}
+
 export function LiquidationTable({ items }: LiquidationTableProps) {
-  const [selectedItem, setSelectedItem] = React.useState<LiquidationItem | null>(null);
-  const [ltoOrAmount, setLtoOrAmount] = React.useState(0);
-  const [ltoProcessFee, setLtoProcessFee] = React.useState(0);
-  const [totalLiquidation, setTotalLiquidation] = React.useState(0);
-  const [shortageOverage, setShortageOverage] = React.useState(0);
+  const [selectedCA, setSelectedCA] = React.useState<GroupedLiquidation | null>(null);
+  const [formData, setFormData] = React.useState<LiquidationFormData>({});
   const { toast } = useToast();
   const router = useRouter();
 
-
-  const handleLiquidateClick = (item: LiquidationItem) => {
-    setSelectedItem(item);
-    // Reset fields when opening dialog
-    setLtoOrAmount(0);
-    setLtoProcessFee(0);
-    setTotalLiquidation(0);
-    setShortageOverage(item.cashAdvance.amount);
+  const handleLiquidateClick = (item: GroupedLiquidation) => {
+    setSelectedCA(item);
+    // Initialize form data for the dialog
+    const initialFormData: LiquidationFormData = {};
+    const singleMcAdvance = item.cashAdvance.amount / item.motorcycles.length;
+    item.motorcycles.forEach(mc => {
+      initialFormData[mc.id] = {
+        ltoOrNumber: '',
+        ltoOrAmount: 0,
+        ltoProcessFee: 0,
+        totalLiquidation: 0,
+        shortageOverage: singleMcAdvance, // Assuming equal split for now
+        remarks: '',
+      };
+    });
+    setFormData(initialFormData);
+  };
+  
+  const handleFormChange = (mcId: string, field: keyof LiquidationFormData[string], value: any) => {
+      setFormData(prev => {
+          const newMcData = { ...prev[mcId], [field]: value };
+          const totalLiq = (newMcData.ltoOrAmount || 0) + (newMcData.ltoProcessFee || 0);
+          const singleMcAdvance = (selectedCA?.cashAdvance.amount || 0) / (selectedCA?.motorcycles.length || 1);
+          newMcData.totalLiquidation = totalLiq;
+          newMcData.shortageOverage = singleMcAdvance - totalLiq;
+          return { ...prev, [mcId]: newMcData };
+      });
   }
-
-  React.useEffect(() => {
-    const totalLiq = (ltoOrAmount || 0) + (ltoProcessFee || 0);
-    setTotalLiquidation(totalLiq);
-
-    if (selectedItem) {
-        const shortage = selectedItem.cashAdvance.amount - totalLiq;
-        setShortageOverage(shortage);
-    }
-  }, [ltoOrAmount, ltoProcessFee, selectedItem]);
-
 
   const handleFinalSubmit = () => {
-     if (!selectedItem) return;
+     if (!selectedCA) return;
+     console.log("Submitting Liquidation Data: ", formData);
      toast({
         title: 'Liquidation Submitted',
-        description: `Liquidation for ${selectedItem.motorcycle?.plateNumber || selectedItem.cashAdvance.purpose} has been submitted for review.`
+        description: `Liquidation for CA #${selectedCA.cashAdvance.id} has been submitted for review.`
     })
-    setSelectedItem(null);
+    setSelectedCA(null);
   }
 
-  const groupedByCA = items.reduce((acc, item) => {
-    const caId = item.cashAdvance.id;
-    if (!acc[caId]) {
-      acc[caId] = {
-        cashAdvance: item.cashAdvance,
-        items: []
-      };
-    }
-    acc[caId].items.push(item);
-    return acc;
-  }, {} as Record<string, { cashAdvance: CashAdvance, items: LiquidationItem[] }>);
-
+  const grandTotalLiquidation = Object.values(formData).reduce((sum, data) => sum + data.totalLiquidation, 0);
+  const grandTotalShortageOverage = (selectedCA?.cashAdvance.amount || 0) - grandTotalLiquidation;
   
   return (
     <>
     <div className="grid gap-4">
-    {Object.values(groupedByCA).map(({ cashAdvance, items: groupItems }) => {
-        const isFullyLiquidated = groupItems.every(i => i.cashAdvance.status === 'Liquidated');
-        const totalCAAmount = cashAdvance.amount;
-        const totalLiquidatedAmount = groupItems.reduce((sum, i) => sum + (i.cashAdvance.totalLiquidation || 0), 0);
+    {items.map((group) => {
+        const isFullyLiquidated = group.cashAdvance.status === 'Liquidated';
 
         return (
-            <Card key={cashAdvance.id}>
+            <Card key={group.cashAdvance.id}>
                 <CardHeader>
                     <div className="flex justify-between items-start">
                         <div>
-                            <CardTitle className="text-lg">CA #{cashAdvance.id}</CardTitle>
-                            <CardDescription>Purpose: {cashAdvance.purpose}</CardDescription>
-                            <CardDescription>Liaison: {cashAdvance.personnel} | Date: {new Date(cashAdvance.date).toLocaleDateString()}</CardDescription>
+                            <CardTitle className="text-lg">CA #{group.cashAdvance.id}</CardTitle>
+                            <CardDescription>{group.cashAdvance.purpose}</CardDescription>
+                            <CardDescription>Liaison: {group.cashAdvance.personnel} | Date: {new Date(group.cashAdvance.date).toLocaleDateString()}</CardDescription>
                         </div>
                         <div className="text-right">
                            <Badge variant={isFullyLiquidated ? 'default' : 'outline'}>
@@ -106,7 +118,7 @@ export function LiquidationTable({ items }: LiquidationTableProps) {
                                 {isFullyLiquidated ? 'Fully Liquidated' : 'Partially Liquidated'}
                             </Badge>
                              <p className="text-sm font-semibold mt-2">
-                                ₱{totalLiquidatedAmount.toLocaleString()} / ₱{totalCAAmount.toLocaleString()}
+                                ₱{(group.cashAdvance.totalLiquidation || 0).toLocaleString()} / ₱{group.cashAdvance.amount.toLocaleString()}
                             </p>
                         </div>
                     </div>
@@ -119,36 +131,30 @@ export function LiquidationTable({ items }: LiquidationTableProps) {
                                 <TableHead>Plate No.</TableHead>
                                 <TableHead>Model</TableHead>
                                 <TableHead>Status</TableHead>
-                                <TableHead className="text-right">Amount</TableHead>
-                                <TableHead>Action</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {groupItems.map(({ cashAdvance: mcCA, motorcycle }, index) => (
-                                <TableRow key={`${mcCA.id}-${index}`}>
-                                    <TableCell>{motorcycle?.customerName || 'N/A'}</TableCell>
-                                    <TableCell>{motorcycle?.plateNumber || 'N/A'}</TableCell>
+                            {group.motorcycles.map((motorcycle, index) => (
+                                <TableRow key={`${motorcycle.id}-${index}`}>
+                                    <TableCell>{motorcycle.customerName || 'N/A'}</TableCell>
+                                    <TableCell>{motorcycle.plateNumber || 'N/A'}</TableCell>
                                     <TableCell>{motorcycle ? `${motorcycle.make} ${motorcycle.model}` : 'N/A'}</TableCell>
-                                    <TableCell><Badge variant={mcCA.status === 'Liquidated' ? 'secondary' : 'outline'}>{mcCA.status}</Badge></TableCell>
-                                    <TableCell className="text-right">₱{mcCA.amount.toLocaleString()}</TableCell>
-                                    <TableCell>
-                                        <Button 
-                                            variant="outline" 
-                                            size="sm" 
-                                            onClick={() => handleLiquidateClick({ cashAdvance, motorcycle })}
-                                            disabled={mcCA.status === 'Liquidated'}
-                                        >
-                                            <FileUp className="mr-2 h-4 w-4" />
-                                            Liquidate
-                                        </Button>
-                                    </TableCell>
+                                    <TableCell><Badge variant={group.cashAdvance.status === 'Liquidated' ? 'secondary' : 'outline'}>{group.cashAdvance.status}</Badge></TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>
                     </Table>
-                     <div className="flex justify-end mt-4">
+                     <div className="flex justify-between mt-4">
                         <Button 
-                            onClick={() => router.push(`/reports/liquidation/${cashAdvance.id}`)}
+                            variant="outline"
+                            onClick={() => handleLiquidateClick(group)}
+                            disabled={isFullyLiquidated}
+                        >
+                            <FileUp className="mr-2 h-4 w-4" />
+                            Liquidate
+                        </Button>
+                        <Button 
+                            onClick={() => router.push(`/reports/liquidation/${group.cashAdvance.id}`)}
                             disabled={!isFullyLiquidated}
                         >
                             <Eye className="mr-2 h-4 w-4" />
@@ -161,71 +167,65 @@ export function LiquidationTable({ items }: LiquidationTableProps) {
     })}
     </div>
 
-    <Dialog open={!!selectedItem} onOpenChange={(open) => !open && setSelectedItem(null)}>
+    <Dialog open={!!selectedCA} onOpenChange={(open) => !open && setSelectedCA(null)}>
         <DialogContent className="sm:max-w-4xl max-w-[90vw] max-h-[90vh]">
             <DialogHeader>
-                <DialogTitle>Liquidate Cash Advance</DialogTitle>
+                <DialogTitle>Liquidate Cash Advance #{selectedCA?.cashAdvance.id}</DialogTitle>
                 <DialogDescription>
-                    Fill in the details for the liquidation of CA for {selectedItem?.motorcycle?.plateNumber || 'N/A'}.
+                   {selectedCA?.cashAdvance.purpose}
                 </DialogDescription>
             </DialogHeader>
-            <ScrollArea className="max-h-[70vh] -mx-6 px-6">
-                <div className="py-4 grid gap-8">
-                    <div className="grid gap-4 p-4 border rounded-lg bg-muted/40">
-                        <h3 className="font-semibold text-lg">Cash Advance Details</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="grid gap-2">
-                                <Label>Customer Name</Label>
-                                <Input value={selectedItem?.motorcycle?.customerName || 'N/A'} disabled />
-                            </div>
-                             <div className="grid gap-2">
-                                <Label>Plate Number</Label>
-                                <Input value={selectedItem?.motorcycle?.plateNumber || 'N/A'} disabled />
-                            </div>
-                             <div className="col-span-full grid gap-2">
-                                <Label>Total Cash Advance Received for this MC</Label>
-                                <Input className="font-bold text-lg" value={`₱${(selectedItem?.cashAdvance.amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}`} disabled />
-                            </div>
+            <ScrollArea className="max-h-[60vh] -mx-6 px-6">
+                <div className="py-4 grid gap-6">
+                    {selectedCA?.motorcycles.map(mc => (
+                        <div key={mc.id} className="grid gap-4 p-4 border rounded-lg bg-muted/40">
+                             <h3 className="font-semibold">{mc.customerName} - {mc.plateNumber}</h3>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  <div className="grid gap-2">
+                                      <Label htmlFor={`lto-or-number-${mc.id}`}>LTO OR Number</Label>
+                                      <Input id={`lto-or-number-${mc.id}`} placeholder="Enter LTO OR number" value={formData[mc.id]?.ltoOrNumber} onChange={e => handleFormChange(mc.id, 'ltoOrNumber', e.target.value)} />
+                                  </div>
+                                  <div className="grid gap-2">
+                                      <Label htmlFor={`lto-or-amount-${mc.id}`}>LTO OR Amount</Label>
+                                      <Input id={`lto-or-amount-${mc.id}`} type="number" placeholder="0.00" value={formData[mc.id]?.ltoOrAmount || ''} onChange={e => handleFormChange(mc.id, 'ltoOrAmount', parseFloat(e.target.value) || 0)} />
+                                  </div>
+                                  <div className="grid gap-2">
+                                      <Label htmlFor={`lto-process-fee-${mc.id}`}>LTO Process Fee</Label>
+                                      <Input id={`lto-process-fee-${mc.id}`} type="number" placeholder="0.00" value={formData[mc.id]?.ltoProcessFee || ''} onChange={e => handleFormChange(mc.id, 'ltoProcessFee', parseFloat(e.target.value) || 0)} />
+                                  </div>
+                                   <div className="grid gap-2">
+                                        <Label htmlFor={`shortage-overage-${mc.id}`}>Shortage / Overage</Label>
+                                        <Input id={`shortage-overage-${mc.id}`} type="number" placeholder="0.00" disabled value={formData[mc.id]?.shortageOverage.toFixed(2)} className={cn('font-bold', (formData[mc.id]?.shortageOverage || 0) < 0 ? 'text-destructive' : 'text-green-600')} />
+                                    </div>
+                                   <div className="col-span-full grid gap-2">
+                                      <Label htmlFor={`remarks-${mc.id}`}>Remarks</Label>
+                                      <Textarea id={`remarks-${mc.id}`} placeholder="Add any remarks here..." value={formData[mc.id]?.remarks} onChange={e => handleFormChange(mc.id, 'remarks', e.target.value)} />
+                                  </div>
+                                  <div className="col-span-full grid gap-2">
+                                      <Label htmlFor={`receipt-upload-${mc.id}`}>Upload Official Receipt</Label>
+                                      <Input id={`receipt-upload-${mc.id}`} type="file" onChange={e => handleFormChange(mc.id, 'receiptFile', e.target.files ? e.target.files[0] : null)} />
+                                  </div>
+                              </div>
                         </div>
-                    </div>
-
-                    <div className="grid gap-4 p-4 border rounded-lg">
-                        <h3 className="font-semibold text-lg">Liquidation Details</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                             <div className="grid gap-2">
-                                <Label htmlFor="lto-or-number">LTO OR Number</Label>
-                                <Input id="lto-or-number" placeholder="Enter LTO OR number" />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="lto-or-amount">LTO OR Amount</Label>
-                                <Input id="lto-or-amount" type="number" placeholder="0.00" value={ltoOrAmount || ''} onChange={(e) => setLtoOrAmount(parseFloat(e.target.value) || 0)} />
-                            </div>
-                             <div className="grid gap-2">
-                                <Label htmlFor="lto-process-fee">LTO Process Fee</Label>
-                                <Input id="lto-process-fee" type="number" placeholder="0.00" value={ltoProcessFee || ''} onChange={(e) => setLtoProcessFee(parseFloat(e.target.value) || 0)} />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="total-liquidation">Total Liquidation</Label>
-                                <Input id="total-liquidation" type="number" placeholder="0.00" disabled value={totalLiquidation.toFixed(2)} />
-                            </div>
-                            <div className="grid gap-2 col-span-full">
-                                <Label htmlFor="shortage-overage">Shortage / Overage</Label>
-                                <Input id="shortage-overage" type="number" placeholder="0.00" disabled value={shortageOverage.toFixed(2)} className={cn('font-bold', shortageOverage < 0 ? 'text-destructive' : 'text-green-600')} />
-                            </div>
-                             <div className="col-span-full grid gap-2">
-                                <Label htmlFor="remarks">Remarks</Label>
-                                <Textarea id="remarks" placeholder="Add any remarks here..." />
-                            </div>
-                            <div className="col-span-full grid gap-2">
-                                <Label htmlFor="receipt-upload">Upload Official Receipt</Label>
-                                <Input id="receipt-upload" type="file" />
-                            </div>
-                        </div>
-                    </div>
+                    ))}
                 </div>
             </ScrollArea>
-             <DialogFooter>
-                <Button variant="outline" onClick={() => setSelectedItem(null)}>Cancel</Button>
+             <div className="grid grid-cols-2 gap-4 mt-4 font-medium p-4 border rounded-lg">
+                <div>
+                    <p>Total CA Amount:</p>
+                    <p>Total Liquidation:</p>
+                    <p className={cn(grandTotalShortageOverage < 0 ? 'text-destructive' : 'text-green-600')}>Shortage / Overage:</p>
+                </div>
+                <div className="text-right">
+                    <p>₱{(selectedCA?.cashAdvance.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+                    <p>₱{grandTotalLiquidation.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+                    <p className={cn(grandTotalShortageOverage < 0 ? 'text-destructive' : 'text-green-600')}>
+                        ₱{grandTotalShortageOverage.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    </p>
+                </div>
+            </div>
+             <DialogFooter className="mt-4">
+                <Button variant="outline" onClick={() => setSelectedCA(null)}>Cancel</Button>
                 <Button onClick={handleFinalSubmit}>Submit Liquidation</Button>
             </DialogFooter>
         </DialogContent>
@@ -234,3 +234,80 @@ export function LiquidationTable({ items }: LiquidationTableProps) {
     </>
   );
 }
+
+
+type LiquidationsContentProps = { 
+    searchQuery: string 
+};
+
+type LiquidationStatusFilter = 'all' | 'unliquidated' | 'liquidated';
+
+
+export function LiquidationsContent({ searchQuery }: LiquidationsContentProps) {
+    const [items, setItems] = React.useState<GroupedLiquidation[] | null>(null);
+    const [allMotorcycles, setAllMotorcycles] = React.useState<Motorcycle[] | null>(null);
+    const [statusFilter, setStatusFilter] = React.useState<LiquidationStatusFilter>('unliquidated');
+
+
+    React.useEffect(() => {
+        Promise.all([getCashAdvances(), getMotorcycles()]).then(([cashAdvances, motorcycles]) => {
+            const groupedItems: GroupedLiquidation[] = cashAdvances
+            .filter(ca => ca.motorcycleIds && ca.motorcycleIds.length > 0)
+            .map(ca => {
+                const associatedMotorcycles = motorcycles.filter(mc => ca.motorcycleIds?.includes(mc.id));
+                return { cashAdvance: ca, motorcycles: associatedMotorcycles };
+            });
+            setItems(groupedItems);
+            setAllMotorcycles(motorcycles);
+        });
+    }, []);
+
+    if (!items || !allMotorcycles) {
+        return <AppLoader />;
+    }
+
+    const filteredBySearch = items.filter(item => {
+        const { cashAdvance, motorcycles } = item;
+        const query = searchQuery.toLowerCase();
+
+        if (cashAdvance.purpose.toLowerCase().includes(query)) return true;
+        if (cashAdvance.personnel.toLowerCase().includes(query)) return true;
+        if (motorcycles.some(mc => mc.customerName?.toLowerCase().includes(query))) return true;
+        if (motorcycles.some(mc => mc.plateNumber?.toLowerCase().includes(query))) return true;
+        
+        if (query === '') return true;
+
+        return false;
+    });
+
+    const getFilteredByStatus = (data: GroupedLiquidation[]) => {
+        switch(statusFilter) {
+            case 'liquidated':
+                return data.filter(i => i.cashAdvance.status === 'Liquidated');
+            case 'unliquidated':
+                 return data.filter(i => ['Approved', 'CV Received'].includes(i.cashAdvance.status));
+            case 'all':
+            default:
+                return data.filter(i => ['Approved', 'CV Received', 'Liquidated'].includes(i.cashAdvance.status));
+        }
+    }
+
+    const finalFilteredItems = getFilteredByStatus(filteredBySearch);
+
+
+    return (
+         <div className="grid gap-4">
+             <div className="flex items-center gap-4">
+                <Tabs value={statusFilter} onValueChange={(value) => setStatusFilter(value as LiquidationStatusFilter)}>
+                    <TabsList>
+                        <TabsTrigger value="unliquidated">For Liquidation</TabsTrigger>
+                        <TabsTrigger value="liquidated">Liquidated</TabsTrigger>
+                        <TabsTrigger value="all">View All</TabsTrigger>
+                    </TabsList>
+                </Tabs>
+            </div>
+            <LiquidationTable items={finalFilteredItems} />
+        </div>
+    )
+}
+
