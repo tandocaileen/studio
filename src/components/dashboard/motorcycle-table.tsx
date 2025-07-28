@@ -626,7 +626,12 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                             ) : null}
                           </div>
                         ))}
-                         {/* This is where you might add a button to add NEW documents during an edit */}
+                         {canEditInsuranceAndControl && (
+                            <Button variant="outline" onClick={handleAddNewDocument} className="w-full">
+                                <PlusCircle className="mr-2" />
+                                Add New Document
+                            </Button>
+                         )}
                       </div>
                     </div>
                 </div>
@@ -700,7 +705,3 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
     </>
   );
 }
-
-    
-
-    
