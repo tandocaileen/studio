@@ -19,6 +19,7 @@ import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog";
 import { ReceiveLtoDocs } from "@/components/dashboard/receive-lto-docs";
 import { EndorsedIncompleteTable } from "@/components/dashboard/endorsed-incomplete-table";
 import { cn } from "@/lib/utils";
+import { Card, CardContent } from "@/components/ui/card";
 
 type ViewFilter = 'unregistered' | 'all';
 type DashboardTab = 'pending-endorsements' | 'all-motorcycles';
@@ -90,7 +91,7 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
           </div>
       </div>
 
-       <div className="grid gap-8">
+       <div className="grid gap-4">
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as DashboardTab)}>
             <TabsList>
                 <TabsTrigger value="all-motorcycles">Motorcycles List</TabsTrigger>
@@ -104,36 +105,40 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
                   Endorsed Units with Incomplete Details ({endorsedIncompleteMotorcycles.length})
                 </TabsTrigger>
             </TabsList>
-            <TabsContent value="pending-endorsements">
-              <EndorsedIncompleteTable 
-                motorcycles={endorsedIncompleteMotorcycles}
-                onUpdate={handleStateUpdate}
-              />
-            </TabsContent>
-            <TabsContent value="all-motorcycles">
-              <div>
-                  <div className="flex items-center gap-4 mb-4">
-                      <Tabs value={viewFilter} onValueChange={(value) => setViewFilter(value as ViewFilter)}>
-                          <TabsList>
-                              <TabsTrigger value="unregistered">Unregistered</TabsTrigger>
-                              <TabsTrigger value="all">View All</TabsTrigger>
-                          </TabsList>
-                      </Tabs>
-                       <Dialog>
-                        <DialogTrigger asChild>
-                            <Button size="sm" className="gap-1 ml-auto">
-                                <PlusCircle className="h-4 w-4" />
-                                <span className="hidden sm:inline">Receive MC Docs</span>
-                            </Button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-7xl">
-                            <ReceiveLtoDocs motorcycles={motorcycles.filter(m => m.status === 'Incomplete')} onSave={handleStateUpdate} />
-                        </DialogContent>
-                      </Dialog>
-                  </div>
-                  <MotorcycleTable motorcycles={filteredMotorcycles} onStateChange={handleStateUpdate} />
-              </div>
-            </TabsContent>
+            <Card>
+                <CardContent className="p-0">
+                    <TabsContent value="pending-endorsements" className="mt-0">
+                        <EndorsedIncompleteTable 
+                            motorcycles={endorsedIncompleteMotorcycles}
+                            onUpdate={handleStateUpdate}
+                        />
+                    </TabsContent>
+                    <TabsContent value="all-motorcycles" className="mt-0">
+                    <div className="p-6">
+                        <div className="flex items-center gap-4 mb-4">
+                            <Tabs value={viewFilter} onValueChange={(value) => setViewFilter(value as ViewFilter)}>
+                                <TabsList>
+                                    <TabsTrigger value="unregistered">Unregistered</TabsTrigger>
+                                    <TabsTrigger value="all">View All</TabsTrigger>
+                                </TabsList>
+                            </Tabs>
+                            <Dialog>
+                                <DialogTrigger asChild>
+                                    <Button size="sm" className="gap-1 ml-auto">
+                                        <PlusCircle className="h-4 w-4" />
+                                        <span className="hidden sm:inline">Receive MC Docs</span>
+                                    </Button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-7xl">
+                                    <ReceiveLtoDocs motorcycles={motorcycles.filter(m => m.status === 'Incomplete')} onSave={handleStateUpdate} />
+                                </DialogContent>
+                            </Dialog>
+                        </div>
+                        <MotorcycleTable motorcycles={filteredMotorcycles} onStateChange={handleStateUpdate} />
+                    </div>
+                    </TabsContent>
+                </CardContent>
+            </Card>
         </Tabs>
       </div>
     </>
