@@ -9,6 +9,7 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { ScrollArea } from "../ui/scroll-area";
+import { Checkbox } from "../ui/checkbox";
 
 type ReceiveLtoDocsProps = {
     motorcycles: Motorcycle[];
@@ -22,6 +23,7 @@ type HpgState = {
 export function ReceiveLtoDocs({ motorcycles, onSave }: ReceiveLtoDocsProps) {
     const [hpgState, setHpgState] = useState<HpgState>({});
     const [searchQuery, setSearchQuery] = useState('');
+    const [selectedMotorcycles, setSelectedMotorcycles] = useState<Motorcycle[]>([]);
     const { toast } = useToast();
 
     const filteredMotorcycles = useMemo(() => {
@@ -41,44 +43,66 @@ export function ReceiveLtoDocs({ motorcycles, onSave }: ReceiveLtoDocsProps) {
         }));
     };
 
+    const handleSelect = (motorcycle: Motorcycle, checked: boolean | 'indeterminate') => {
+        if (checked) {
+            setSelectedMotorcycles(prev => [...prev, motorcycle]);
+        } else {
+            setSelectedMotorcycles(prev => prev.filter(m => m.id !== motorcycle.id));
+        }
+    };
+
+    const handleSelectAll = (checked: boolean | 'indeterminate') => {
+        if (checked) {
+            setSelectedMotorcycles(filteredMotorcycles);
+        } else {
+            setSelectedMotorcycles([]);
+        }
+    };
+    
     const handleClear = () => {
         setHpgState({});
+        setSelectedMotorcycles([]);
     };
 
     const handleSave = () => {
+        if (selectedMotorcycles.length === 0) {
+            toast({ title: "No Motorcycles Selected", description: "Please select at least one motorcycle to receive.", variant: "destructive" });
+            return;
+        }
+        
         const updatedMotorcycles: Motorcycle[] = [];
-        motorcycles.forEach(mc => {
-            const hpgControlNumber = hpgState[mc.id];
-            // Only update if there is a new HPG number entered
+        selectedMotorcycles.forEach(mc => {
+            const hpgControlNumber = hpgState[mc.id] || mc.hpgControlNumber;
+            // Only update if there is a HPG number entered or it was selected
             if (hpgControlNumber) {
                 const newDocs = [...mc.documents];
-                
-                // Add or update the HPG document
                 const hpgDocIndex = newDocs.findIndex(d => d.type === 'HPG Control Form');
+                
                 if (hpgDocIndex > -1) {
                     newDocs[hpgDocIndex] = { ...newDocs[hpgDocIndex], url: hpgControlNumber };
                 } else {
                      newDocs.push({
                         type: 'HPG Control Form',
-                        url: hpgControlNumber, // Store the number in the URL field for simplicity
+                        url: hpgControlNumber,
                         uploadedAt: new Date(),
                     });
                 }
                 
-                // The status will be handled by another process, so we just update the HPG number here.
-                updatedMotorcycles.push({ ...mc, documents: newDocs, hpgControlNumber });
+                updatedMotorcycles.push({ ...mc, documents: newDocs, hpgControlNumber, status: 'Ready to Register' });
             }
         });
 
         if (updatedMotorcycles.length === 0) {
-            toast({ title: "No Changes", description: "No HPG Control Numbers were entered.", variant: "destructive" });
+            toast({ title: "No Changes to Save", description: "No HPG Control Numbers were entered for the selected motorcycles.", variant: "destructive" });
             return;
         }
 
         onSave(updatedMotorcycles);
-        toast({ title: "Documents Updated", description: `${updatedMotorcycles.length} motorcycle record(s) have been updated with HPG numbers.` });
+        toast({ title: "Documents Received", description: `${updatedMotorcycles.length} motorcycle record(s) have been updated.` });
         handleClear();
     };
+
+    const isAllSelected = filteredMotorcycles.length > 0 && selectedMotorcycles.length === filteredMotorcycles.length;
 
     return (
         <Card className="border-0 shadow-none">
@@ -100,8 +124,15 @@ export function ReceiveLtoDocs({ motorcycles, onSave }: ReceiveLtoDocsProps) {
                     <Table>
                         <TableHeader className="sticky top-0 bg-background">
                             <TableRow>
+                                <TableHead className="w-12">
+                                    <Checkbox
+                                        checked={isAllSelected}
+                                        onCheckedChange={handleSelectAll}
+                                        aria-label="Select all"
+                                    />
+                                </TableHead>
                                 <TableHead>Sale ID</TableHead>
-                                <TableHead>Make & Model</TableHead>
+                                <TableHead>Make &amp; Model</TableHead>
                                 <TableHead>Engine No.</TableHead>
                                 <TableHead>Chassis No.</TableHead>
                                 <TableHead>HPG Control No.</TableHead>
@@ -109,8 +140,16 @@ export function ReceiveLtoDocs({ motorcycles, onSave }: ReceiveLtoDocsProps) {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {filteredMotorcycles.map(mc => (
-                                <TableRow key={mc.id}>
+                            {filteredMotorcycles.map(mc => {
+                                const isSelected = selectedMotorcycles.some(m => m.id === mc.id);
+                                return (
+                                <TableRow key={mc.id} data-state={isSelected ? "selected" : ""}>
+                                    <TableCell>
+                                        <Checkbox
+                                            checked={isSelected}
+                                            onCheckedChange={(checked) => handleSelect(mc, checked)}
+                                        />
+                                    </TableCell>
                                     <TableCell>{mc.id}</TableCell>
                                     <TableCell>{mc.make} {mc.model}</TableCell>
                                     <TableCell>{mc.engineNumber}</TableCell>
@@ -125,7 +164,7 @@ export function ReceiveLtoDocs({ motorcycles, onSave }: ReceiveLtoDocsProps) {
                                     </TableCell>
                                     <TableCell>N/A</TableCell>
                                 </TableRow>
-                            ))}
+                            )})}
                         </TableBody>
                     </Table>
                 </ScrollArea>
@@ -138,3 +177,5 @@ export function ReceiveLtoDocs({ motorcycles, onSave }: ReceiveLtoDocsProps) {
         </Card>
     );
 }
+
+    

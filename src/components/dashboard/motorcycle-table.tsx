@@ -76,6 +76,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
   
   React.useEffect(() => {
     setMotorcycles(initialMotorcycles);
+    setSelectedMotorcycles([]);
     setCurrentPage(1);
   }, [initialMotorcycles]);
 
@@ -176,7 +177,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
 
   const handleSelectAll = (checked: boolean | 'indeterminate') => {
     if (checked === true) {
-      setSelectedMotorcycles(motorcycles);
+      setSelectedMotorcycles(paginatedMotorcycles);
     } else {
       setSelectedMotorcycles([]);
     }
@@ -284,6 +285,8 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
     currentPage * ITEMS_PER_PAGE
   );
 
+  const isAllSelectedOnPage = paginatedMotorcycles.length > 0 && paginatedMotorcycles.every(pm => selectedMotorcycles.some(sm => sm.id === pm.id));
+
 
   return (
     <>
@@ -313,7 +316,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
               <TableRow>
                 <TableHead className="w-[40px]">
                    <Checkbox
-                    checked={selectedMotorcycles.length === motorcycles.length && motorcycles.length > 0}
+                    checked={isAllSelectedOnPage}
                     onCheckedChange={(checked) => handleSelectAll(checked)}
                     aria-label="Select all"
                   />
@@ -502,7 +505,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                       </div>
                     </div>
 
-                    <h3 className="font-semibold text-lg border-b pb-2 mt-4 mb-2">Insurance & Control</h3>
+                    <h3 className="font-semibold text-lg border-b pb-2 mt-4 mb-2">Insurance &amp; Control</h3>
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="grid gap-2">
                             <Label htmlFor="edit-cocNumber">COC No.</Label>
@@ -685,3 +688,5 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
     </>
   );
 }
+
+    
