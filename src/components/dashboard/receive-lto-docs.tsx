@@ -44,12 +44,12 @@ export function ReceiveLtoDocs({ motorcycles, onSave }: ReceiveLtoDocsProps) {
     };
 
     const handleInputChange = (id: string, field: keyof EditableDetails, value: string) => {
-        setDetails(prev => ({ 
-            ...prev, 
+        setDetails(prev => ({
+            ...prev,
             [id]: {
-                 ...prev[id], 
-                 [field]: value 
-            } 
+                 ...prev[id],
+                 [field]: value
+            }
         }));
     };
 
@@ -91,8 +91,11 @@ export function ReceiveLtoDocs({ motorcycles, onSave }: ReceiveLtoDocsProps) {
                                     onCheckedChange={handleSelectAll}
                                 />
                             </TableHead>
-                            <TableHead>Customer Name</TableHead>
-                            <TableHead>Make & Model</TableHead>
+                            <TableHead>MT No.</TableHead>
+                            <TableHead>MC Name</TableHead>
+                            <TableHead>Model</TableHead>
+                            <TableHead>Engine No.</TableHead>
+                            <TableHead>Chassis No.</TableHead>
                             <TableHead>SI No.</TableHead>
                             <TableHead>Account Code</TableHead>
                             <TableHead>HPG Control Number</TableHead>
@@ -107,10 +110,13 @@ export function ReceiveLtoDocs({ motorcycles, onSave }: ReceiveLtoDocsProps) {
                                         onCheckedChange={(checked) => handleSelect(mc, checked)}
                                     />
                                 </TableCell>
-                                <TableCell>{mc.customerName}</TableCell>
-                                <TableCell>{mc.make} {mc.model}</TableCell>
+                                <TableCell>{mc.id}</TableCell>
+                                <TableCell>{mc.make}</TableCell>
+                                <TableCell>{mc.model}</TableCell>
+                                <TableCell>{mc.engineNumber}</TableCell>
+                                <TableCell>{mc.chassisNumber}</TableCell>
                                 <TableCell>
-                                    <Input 
+                                    <Input
                                         placeholder="Enter SI No."
                                         value={details[mc.id]?.salesInvoiceNo || mc.salesInvoiceNo || ''}
                                         onChange={(e) => handleInputChange(mc.id, 'salesInvoiceNo', e.target.value)}
@@ -118,7 +124,7 @@ export function ReceiveLtoDocs({ motorcycles, onSave }: ReceiveLtoDocsProps) {
                                     />
                                 </TableCell>
                                 <TableCell>
-                                    <Input 
+                                    <Input
                                         placeholder="Enter Account Code"
                                         value={details[mc.id]?.accountCode || mc.accountCode || ''}
                                         onChange={(e) => handleInputChange(mc.id, 'accountCode', e.target.value)}
@@ -126,7 +132,7 @@ export function ReceiveLtoDocs({ motorcycles, onSave }: ReceiveLtoDocsProps) {
                                     />
                                 </TableCell>
                                 <TableCell>
-                                    <Input 
+                                    <Input
                                         placeholder="Enter HPG No."
                                         value={details[mc.id]?.hpgControlNumber || mc.hpgControlNumber || ''}
                                         onChange={(e) => handleInputChange(mc.id, 'hpgControlNumber', e.target.value)}
@@ -148,7 +154,7 @@ export function ReceiveLtoDocs({ motorcycles, onSave }: ReceiveLtoDocsProps) {
                     <Button variant="outline">Cancel</Button>
                 </DialogClose>
                 <DialogClose asChild>
-                    <Button 
+                    <Button
                         onClick={() => handleSave(selectedMotorcycles)}
                         disabled={selectedMotorcycles.length === 0}
                     >
@@ -159,5 +165,3 @@ export function ReceiveLtoDocs({ motorcycles, onSave }: ReceiveLtoDocsProps) {
         </>
     );
 }
-
-    
