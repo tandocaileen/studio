@@ -36,8 +36,10 @@ export function ReceiveLtoDocs({ motorcycles, onSave }: ReceiveLtoDocsProps) {
     };
 
     const handleReceive = () => {
-        // In a real app, this would likely update a status or log the reception event.
-        // For this demo, we'll just show a confirmation toast.
+        // In a real app, this would update the status. For this demo, we just
+        // pass the selected motorcycles back to the parent to filter them out of this list.
+        onSave(selectedMotorcycles);
+        
         toast({
             title: "Documents Received",
             description: `Confirmed reception for ${selectedMotorcycles.length} motorcycle(s).`

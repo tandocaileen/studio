@@ -44,13 +44,16 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
 
   const handleStateUpdate = (updatedOrNewMotorcycles: Motorcycle | Motorcycle[]) => {
       setMotorcycles(currentMotorcycles => {
+          if (!currentMotorcycles) return [];
+          const motorcyclesMap = new Map(currentMotorcycles.map(m => [m.id, m]));
+
           if (Array.isArray(updatedOrNewMotorcycles)) {
-               const updatedMap = new Map(updatedOrNewMotorcycles.map(m => [m.id, m]));
-               return currentMotorcycles!.map(cm => updatedMap.get(cm.id) || cm);
+              updatedOrNewMotorcycles.forEach(um => motorcyclesMap.set(um.id, um));
           } else {
-              // It's a single new motorcycle
-              return [...currentMotorcycles!, updatedOrNewMotorcycles];
+              motorcyclesMap.set(updatedOrNewMotorcycles.id, updatedOrNewMotorcycles);
           }
+          
+          return Array.from(motorcyclesMap.values());
       });
   };
   
