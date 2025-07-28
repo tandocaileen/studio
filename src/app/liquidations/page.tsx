@@ -26,6 +26,8 @@ import { cn } from '@/lib/utils';
 
 
 type ViewMode = 'motorcycle' | 'ca';
+type MotorcycleViewFilter = 'pending' | 'all';
+
 
 type GroupedLiquidation = {
     cashAdvance: CashAdvance;
@@ -48,6 +50,7 @@ export default function LiquidationsPage() {
     const [motorcycles, setMotorcycles] = React.useState<Motorcycle[] | null>(null);
     const [cashAdvances, setCashAdvances] = React.useState<CashAdvance[] | null>(null);
     const [viewMode, setViewMode] = React.useState<ViewMode>('motorcycle');
+    const [motorcycleViewFilter, setMotorcycleViewFilter] = React.useState<MotorcycleViewFilter>('pending');
     const [selectedCA, setSelectedCA] = React.useState<GroupedLiquidation | null>(null);
     const [formData, setFormData] = React.useState<LiquidationFormData>({});
 
@@ -110,16 +113,23 @@ export default function LiquidationsPage() {
     const shortageOverage = singleMcAdvance - totalLiquidation;
 
     // Data for Motorcycle View
-    const pendingLiquidationMotorcycles = motorcycles.filter(mc => {
+    const allMotorcyclesForLiaison = motorcycles.filter(mc => {
         const ca = cashAdvances.find(c => c.motorcycleIds?.includes(mc.id));
         if (!ca) return false;
-        const isReadyForLiq = ['Approved', 'CV Received'].includes(ca.status);
-        const isNotLiquidated = mc.status !== 'Liquidated';
-
+        const isRelevantCA = ['Approved', 'CV Received', 'Liquidated'].includes(ca.status);
+        if (!isRelevantCA) return false;
         if (isLiaison && mc.assignedLiaison !== user.name) return false;
+        return true;
+    });
 
+    const pendingLiquidationMotorcycles = allMotorcyclesForLiaison.filter(mc => {
+        const ca = cashAdvances.find(c => c.motorcycleIds?.includes(mc.id));
+        const isReadyForLiq = ['Approved', 'CV Received'].includes(ca!.status);
+        const isNotLiquidated = mc.status !== 'Liquidated';
         return isReadyForLiq && isNotLiquidated;
     });
+
+    const motorcyclesToShow = motorcycleViewFilter === 'pending' ? pendingLiquidationMotorcycles : allMotorcyclesForLiaison;
 
     // Data for CA View
     const groupedItems: GroupedLiquidation[] = cashAdvances
@@ -157,8 +167,12 @@ export default function LiquidationsPage() {
                             <TabsContent value="motorcycle">
                                <Card>
                                    <CardHeader>
-                                       <CardTitle>Pending Liquidations by Motorcycle</CardTitle>
-                                       <CardDescription>Liquidate expenses for individual motorcycles.</CardDescription>
+                                       <Tabs value={motorcycleViewFilter} onValueChange={(v) => setMotorcycleViewFilter(v as MotorcycleViewFilter)}>
+                                            <TabsList>
+                                                <TabsTrigger value="pending">Pending for Liquidation</TabsTrigger>
+                                                <TabsTrigger value="all">View All</TabsTrigger>
+                                            </TabsList>
+                                       </Tabs>
                                    </CardHeader>
                                    <CardContent>
                                        <Table>
@@ -169,13 +183,17 @@ export default function LiquidationsPage() {
                                                    <TableHead>CA Number</TableHead>
                                                    <TableHead>Liaison</TableHead>
                                                    <TableHead className="text-right">Amount</TableHead>
+                                                   <TableHead>Status</TableHead>
                                                    <TableHead>Action</TableHead>
                                                </TableRow>
                                            </TableHeader>
                                            <TableBody>
-                                                {pendingLiquidationMotorcycles.map(mc => {
+                                                {motorcyclesToShow.map(mc => {
                                                     const ca = cashAdvances.find(c => c.motorcycleIds?.includes(mc.id));
                                                     if (!ca) return null;
+                                                    
+                                                    const isLiquidated = mc.status === 'Liquidated';
+
                                                     return (
                                                         <TableRow key={mc.id}>
                                                             <TableCell>{mc.customerName}</TableCell>
@@ -184,13 +202,20 @@ export default function LiquidationsPage() {
                                                             <TableCell>{ca.personnel}</TableCell>
                                                             <TableCell className="text-right">₱{getMcAdvanceAmount(mc).toLocaleString()}</TableCell>
                                                             <TableCell>
-                                                                {isLiaison ? (
+                                                                <Badge variant={isLiquidated ? 'default' : 'outline'}>
+                                                                    {isLiquidated ? "Liquidated" : "Pending"}
+                                                                </Badge>
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                {isLiaison && !isLiquidated ? (
                                                                     <Button size="sm" onClick={() => handleLiquidateClick(mc, ca)}>
                                                                         <FileUp className="mr-2 h-4 w-4" />
                                                                         Liquidate
                                                                     </Button>
                                                                 ) : (
-                                                                     <Badge variant="outline">Pending</Badge>
+                                                                    <Button size="sm" variant="ghost" disabled>
+                                                                        -
+                                                                    </Button>
                                                                 )}
                                                             </TableCell>
                                                         </TableRow>
@@ -198,9 +223,9 @@ export default function LiquidationsPage() {
                                                 })}
                                            </TableBody>
                                        </Table>
-                                       {pendingLiquidationMotorcycles.length === 0 && (
+                                       {motorcyclesToShow.length === 0 && (
                                            <div className="text-center py-12 text-muted-foreground">
-                                               <p>No motorcycles pending liquidation.</p>
+                                               <p>No motorcycles found for the selected filter.</p>
                                            </div>
                                        )}
                                    </CardContent>
