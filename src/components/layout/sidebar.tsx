@@ -11,6 +11,7 @@ import {
   Receipt,
   LogOut,
   Users,
+  FilePenLine,
 } from 'lucide-react';
 import {
   Tooltip,
@@ -35,6 +36,7 @@ type NavItem = {
 const navItems: NavItem[] = [
   { href: '/', icon: Home, label: 'Dashboard', allowedRoles: ['Store Supervisor', 'Cashier'] },
   { href: '/', icon: Home, label: 'Home', allowedRoles: ['Liaison'] },
+  { href: '/endorsements', icon: FilePenLine, label: 'Endorsements', allowedRoles: ['Store Supervisor'] },
   { href: '/cash-advances', icon: DollarSign, label: 'Cash Advances', allowedRoles: ['Liaison', 'Cashier'] },
   { href: '/liquidations', icon: Receipt, label: 'Liquidations', allowedRoles: ['Liaison'] },
   { href: '/users', icon: Users, label: 'Users', allowedRoles: ['Store Supervisor'] },
