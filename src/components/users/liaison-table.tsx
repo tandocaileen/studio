@@ -10,30 +10,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { LiaisonUser } from '@/types';
-import { MoreHorizontal, PlusCircle, Edit, Trash2 } from 'lucide-react';
 import { getBranches, getLiaisons } from '@/lib/data';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { AppLoader } from '../layout/loader';
 
@@ -65,7 +44,7 @@ export function LiaisonTable() {
           <div>
             <CardTitle>Liaisons</CardTitle>
             <CardDescription>
-              View liaison personnel, their assigned branches, and fees.
+              View liaison personnel and their assigned branches.
             </CardDescription>
           </div>
         </CardHeader>
@@ -75,8 +54,8 @@ export function LiaisonTable() {
               <TableRow>
                 <TableHead>Name</TableHead>
                 <TableHead>Assigned Branch</TableHead>
-                <TableHead className="text-right">Processing Fee</TableHead>
-                <TableHead className="text-right">OR Fee</TableHead>
+                <TableHead className="text-right">Default Processing Fee</TableHead>
+                <TableHead className="text-right">Default OR Fee</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

@@ -62,23 +62,6 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
     toast({ title: 'Download Started', description: `Downloading PDF for CA #${previewingAdvance.id}`});
   }
 
-  const statusVariant = (status: CashAdvance['status']): 'default' | 'secondary' | 'destructive' | 'outline' => {
-    switch (status) {
-      case 'Pending':
-        return 'default';
-      case 'Approved':
-      case 'Check Voucher Released':
-        return 'outline';
-      case 'Liquidated':
-      case 'Encashed':
-        return 'secondary';
-      case 'Rejected':
-        return 'destructive';
-      default:
-        return 'default';
-    }
-  };
-  
   const getStatusColor = (status: CashAdvance['status']): string => {
     switch (status) {
       case 'Pending': return 'bg-amber-500';
@@ -91,7 +74,7 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
     }
   }
 
-  const isCashier = user?.role === 'Cashier';
+  const isCashierOrSupervisor = user?.role === 'Cashier' || user?.role === 'Store Supervisor';
 
   return (
     <>
@@ -108,8 +91,8 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>{isCashier ? 'Liaison' : 'Customer'}</TableHead>
-              {isCashier ? <TableHead>Purpose</TableHead> : <TableHead>Motorcycle</TableHead>}
+              <TableHead>{isCashierOrSupervisor ? 'Liaison' : 'Customer'}</TableHead>
+              {isCashierOrSupervisor ? <TableHead>Purpose</TableHead> : <TableHead>Motorcycle</TableHead>}
               <TableHead className="text-right">Amount</TableHead>
               <TableHead>Date</TableHead>
               <TableHead>Status</TableHead>
@@ -122,15 +105,15 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
             {advances.map(({ cashAdvance: ca, motorcycle }) => (
               <TableRow key={ca.id}>
                  <TableCell className="font-medium">
-                  {isCashier ? ca.personnel : (motorcycle?.customerName || ca.personnel)}
+                  {isCashierOrSupervisor ? ca.personnel : (motorcycle?.customerName || ca.personnel)}
                 </TableCell>
                 <TableCell className="max-w-[300px] truncate">
-                  {isCashier ? ca.purpose : (motorcycle ? `${motorcycle.make} ${motorcycle.model}` : ca.purpose)}
+                  {isCashierOrSupervisor ? ca.purpose : (motorcycle ? `${motorcycle.make} ${motorcycle.model}` : ca.purpose)}
                 </TableCell>
                 <TableCell className="text-right">₱{ca.amount.toLocaleString()}</TableCell>
                 <TableCell>{format(new Date(ca.date), 'MMM dd, yyyy')}</TableCell>
                 <TableCell>
-                  <Badge variant={statusVariant(ca.status)} className="capitalize">
+                  <Badge variant="outline" className="capitalize">
                      <span className={`mr-2 inline-block h-2 w-2 rounded-full ${getStatusColor(ca.status)}`}></span>
                     {ca.status}
                   </Badge>
@@ -149,8 +132,9 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
                         <Eye className="mr-2 h-4 w-4" />
                         <span>Preview/Print</span>
                       </DropdownMenuItem>
-                      {isCashier && (
+                      {isCashierOrSupervisor && (
                         <>
+                           <DropdownMenuSeparator />
                           <DropdownMenuItem disabled={ca.status !== 'Pending'} onClick={() => handleAction(`Approved advance for ${ca.personnel}.`)}>
                             <Check className="mr-2 h-4 w-4" />
                             <span>Approve</span>

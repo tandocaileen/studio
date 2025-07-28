@@ -145,6 +145,7 @@ function CashierDashboardContent() {
             </div>
             <SummaryCards motorcycles={motorcycles} cashAdvances={cashAdvances} />
             <OverdueAdvances cashAdvances={cashAdvances} />
+            <MotorcycleTable motorcycles={motorcycles} />
         </div>
     )
 }

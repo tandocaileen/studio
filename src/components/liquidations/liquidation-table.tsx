@@ -34,14 +34,17 @@ export function LiquidationTable({ items }: LiquidationTableProps) {
   const [shortageOverage, setShortageOverage] = React.useState(0);
   const { toast } = useToast();
 
-  const handleLiquidate = (item: LiquidationItem) => {
+  const handleLiquidateClick = (item: LiquidationItem) => {
     setSelectedItem(item);
+    // Reset fields when opening dialog
     setLtoOrAmount(0);
     setLtoProcessFee(0);
+    setTotalLiquidation(0);
+    setShortageOverage(item.cashAdvance.amount);
   }
 
   React.useEffect(() => {
-    const totalLiq = ltoOrAmount + ltoProcessFee;
+    const totalLiq = (ltoOrAmount || 0) + (ltoProcessFee || 0);
     setTotalLiquidation(totalLiq);
 
     if (selectedItem) {
@@ -74,24 +77,22 @@ export function LiquidationTable({ items }: LiquidationTableProps) {
             <Table>
             <TableHeader>
                 <TableRow>
-                <TableHead>Engine Number</TableHead>
-                <TableHead>Chassis Number</TableHead>
+                <TableHead>Customer Name</TableHead>
+                <TableHead>Plate No.</TableHead>
                 <TableHead>Model</TableHead>
-                <TableHead>Registration Fee</TableHead>
-                <TableHead>Received CV (budget)</TableHead>
-                <TableHead>Liquidate (with attachment)</TableHead>
+                <TableHead>Cash Advance</TableHead>
+                <TableHead>Action</TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
                 {items.filter(item => ['Approved', 'Encashed'].includes(item.cashAdvance.status)).map(({ cashAdvance, motorcycle }) => (
                 <TableRow key={cashAdvance.id}>
-                    <TableCell>{motorcycle?.engineNumber || 'N/A'}</TableCell>
-                    <TableCell>{motorcycle?.chassisNumber || 'N/A'}</TableCell>
+                    <TableCell>{motorcycle?.customerName || 'N/A'}</TableCell>
+                    <TableCell>{motorcycle?.plateNumber || 'N/A'}</TableCell>
                     <TableCell>{motorcycle ? `${motorcycle.make} ${motorcycle.model}` : 'N/A'}</TableCell>
                     <TableCell className="text-right">₱{cashAdvance.amount.toLocaleString()}</TableCell>
-                    <TableCell className="text-right">₱{cashAdvance.amount.toLocaleString()}</TableCell>
                     <TableCell>
-                    <Button variant="outline" size="sm" onClick={() => handleLiquidate({cashAdvance, motorcycle})}>
+                    <Button variant="outline" size="sm" onClick={() => handleLiquidateClick({cashAdvance, motorcycle})}>
                         <FileUp className="mr-2 h-4 w-4" />
                         Liquidate
                     </Button>
@@ -115,28 +116,20 @@ export function LiquidationTable({ items }: LiquidationTableProps) {
             <ScrollArea className="max-h-[70vh] -mx-6 px-6">
                 <div className="py-4 grid gap-8">
                      {/* Auto-generated Section */}
-                    <div className="grid gap-4 p-4 border rounded-lg">
+                    <div className="grid gap-4 p-4 border rounded-lg bg-muted/40">
                         <h3 className="font-semibold text-lg">Cash Advance Details</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="grid gap-2">
-                                <Label>Account Code</Label>
-                                <Input value="CA-LTO-001" disabled />
+                                <Label>Customer Name</Label>
+                                <Input value={selectedItem?.motorcycle?.customerName || 'N/A'} disabled />
                             </div>
                              <div className="grid gap-2">
-                                <Label>Customer Name</Label>
-                                <Input value={selectedItem?.motorcycle?.customerName} disabled />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label>OR Amount (from CA)</Label>
-                                <Input value={selectedItem?.cashAdvance.amount.toLocaleString()} disabled />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label>Processing Fee</Label>
-                                <Input value={selectedItem?.motorcycle?.processingFee?.toLocaleString() || '1500'} disabled />
+                                <Label>Plate Number</Label>
+                                <Input value={selectedItem?.motorcycle?.plateNumber || 'N/A'} disabled />
                             </div>
                              <div className="col-span-full grid gap-2">
-                                <Label>Total Cash Advance</Label>
-                                <Input className="font-bold text-lg" value={`₱${selectedItem?.cashAdvance.amount.toLocaleString()}`} disabled />
+                                <Label>Total Cash Advance Received</Label>
+                                <Input className="font-bold text-lg" value={`₱${(selectedItem?.cashAdvance.amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}`} disabled />
                             </div>
                         </div>
                     </div>
@@ -161,9 +154,9 @@ export function LiquidationTable({ items }: LiquidationTableProps) {
                                 <Label htmlFor="total-liquidation">Total Liquidation</Label>
                                 <Input id="total-liquidation" type="number" placeholder="0.00" disabled value={totalLiquidation.toFixed(2)} />
                             </div>
-                            <div className="grid gap-2">
+                            <div className="grid gap-2 col-span-full">
                                 <Label htmlFor="shortage-overage">Shortage / Overage</Label>
-                                <Input id="shortage-overage" type="number" placeholder="0.00" disabled value={shortageOverage.toFixed(2)} className={shortageOverage < 0 ? 'text-destructive' : ''} />
+                                <Input id="shortage-overage" type="number" placeholder="0.00" disabled value={shortageOverage.toFixed(2)} className={cn('font-bold', shortageOverage < 0 ? 'text-destructive' : 'text-green-600')} />
                             </div>
                              <div className="col-span-full grid gap-2">
                                 <Label htmlFor="remarks">Remarks</Label>

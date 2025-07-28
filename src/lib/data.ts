@@ -35,6 +35,9 @@ const motorcycles: Motorcycle[] = [
     salesInvoiceNo: 'SI-00123',
     accountCode: 'AC-JDC-001',
     hpgControlNumber: 'HPG-CTRL-001',
+    cocNumber: 'COC-123',
+    policyNumber: 'POL-123',
+    sarCode: 'SAR-123'
   },
   {
     id: '2',
@@ -61,6 +64,9 @@ const motorcycles: Motorcycle[] = [
     salesInvoiceNo: 'SI-00124',
     accountCode: 'AC-MCL-001',
     hpgControlNumber: 'HPG-CTRL-002',
+    cocNumber: 'COC-456',
+    policyNumber: 'POL-456',
+    sarCode: 'SAR-456'
   },
   {
     id: '3',
@@ -87,6 +93,9 @@ const motorcycles: Motorcycle[] = [
     salesInvoiceNo: 'SI-00125',
     accountCode: 'AC-JRZ-001',
     hpgControlNumber: 'HPG-CTRL-003',
+    cocNumber: 'COC-789',
+    policyNumber: 'POL-789',
+    sarCode: 'SAR-789'
   },
   {
     id: '4',
@@ -265,4 +274,3 @@ export async function getLiaisons() {
     await new Promise(resolve => setTimeout(resolve, 500));
     return liaisonUsers;
 }
-

@@ -23,7 +23,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Document, Motorcycle, DocumentType } from '@/types';
 import { MoreHorizontal, PlusCircle, FileText, Truck, Wrench, DollarSign, ExternalLink, Save, XCircle, Trash2, CalendarIcon } from 'lucide-react';
-import { getBranches } from '@/lib/data';
+import { getBranches, getLiaisons } from '@/lib/data';
 import {
   Dialog,
   DialogContent,
@@ -71,6 +71,11 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
   const [viewingDocumentsMotorcycle, setViewingDocumentsMotorcycle] = React.useState<Motorcycle | null>(null);
   const [newDocuments, setNewDocuments] = React.useState<NewDocument[]>([]);
   const [isPreviewingCa, setIsPreviewingCa] = React.useState(false);
+  const [liaisons, setLiaisons] = React.useState<any[]>([]);
+
+  React.useEffect(() => {
+    getLiaisons().then(setLiaisons);
+  }, []);
 
   const { toast } = useToast();
   const { user } = useAuth();
@@ -78,6 +83,8 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
   const isLiaison = user?.role === 'Liaison';
   const isSupervisor = user?.role === 'Store Supervisor';
   const isCashier = user?.role === 'Cashier';
+  const canEdit = isSupervisor || isCashier;
+
 
   const handleAction = (message: string) => {
     toast({
@@ -278,7 +285,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                   <span className="hidden sm:inline">Generate CA</span>
               </Button>
             )}
-            {isSupervisor && (
+            {canEdit && (
               <Dialog>
                 <DialogTrigger asChild>
                   <Button size="sm" className="gap-1">
@@ -339,10 +346,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                                 <SelectValue placeholder="Select a liaison" />
                               </SelectTrigger>
                               <SelectContent>
-                                {/* TODO: Populate with actual liaison users */}
-                                <SelectItem value="John Doe">John Doe</SelectItem>
-                                <SelectItem value="Jane Smith">Jane Smith</SelectItem>
-                                <SelectItem value="Peter Jones">Peter Jones</SelectItem>
+                                {liaisons.map(liaison => <SelectItem key={liaison.id} value={liaison.name}>{liaison.name}</SelectItem>)}
                               </SelectContent>
                             </Select>
                         </div>
@@ -467,11 +471,11 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[40px]">
-                  <Checkbox
+                   {!isLiaison && <Checkbox
                     checked={selectedMotorcycles.length === motorcycles.length && motorcycles.length > 0}
                     onCheckedChange={(checked) => handleSelectAll(checked)}
                     aria-label="Select all"
-                  />
+                  />}
                 </TableHead>
                 <TableHead>Sale ID</TableHead>
                 <TableHead>SI No.</TableHead>
@@ -529,13 +533,13 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
                           <DropdownMenuItem onClick={() => handleEditClick(motorcycle)}>
                             <Truck className="mr-2 h-4 w-4" />
-                            <span>{isLiaison ? 'View Details' : 'Edit Details'}</span>
+                            <span>{canEdit ? 'Edit Details' : 'View Details'}</span>
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => setViewingDocumentsMotorcycle(motorcycle)}>
                             <FileText className="mr-2 h-4 w-4" />
                             <span>View Documents</span>
                           </DropdownMenuItem>
-                           {isSupervisor && (
+                           {canEdit && (
                             <>
                               <DropdownMenuItem onClick={() => handleAction(`Logging maintenance for ${motorcycle.plateNumber}.`)}>
                                 <Wrench className="mr-2 h-4 w-4" />
@@ -560,10 +564,10 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
           <DialogContent className="sm:max-w-4xl max-w-[90vw] max-h-[90vh]">
               <DialogHeader>
                   <DialogTitle>
-                    {isLiaison ? 'View Motorcycle' : 'Edit Motorcycle'} - {editingMotorcycle?.plateNumber}
+                    {canEdit ? 'Edit Motorcycle' : 'View Motorcycle'} - {editingMotorcycle?.plateNumber}
                   </DialogTitle>
                   <DialogDescription>
-                      {isLiaison ? 'Viewing details for this unit.' : 'Update the details and documents for this unit.'}
+                      {canEdit ? 'Update the details and documents for this unit.' : 'Viewing details for this unit.'}
                   </DialogDescription>
               </DialogHeader>
               <ScrollArea className="max-h-[70vh]">
@@ -572,31 +576,31 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="grid gap-2">
                           <Label htmlFor="edit-plateNumber">Plate No.</Label>
-                          <Input id="edit-plateNumber" name="plateNumber" value={editedData.plateNumber || ''} onChange={handleInputChange} disabled={isLiaison} />
+                          <Input id="edit-plateNumber" name="plateNumber" value={editedData.plateNumber || ''} onChange={handleInputChange} disabled={!canEdit} />
                       </div>
                       <div className="grid gap-2">
                           <Label htmlFor="edit-customerName">Customer Name</Label>
-                          <Input id="edit-customerName" name="customerName" value={editedData.customerName || ''} onChange={handleInputChange} disabled={isLiaison} />
+                          <Input id="edit-customerName" name="customerName" value={editedData.customerName || ''} onChange={handleInputChange} disabled={!canEdit} />
                       </div>
                       <div className="grid gap-2">
                           <Label htmlFor="edit-make">Make</Label>
-                          <Input id="edit-make" name="make" value={editedData.make || ''} onChange={handleInputChange} disabled={isLiaison} />
+                          <Input id="edit-make" name="make" value={editedData.make || ''} onChange={handleInputChange} disabled={!canEdit} />
                       </div>
                       <div className="grid gap-2">
                           <Label htmlFor="edit-model">Model</Label>
-                          <Input id="edit-model" name="model" value={editedData.model || ''} onChange={handleInputChange} disabled={isLiaison} />
+                          <Input id="edit-model" name="model" value={editedData.model || ''} onChange={handleInputChange} disabled={!canEdit} />
                       </div>
                        <div className="grid gap-2">
                           <Label htmlFor="edit-engineNumber">Engine No.</Label>
-                          <Input id="edit-engineNumber" name="engineNumber" value={editedData.engineNumber || ''} onChange={handleInputChange} disabled={isLiaison} />
+                          <Input id="edit-engineNumber" name="engineNumber" value={editedData.engineNumber || ''} onChange={handleInputChange} disabled={!canEdit} />
                       </div>
                       <div className="grid gap-2">
                           <Label htmlFor="edit-chassisNumber">Chassis No.</Label>
-                          <Input id="edit-chassisNumber" name="chassisNumber" value={editedData.chassisNumber || ''} onChange={handleInputChange} disabled={isLiaison} />
+                          <Input id="edit-chassisNumber" name="chassisNumber" value={editedData.chassisNumber || ''} onChange={handleInputChange} disabled={!canEdit} />
                       </div>
                        <div className="grid gap-2">
                           <Label htmlFor="edit-branch">Branch</Label>
-                           <Select value={editedData.assignedBranch} onValueChange={(value) => handleSelectChange('assignedBranch', value)} disabled={isLiaison}>
+                           <Select value={editedData.assignedBranch} onValueChange={(value) => handleSelectChange('assignedBranch', value)} disabled={!canEdit}>
                             <SelectTrigger>
                               <SelectValue />
                             </SelectTrigger>
@@ -607,21 +611,18 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                       </div>
                        <div className="grid gap-2">
                           <Label htmlFor="edit-assignedLiaison">Assign Liaison</Label>
-                           <Select value={editedData.assignedLiaison} onValueChange={(value) => handleSelectChange('assignedLiaison', value)} disabled={isLiaison}>
+                           <Select value={editedData.assignedLiaison} onValueChange={(value) => handleSelectChange('assignedLiaison', value)} disabled={!canEdit}>
                             <SelectTrigger>
                               <SelectValue placeholder="Select a liaison" />
                             </SelectTrigger>
                             <SelectContent>
-                               {/* TODO: Populate with actual liaison users */}
-                              <SelectItem value="John Doe">John Doe</SelectItem>
-                              <SelectItem value="Jane Smith">Jane Smith</SelectItem>
-                              <SelectItem value="Peter Jones">Peter Jones</SelectItem>
+                               {liaisons.map(l => <SelectItem key={l.id} value={l.name}>{l.name}</SelectItem>)}
                             </SelectContent>
                           </Select>
                       </div>
                       <div className="grid gap-2">
                         <Label htmlFor="status">Status</Label>
-                        <Select value={editedData.status} onValueChange={(value) => handleSelectChange('status', value)} disabled={isLiaison}>
+                        <Select value={editedData.status} onValueChange={(value) => handleSelectChange('status', value)} disabled={!canEdit}>
                           <SelectTrigger>
                             <SelectValue/>
                           </SelectTrigger>
@@ -639,23 +640,23 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="grid gap-2">
                             <Label htmlFor="edit-cocNumber">COC No.</Label>
-                            <Input id="edit-cocNumber" name="cocNumber" value={editedData.cocNumber || ''} onChange={handleInputChange} disabled={isLiaison} />
+                            <Input id="edit-cocNumber" name="cocNumber" value={editedData.cocNumber || ''} onChange={handleInputChange} disabled={!canEdit} />
                         </div>
                          <div className="grid gap-2">
                             <Label htmlFor="edit-policyNumber">Policy No.</Label>
-                            <Input id="edit-policyNumber" name="policyNumber" value={editedData.policyNumber || ''} onChange={handleInputChange} disabled={isLiaison} />
+                            <Input id="edit-policyNumber" name="policyNumber" value={editedData.policyNumber || ''} onChange={handleInputChange} disabled={!canEdit} />
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="edit-insuranceType">Insurance Type</Label>
-                            <Input id="edit-insuranceType" name="insuranceType" value={editedData.insuranceType || ''} onChange={handleInputChange} disabled={isLiaison} />
+                            <Input id="edit-insuranceType" name="insuranceType" value={editedData.insuranceType || ''} onChange={handleInputChange} disabled={!canEdit} />
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="edit-hpgControlNumber">HPG Control No.</Label>
-                            <Input id="edit-hpgControlNumber" name="hpgControlNumber" value={editedData.hpgControlNumber || ''} onChange={handleInputChange} disabled={isLiaison} />
+                            <Input id="edit-hpgControlNumber" name="hpgControlNumber" value={editedData.hpgControlNumber || ''} onChange={handleInputChange} disabled={!canEdit} />
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="edit-sarCode">SAR Code</Label>
-                            <Input id="edit-sarCode" name="sarCode" value={editedData.sarCode || ''} onChange={handleInputChange} disabled={isLiaison} />
+                            <Input id="edit-sarCode" name="sarCode" value={editedData.sarCode || ''} onChange={handleInputChange} disabled={!canEdit} />
                         </div>
                      </div>
 
@@ -682,7 +683,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                               size="icon"
                               className="absolute top-1 right-1 h-6 w-6"
                               onClick={() => handleRemoveDocument(doc.id, false)}
-                              disabled={isLiaison}
+                              disabled={!canEdit}
                             >
                               <Trash2 className="h-4 w-4 text-destructive" />
                             </Button>
@@ -691,7 +692,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                               <Select
                                 value={doc.type}
                                 onValueChange={(value: DocumentType) => handleDocumentChange(doc.id, 'type', value, false)}
-                                disabled={isLiaison}
+                                disabled={!canEdit}
                               >
                                 <SelectTrigger id={`edit-doc-type-${index}`} className="col-span-3">
                                   <SelectValue />
@@ -706,7 +707,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                             <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor={`edit-doc-file-${index}`} className="text-right">File</Label>
                                 <div className="col-span-3 flex items-center gap-2">
-                                    <Input id={`edit-doc-file-${index}`} type="file" className="flex-grow" onChange={(e) => handleFileChange(doc.id, e, false)} disabled={isLiaison} />
+                                    <Input id={`edit-doc-file-${index}`} type="file" className="flex-grow" onChange={(e) => handleFileChange(doc.id, e, false)} disabled={!canEdit} />
                                     <Button variant="outline" size="sm" asChild>
                                         <a href={doc.url} target="_blank" rel="noopener noreferrer">
                                             View Current <ExternalLink className="ml-2 h-3 w-3" />
@@ -725,7 +726,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                                           "col-span-3 justify-start text-left font-normal",
                                           !doc.expiresAt && "text-muted-foreground"
                                         )}
-                                        disabled={isLiaison}
+                                        disabled={!canEdit}
                                       >
                                         <CalendarIcon className="mr-2 h-4 w-4" />
                                         {doc.expiresAt ? format(new Date(doc.expiresAt), "PPP") : <span>Pick a date</span>}
@@ -751,7 +752,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
               </ScrollArea>
               <DialogFooter>
                   <Button variant="outline" onClick={handleCancelEdit}>Close</Button>
-                  {!isLiaison && <Button onClick={handleSaveEdit}>Save Changes</Button>}
+                  {canEdit && <Button onClick={handleSaveEdit}>Save Changes</Button>}
               </DialogFooter>
           </DialogContent>
       </Dialog>

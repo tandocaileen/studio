@@ -62,8 +62,8 @@ export function OverdueAdvances({ cashAdvances }: OverdueAdvancesProps) {
             </TableBody>
           </Table>
         ) : (
-          <div className="flex items-center justify-center p-8">
-            <p className="text-muted-foreground">No overdue cash advances.</p>
+          <div className="flex items-center justify-center p-8 text-center text-muted-foreground">
+            <p>No overdue cash advances to show.</p>
           </div>
         )}
       </CardContent>

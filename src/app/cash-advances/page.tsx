@@ -44,9 +44,10 @@ function CashAdvancesContent({ searchQuery }: { searchQuery: string }) {
         }
 
         // Search query filtering
-        if (motorcycle && user.role !== 'Cashier') {
+        if (motorcycle) { // All roles can search by motorcycle info now
             if (motorcycle.customerName?.toLowerCase().includes(query)) return true;
             if (motorcycle.model.toLowerCase().includes(query)) return true;
+             if (motorcycle.plateNumber?.toLowerCase().includes(query)) return true;
         }
         if (cashAdvance.purpose.toLowerCase().includes(query)) return true;
         if (cashAdvance.personnel.toLowerCase().includes(query)) return true;
@@ -61,7 +62,7 @@ export default function CashAdvancesPage() {
     const [searchQuery, setSearchQuery] = useState('');
 
     return (
-        <ProtectedPage allowedRoles={['Liaison', 'Cashier']}>
+        <ProtectedPage allowedRoles={['Liaison', 'Cashier', 'Store Supervisor']}>
             <div className="flex min-h-screen w-full flex-col bg-muted/40">
                 <AppSidebar />
                 <div className="flex flex-col pt-14 sm:gap-4 sm:py-4 sm:pl-14">
