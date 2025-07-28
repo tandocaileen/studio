@@ -220,21 +220,32 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
     setEditingMotorcycle(null);
     setEditedData({});
     setEditedDocuments([]);
+    setNewDocuments([]);
   };
 
   const handleSaveEdit = () => {
     if (!editingMotorcycle) return;
 
+    const finalDocuments = [
+      ...editedDocuments.map(doc => ({
+        type: doc.type,
+        url: doc.file ? URL.createObjectURL(doc.file) : doc.url || '#',
+        uploadedAt: doc.uploadedAt || new Date(),
+        expiresAt: doc.expiresAt,
+      })),
+      ...newDocuments.map(doc => ({
+        type: doc.type,
+        url: doc.file ? URL.createObjectURL(doc.file) : '#',
+        uploadedAt: new Date(),
+        expiresAt: doc.expiresAt,
+      }))
+    ] as Document[];
+
     const updatedMotorcycle = {
       ...editingMotorcycle,
       ...editedData,
       status: 'Ready to Register', // Change status upon saving details
-      documents: editedDocuments.map(doc => ({
-        type: doc.type,
-        url: doc.url || '#',
-        uploadedAt: doc.uploadedAt || new Date(),
-        expiresAt: doc.expiresAt,
-      })) as Document[],
+      documents: finalDocuments,
     };
     
     const updatedMotorcycles = motorcycles.map(m => 
@@ -624,6 +635,65 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                             ) : null}
                           </div>
                         ))}
+                         {newDocuments.map((doc, index) => (
+                           <div key={doc.id} className="grid grid-cols-1 gap-4 p-4 border rounded-lg relative bg-muted/50">
+                             <Button
+                              variant="ghost"
+                              size="icon"
+                              className="absolute top-1 right-1 h-6 w-6"
+                              onClick={() => handleRemoveDocument(doc.id, true)}
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                              <Label htmlFor={`new-doc-type-${index}`} className="text-right">Type</Label>
+                              <Select
+                                value={doc.type}
+                                onValueChange={(value: DocumentType) => handleDocumentChange(doc.id, 'type', value, true)}
+                              >
+                                <SelectTrigger id={`new-doc-type-${index}`} className="col-span-3">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                   {ALL_DOC_TYPES.map(type => (
+                                      <SelectItem key={type} value={type}>{type}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                             <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor={`new-doc-file-${index}`} className="text-right">File</Label>
+                                <Input id={`new-doc-file-${index}`} type="file" className="col-span-3" onChange={(e) => handleFileChange(doc.id, e, true)} />
+                            </div>
+                             {doc.type === 'Insurance' || doc.type === 'OR/CR' ? (
+                              <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor={`new-doc-expiry-${index}`} className="text-right">Expiry / Effectivity</Label>
+                                  <Popover>
+                                    <PopoverTrigger asChild>
+                                      <Button
+                                        variant={"outline"}
+                                        className={cn(
+                                          "col-span-3 justify-start text-left font-normal",
+                                          !doc.expiresAt && "text-muted-foreground"
+                                        )}
+                                      >
+                                        <CalendarIcon className="mr-2 h-4 w-4" />
+                                        {doc.expiresAt ? format(new Date(doc.expiresAt), "PPP") : <span>Pick a date</span>}
+                                      </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0">
+                                      <Calendar
+                                        mode="single"
+                                        selected={doc.expiresAt ? new Date(doc.expiresAt) : undefined}
+                                        onSelect={(date) => handleDocumentChange(doc.id, 'expiresAt', date, true)}
+                                        initialFocus
+                                      />
+                                    </PopoverContent>
+                                  </Popover>
+                              </div>
+                            ) : null}
+                          </div>
+                        ))}
                          {canEditInsuranceAndControl && (
                             <Button variant="outline" onClick={handleAddNewDocument} className="w-full">
                                 <PlusCircle className="mr-2" />
@@ -703,3 +773,5 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
     </>
   );
 }
+
+    
