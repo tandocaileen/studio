@@ -18,15 +18,19 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { X, FilePenLine } from 'lucide-react';
+import { FilePenLine } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 function EndorsementsContent() {
     const [motorcycles, setMotorcycles] = React.useState<Motorcycle[] | null>(null);
     const [liaisons, setLiaisons] = React.useState<LiaisonUser[] | null>(null);
     const [selectedMotorcycles, setSelectedMotorcycles] = React.useState<Motorcycle[]>([]);
+    const [selectedLiaison, setSelectedLiaison] = React.useState<LiaisonUser | null>(null);
+    const [remarks, setRemarks] = React.useState('');
     const [searchQuery, setSearchQuery] = React.useState('');
+    const [isSummaryOpen, setIsSummaryOpen] = React.useState(false);
     const { toast } = useToast();
 
     React.useEffect(() => {
@@ -42,20 +46,33 @@ function EndorsementsContent() {
         }
     };
     
-    const handleRemoveFromEndorsement = (motorcycleId: string) => {
-        setSelectedMotorcycles(prev => prev.filter(m => m.id !== motorcycleId));
-    };
-    
-    const handleCreateEndorsement = () => {
+    const handleAttemptCreateEndorsement = () => {
         if (selectedMotorcycles.length === 0) {
-            toast({ title: 'No units selected', description: 'Please select at least one motorcycle to endorse.', variant: 'destructive' });
+            toast({ title: 'No Units Selected', description: 'Please select at least one motorcycle to endorse.', variant: 'destructive' });
             return;
         }
-        toast({ title: 'Endorsement Created!', description: `${selectedMotorcycles.length} unit(s) have been endorsed successfully.` });
+        if (!selectedLiaison) {
+            toast({ title: 'No Liaison Selected', description: 'Please select a receiving liaison.', variant: 'destructive' });
+            return;
+        }
+        setIsSummaryOpen(true);
+    }
+
+    const handleConfirmEndorsement = () => {
+        toast({ title: 'Endorsement Created!', description: `${selectedMotorcycles.length} unit(s) have been endorsed to ${selectedLiaison?.name}.` });
         
         // In a real app, you would update the backend here.
-        // For the demo, we'll just clear the selection.
+        // For the demo, we'll just clear the state.
         setSelectedMotorcycles([]);
+        setSelectedLiaison(null);
+        setRemarks('');
+        setIsSummaryOpen(false);
+        // This is a bit of a hack to reset the select component visually
+        const trigger = document.getElementById('receiving-liaison-trigger');
+        if (trigger) {
+            // @ts-ignore
+            trigger.childNodes[0].textContent = 'Select a liaison';
+        }
     }
 
     if (!motorcycles || !liaisons) {
@@ -70,127 +87,158 @@ function EndorsementsContent() {
     const endorsementCode = `ENDO-${format(new Date(), 'yyyyMMdd')}-001`;
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-            {/* Left Panel: Endorsement Form */}
-            <Card className="lg:col-span-1 sticky top-20">
-                <CardHeader>
-                    <CardTitle>Endorsement Details</CardTitle>
-                    <CardDescription>Assign units to a liaison.</CardDescription>
-                </CardHeader>
-                <CardContent className="grid gap-6">
-                    <div className="grid gap-2">
-                        <Label htmlFor="transaction-date">Transaction Date</Label>
-                        <Input id="transaction-date" value={format(new Date(), 'MMMM dd, yyyy')} disabled />
-                    </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="endorsement-code">Endorsement Code</Label>
-                        <Input id="endorsement-code" value={endorsementCode} disabled />
-                    </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="receiving-liaison">Receiving Liaison</Label>
-                        <Select>
-                            <SelectTrigger id="receiving-liaison">
-                                <SelectValue placeholder="Select a liaison" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {liaisons.map(liaison => (
-                                    <SelectItem key={liaison.id} value={liaison.name}>{liaison.name}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                     <div className="grid gap-2">
-                        <Label htmlFor="remarks">Remarks</Label>
-                        <Textarea id="remarks" placeholder="Add any notes for this endorsement..." />
-                    </div>
-                    <Button onClick={handleCreateEndorsement} className="w-full">
-                        <FilePenLine className="mr-2 h-4 w-4" />
-                        Create Endorsement
-                    </Button>
-                </CardContent>
-            </Card>
+        <>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                {/* Left Panel: Endorsement Form */}
+                <Card className="lg:col-span-1 sticky top-20">
+                    <CardHeader>
+                        <CardTitle>Endorsement Details</CardTitle>
+                        <CardDescription>Assign units to a liaison.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="grid gap-6">
+                        <div className="grid gap-2">
+                            <Label htmlFor="transaction-date">Transaction Date</Label>
+                            <Input id="transaction-date" value={format(new Date(), 'MMMM dd, yyyy')} disabled />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="endorsement-code">Endorsement Code</Label>
+                            <Input id="endorsement-code" value={endorsementCode} disabled />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="receiving-liaison">Receiving Liaison</Label>
+                            <Select 
+                                onValueChange={(liaisonId) => {
+                                    const liaison = liaisons.find(l => l.id === liaisonId);
+                                    setSelectedLiaison(liaison || null);
+                                }}
+                                value={selectedLiaison?.id || ''}
+                            >
+                                <SelectTrigger id="receiving-liaison-trigger">
+                                    <SelectValue placeholder="Select a liaison" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {liaisons.map(liaison => (
+                                        <SelectItem key={liaison.id} value={liaison.id}>{liaison.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="remarks">Remarks</Label>
+                            <Textarea 
+                                id="remarks" 
+                                placeholder="Add any notes for this endorsement..."
+                                value={remarks}
+                                onChange={(e) => setRemarks(e.target.value)}
+                            />
+                        </div>
+                        <Button onClick={handleAttemptCreateEndorsement} className="w-full">
+                            <FilePenLine className="mr-2 h-4 w-4" />
+                            Create Endorsement
+                        </Button>
+                    </CardContent>
+                </Card>
 
-            {/* Right Panel: Motorcycle Selection */}
-            <div className="lg:col-span-2 grid gap-8">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Pending Units</CardTitle>
-                        <CardDescription>Select motorcycles to include in the endorsement.</CardDescription>
-                         <Input
-                            placeholder="Search by Plate No. or Customer Name..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="max-w-sm"
-                        />
-                    </CardHeader>
-                    <CardContent>
-                        <ScrollArea className="h-[400px]">
-                            <Table>
-                                <TableHeader className="sticky top-0 bg-background">
-                                    <TableRow>
-                                        <TableHead className="w-[40px]"></TableHead>
-                                        <TableHead>Customer Name</TableHead>
-                                        <TableHead>Plate No.</TableHead>
-                                        <TableHead>Engine / Chassis No.</TableHead>
-                                        <TableHead>Status</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {availableMotorcycles.map(mc => (
-                                        <TableRow key={mc.id}>
-                                            <TableCell>
-                                                <Checkbox
-                                                    checked={selectedMotorcycles.some(m => m.id === mc.id)}
-                                                    onCheckedChange={(checked) => handleSelectMotorcycle(mc, checked)}
-                                                    aria-label={`Select ${mc.customerName}`}
-                                                />
-                                            </TableCell>
-                                            <TableCell>{mc.customerName}</TableCell>
-                                            <TableCell>{mc.plateNumber}</TableCell>
-                                            <TableCell>
-                                                <div className="font-mono text-xs">{mc.engineNumber}</div>
-                                                <div className="font-mono text-xs text-muted-foreground">{mc.chassisNumber}</div>
-                                            </TableCell>
-                                            <TableCell><Badge variant={mc.status === 'Incomplete' ? 'outline' : 'default'}>{mc.status}</Badge></TableCell>
+                {/* Right Panel: Motorcycle Selection */}
+                <div className="lg:col-span-2 grid gap-8">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Pending Units ({availableMotorcycles.length})</CardTitle>
+                            <CardDescription>Select motorcycles to include in the endorsement.</CardDescription>
+                            <Input
+                                placeholder="Search by Plate No. or Customer Name..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="max-w-sm"
+                            />
+                        </CardHeader>
+                        <CardContent>
+                            <ScrollArea className="h-[60vh]">
+                                <Table>
+                                    <TableHeader className="sticky top-0 bg-background">
+                                        <TableRow>
+                                            <TableHead className="w-[40px]"></TableHead>
+                                            <TableHead>Customer Name</TableHead>
+                                            <TableHead>Plate No.</TableHead>
+                                            <TableHead>Engine / Chassis No.</TableHead>
+                                            <TableHead>Status</TableHead>
                                         </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </ScrollArea>
-                    </CardContent>
-                </Card>
-                
-                 <Card>
-                    <CardHeader>
-                        <CardTitle>Endorsed Units ({selectedMotorcycles.length})</CardTitle>
-                         <CardDescription>These units will be assigned to the selected liaison.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <ScrollArea className="h-[200px]">
-                            {selectedMotorcycles.length > 0 ? (
-                                <ul className="space-y-2">
-                                    {selectedMotorcycles.map(mc => (
-                                        <li key={mc.id} className="flex items-center justify-between p-2 border rounded-lg">
-                                            <div>
-                                                <p className="font-medium">{mc.customerName}</p>
-                                                <p className="text-sm text-muted-foreground">{mc.make} {mc.model} ({mc.plateNumber})</p>
-                                            </div>
-                                            <Button variant="ghost" size="icon" onClick={() => handleRemoveFromEndorsement(mc.id)}>
-                                                <X className="h-4 w-4 text-destructive" />
-                                            </Button>
-                                        </li>
-                                    ))}
-                                </ul>
-                            ) : (
-                                <div className="text-center text-muted-foreground py-8">
-                                    Select units from the table above.
-                                </div>
-                            )}
-                        </ScrollArea>
-                    </CardContent>
-                </Card>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {availableMotorcycles.map(mc => (
+                                            <TableRow 
+                                                key={mc.id}
+                                                data-state={selectedMotorcycles.some(m => m.id === mc.id) ? "selected" : undefined}
+                                            >
+                                                <TableCell>
+                                                    <Checkbox
+                                                        checked={selectedMotorcycles.some(m => m.id === mc.id)}
+                                                        onCheckedChange={(checked) => handleSelectMotorcycle(mc, checked)}
+                                                        aria-label={`Select ${mc.customerName}`}
+                                                    />
+                                                </TableCell>
+                                                <TableCell>{mc.customerName}</TableCell>
+                                                <TableCell>{mc.plateNumber}</TableCell>
+                                                <TableCell>
+                                                    <div className="font-mono text-xs">{mc.engineNumber}</div>
+                                                    <div className="font-mono text-xs text-muted-foreground">{mc.chassisNumber}</div>
+                                                </TableCell>
+                                                <TableCell><Badge variant={mc.status === 'Incomplete' ? 'outline' : 'default'}>{mc.status}</Badge></TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </ScrollArea>
+                        </CardContent>
+                    </Card>
+                </div>
             </div>
-        </div>
+
+            <Dialog open={isSummaryOpen} onOpenChange={setIsSummaryOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Confirm Endorsement</DialogTitle>
+                        <DialogDescription>
+                            Please review the details before confirming the endorsement.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-3 gap-2">
+                           <div className="font-semibold">Endorsement Code:</div>
+                           <div className="col-span-2">{endorsementCode}</div>
+                        </div>
+                        <div className="grid grid-cols-3 gap-2">
+                           <div className="font-semibold">Receiving Liaison:</div>
+                           <div className="col-span-2">{selectedLiaison?.name}</div>
+                        </div>
+                        <div className="grid grid-cols-3 gap-2">
+                           <div className="font-semibold">Total Units:</div>
+                           <div className="col-span-2">{selectedMotorcycles.length}</div>
+                        </div>
+                         <div className="grid grid-cols-3 gap-2">
+                           <div className="font-semibold">Remarks:</div>
+                           <div className="col-span-2">{remarks || 'N/A'}</div>
+                        </div>
+                        
+                        <Label className="font-semibold mt-4">Units to be Endorsed:</Label>
+                        <ScrollArea className="h-48 border rounded-md p-2">
+                             <ul className="space-y-2">
+                                {selectedMotorcycles.map(mc => (
+                                    <li key={mc.id}>
+                                        <p className="font-medium">{mc.customerName}</p>
+                                        <p className="text-sm text-muted-foreground">{mc.make} {mc.model} ({mc.plateNumber})</p>
+                                    </li>
+                                ))}
+                            </ul>
+                        </ScrollArea>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsSummaryOpen(false)}>Cancel</Button>
+                        <Button onClick={handleConfirmEndorsement}>Confirm Endorsement</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </>
     );
 }
 
@@ -210,4 +258,3 @@ export default function EndorsementsPage() {
         </ProtectedPage>
     );
 }
-
