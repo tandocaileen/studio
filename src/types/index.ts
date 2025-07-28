@@ -33,6 +33,10 @@ export type Motorcycle = {
   processingFee?: number;
   orFee?: number;
   assignedLiaison?: string;
+  // Endorsement fields
+  salesInvoiceNo?: string;
+  accountCode?: string;
+  endorsementCode?: string;
 };
 
 export type CashAdvance = {
@@ -62,3 +66,5 @@ export type LiaisonUser = {
     processingFee: number;
     orFee: number;
 }
+
+    

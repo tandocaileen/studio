@@ -162,10 +162,17 @@ function EndorsementsContent() {
                                     <TableHeader className="sticky top-0 bg-background">
                                         <TableRow>
                                             <TableHead className="w-[40px]"></TableHead>
+                                            <TableHead>Sale ID</TableHead>
+                                            <TableHead>SI No.</TableHead>
+                                            <TableHead>Account Code</TableHead>
                                             <TableHead>Customer Name</TableHead>
                                             <TableHead>Plate No.</TableHead>
                                             <TableHead>Make & Model</TableHead>
-                                            <TableHead>Engine / Chassis No.</TableHead>
+                                            <TableHead>Engine No.</TableHead>
+                                            <TableHead>Chassis No.</TableHead>
+                                            <TableHead>CSR No.</TableHead>
+                                            <TableHead>CR/OR No.</TableHead>
+                                            <TableHead>HPG Control No.</TableHead>
                                             <TableHead>Status</TableHead>
                                         </TableRow>
                                     </TableHeader>
@@ -182,16 +189,20 @@ function EndorsementsContent() {
                                                         aria-label={`Select ${mc.customerName}`}
                                                     />
                                                 </TableCell>
+                                                <TableCell>{mc.id}</TableCell>
+                                                <TableCell>{mc.salesInvoiceNo}</TableCell>
+                                                <TableCell>{mc.accountCode}</TableCell>
                                                 <TableCell className="font-medium">{mc.customerName}</TableCell>
                                                 <TableCell>{mc.plateNumber}</TableCell>
                                                 <TableCell>
                                                     <div>{mc.make}</div>
                                                     <div className="text-xs text-muted-foreground">{mc.model}</div>
                                                 </TableCell>
-                                                <TableCell>
-                                                    <div className="font-mono text-xs">{mc.engineNumber}</div>
-                                                    <div className="font-mono text-xs text-muted-foreground">{mc.chassisNumber}</div>
-                                                </TableCell>
+                                                <TableCell className="font-mono text-xs">{mc.engineNumber}</TableCell>
+                                                <TableCell className="font-mono text-xs">{mc.chassisNumber}</TableCell>
+                                                <TableCell>{mc.documents.find(d => d.type === 'CSR')?.url.slice(-8) || 'N/A'}</TableCell>
+                                                <TableCell>{mc.documents.find(d => d.type === 'OR/CR')?.url.slice(-8) || 'N/A'}</TableCell>
+                                                <TableCell>{mc.hpgControlNumber || 'N/A'}</TableCell>
                                                 <TableCell><Badge variant={mc.status === 'Incomplete' ? 'outline' : 'default'}>{mc.status}</Badge></TableCell>
                                             </TableRow>
                                         ))}
@@ -267,3 +278,5 @@ export default function EndorsementsPage() {
         </ProtectedPage>
     );
 }
+
+    

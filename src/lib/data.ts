@@ -24,7 +24,7 @@ const motorcycles: Motorcycle[] = [
     supplier: 'Honda Prestige',
     status: 'Registered',
     documents: [
-      { type: 'OR/CR', url: '#', uploadedAt: new Date('2023-01-20'), expiresAt: addDays(today, 300) },
+      { type: 'OR/CR', url: '#/doc/orcr123', uploadedAt: new Date('2023-01-20'), expiresAt: addDays(today, 300) },
       { type: 'COC', url: '#', uploadedAt: new Date('2023-01-20') },
       { type: 'Insurance', url: '#', uploadedAt: new Date('2023-01-20'), expiresAt: addDays(today, 25) },
     ],
@@ -32,6 +32,9 @@ const motorcycles: Motorcycle[] = [
     assignedLiaison: 'Liaison A',
     processingFee: 1500,
     orFee: 1000,
+    salesInvoiceNo: 'SI-00123',
+    accountCode: 'AC-JDC-001',
+    hpgControlNumber: 'HPG-CTRL-001',
   },
   {
     id: '2',
@@ -47,7 +50,7 @@ const motorcycles: Motorcycle[] = [
     supplier: 'Yamaha Motors',
     status: 'For Renewal',
     documents: [
-      { type: 'OR/CR', url: '#', uploadedAt: new Date('2022-05-25'), expiresAt: addDays(today, -10) },
+      { type: 'OR/CR', url: '#/doc/orcr456', uploadedAt: new Date('2022-05-25'), expiresAt: addDays(today, -10) },
       { type: 'COC', url: '#', uploadedAt: new Date('2022-05-25') },
       { type: 'Insurance', url: '#', uploadedAt: new Date('2022-05-25'), expiresAt: addDays(today, 5) },
     ],
@@ -55,6 +58,9 @@ const motorcycles: Motorcycle[] = [
     assignedLiaison: 'Liaison B',
     processingFee: 1500,
     orFee: 1000,
+    salesInvoiceNo: 'SI-00124',
+    accountCode: 'AC-MCL-001',
+    hpgControlNumber: 'HPG-CTRL-002',
   },
   {
     id: '3',
@@ -70,7 +76,7 @@ const motorcycles: Motorcycle[] = [
     supplier: 'Suzuki Philippines',
     status: 'Registered',
     documents: [
-      { type: 'OR/CR', url: '#', uploadedAt: new Date('2023-03-15'), expiresAt: addDays(today, 400) },
+      { type: 'OR/CR', url: '#/doc/orcr789', uploadedAt: new Date('2023-03-15'), expiresAt: addDays(today, 400) },
       { type: 'COC', url: '#', uploadedAt: new Date('2023-03-15') },
       { type: 'Insurance', url: '#', uploadedAt: new Date('2023-03-15'), expiresAt: addDays(today, 150) },
     ],
@@ -78,6 +84,9 @@ const motorcycles: Motorcycle[] = [
     assignedLiaison: 'Liaison A',
     processingFee: 1600,
     orFee: 1100,
+    salesInvoiceNo: 'SI-00125',
+    accountCode: 'AC-JRZ-001',
+    hpgControlNumber: 'HPG-CTRL-003',
   },
   {
     id: '4',
@@ -97,6 +106,9 @@ const motorcycles: Motorcycle[] = [
     assignedLiaison: 'Demo Liaison',
     processingFee: 1500,
     orFee: 1000,
+    salesInvoiceNo: 'SI-00126',
+    accountCode: 'AC-ABF-001',
+    hpgControlNumber: 'HPG-CTRL-004',
   },
   {
     id: '5',
@@ -119,6 +131,9 @@ const motorcycles: Motorcycle[] = [
     assignedLiaison: 'Demo Liaison',
     processingFee: 1550,
     orFee: 1050,
+    salesInvoiceNo: 'SI-00127',
+    accountCode: 'AC-GSL-001',
+    hpgControlNumber: 'HPG-CTRL-005',
   },
    {
     id: '6',
@@ -136,12 +151,15 @@ const motorcycles: Motorcycle[] = [
     documents: [
       { type: 'COC', url: '#', uploadedAt: new Date('2024-05-15') },
       { type: 'Insurance', url: '#', uploadedAt: new Date('2024-05-15'), expiresAt: addDays(today, 365) },
-      { type: 'CSR', url: '#', uploadedAt: new Date('2024-05-15') },
+      { type: 'CSR', url: '#/doc/csr654', uploadedAt: new Date('2024-05-15') },
     ],
     customerName: 'Apolinario Mabini',
     assignedLiaison: 'Demo Liaison',
     processingFee: 1500,
     orFee: 1000,
+    salesInvoiceNo: 'SI-00128',
+    accountCode: 'AC-APM-001',
+    hpgControlNumber: 'HPG-CTRL-006',
   },
   {
     id: '7',
@@ -161,6 +179,8 @@ const motorcycles: Motorcycle[] = [
     assignedLiaison: 'Demo Liaison',
     processingFee: 1500,
     orFee: 1000,
+    salesInvoiceNo: 'SI-00129',
+    accountCode: 'AC-EAG-001',
   }
 ];
 
@@ -245,3 +265,5 @@ export async function getLiaisons() {
     await new Promise(resolve => setTimeout(resolve, 500));
     return liaisonUsers;
 }
+
+    
