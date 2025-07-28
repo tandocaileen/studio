@@ -472,10 +472,17 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
                     aria-label="Select all"
                   />
                 </TableHead>
+                <TableHead>Sale ID</TableHead>
+                <TableHead>SI No.</TableHead>
+                <TableHead>Account Code</TableHead>
+                <TableHead>Customer Name</TableHead>
                 <TableHead>Plate No.</TableHead>
-                <TableHead className="hidden sm:table-cell">Make & Model</TableHead>
-                <TableHead className="hidden md:table-cell">Engine No.</TableHead>
-                <TableHead className="hidden lg:table-cell">Chassis No.</TableHead>
+                <TableHead>Make & Model</TableHead>
+                <TableHead>Engine No.</TableHead>
+                <TableHead>Chassis No.</TableHead>
+                <TableHead>CSR No.</TableHead>
+                <TableHead>CR/OR No.</TableHead>
+                <TableHead>HPG Control No.</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="w-[100px]">
                   <span className="sr-only">Actions</span>
@@ -485,20 +492,27 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles }: MotorcycleT
             <TableBody>
               {motorcycles.map((motorcycle) => (
                   <TableRow key={motorcycle.id} data-state={selectedMotorcycles.some(m => m.id === motorcycle.id) ? "selected" : undefined}>
-                     <TableCell>
+                    <TableCell>
                       <Checkbox
                         checked={selectedMotorcycles.some(m => m.id === motorcycle.id)}
                         onCheckedChange={(checked) => handleSelectMotorcycle(motorcycle, checked)}
                         aria-label={`Select motorcycle ${motorcycle.plateNumber}`}
                       />
                     </TableCell>
-                    <TableCell className="font-medium">
-                        <div>{motorcycle.plateNumber}</div>
-                        <div className="text-muted-foreground sm:hidden">{`${motorcycle.make} ${motorcycle.model}`}</div>
+                    <TableCell>{motorcycle.id}</TableCell>
+                    <TableCell>{motorcycle.salesInvoiceNo}</TableCell>
+                    <TableCell>{motorcycle.accountCode}</TableCell>
+                    <TableCell className="font-medium">{motorcycle.customerName}</TableCell>
+                    <TableCell>{motorcycle.plateNumber}</TableCell>
+                    <TableCell>
+                        <div>{motorcycle.make}</div>
+                        <div className="text-xs text-muted-foreground">{motorcycle.model}</div>
                     </TableCell>
-                    <TableCell className="hidden sm:table-cell">{`${motorcycle.make} ${motorcycle.model}`}</TableCell>
-                    <TableCell className="hidden md:table-cell">{motorcycle.engineNumber}</TableCell>
-                    <TableCell className="hidden lg:table-cell">{motorcycle.chassisNumber}</TableCell>
+                    <TableCell className="font-mono text-xs">{motorcycle.engineNumber}</TableCell>
+                    <TableCell className="font-mono text-xs">{motorcycle.chassisNumber}</TableCell>
+                    <TableCell>{motorcycle.documents.find(d => d.type === 'CSR')?.url.slice(-8) || 'N/A'}</TableCell>
+                    <TableCell>{motorcycle.documents.find(d => d.type === 'OR/CR')?.url.slice(-8) || 'N/A'}</TableCell>
+                    <TableCell>{motorcycle.hpgControlNumber || 'N/A'}</TableCell>
                     <TableCell>
                       <Badge variant={statusVariant(motorcycle.status)}>{motorcycle.status}</Badge>
                     </TableCell>
