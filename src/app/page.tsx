@@ -87,7 +87,7 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
             <DialogTrigger asChild>
                 <Button size="sm" className="gap-1">
                     <PlusCircle className="h-4 w-4" />
-                    <span className="hidden sm:inline">Receive LTO Docs</span>
+                    <span className="hidden sm:inline">Receive MC Docs</span>
                 </Button>
             </DialogTrigger>
             <DialogContent className="max-w-7xl">
