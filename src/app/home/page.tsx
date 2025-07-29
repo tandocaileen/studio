@@ -14,13 +14,16 @@ import { SummaryCards } from "@/components/dashboard/summary-cards";
 import { OverdueAdvances } from "@/components/dashboard/overdue-advances";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Filter, PlusCircle } from "lucide-react";
+import { Filter, PlusCircle, RotateCcw } from "lucide-react";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ReceiveLtoDocs } from "@/components/dashboard/receive-lto-docs";
 import { EndorsedIncompleteTable } from "@/components/dashboard/endorsed-incomplete-table";
 import { cn } from "@/lib/utils";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 
 const ALL_STATUSES: MotorcycleStatus[] = ['Incomplete', 'Ready to Register', 'Endorsed - Incomplete', 'Endorsed - Ready', 'Processing', 'For Review'];
 
@@ -139,7 +142,8 @@ const LIAISON_STATUSES: MotorcycleStatus[] = ['Endorsed - Incomplete', 'Endorsed
 
 function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
   const [motorcycles, setMotorcycles] = useState<Motorcycle[] | null>(null);
-  const [statusFilters, setStatusFilters] = useState<string[]>(['Endorsed - Ready', 'Endorsed - Incomplete']);
+  const [activeStatusFilters, setActiveStatusFilters] = useState<string[]>(['Endorsed - Ready', 'Endorsed - Incomplete']);
+  const [tempStatusFilters, setTempStatusFilters] = useState<string[]>(['Endorsed - Ready', 'Endorsed - Incomplete']);
   
   useEffect(() => {
     getMotorcycles().then(setMotorcycles);
@@ -152,14 +156,23 @@ function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
     return <AppLoader />;
   }
   
-  const handleStatusFilterChange = (status: string, checked: boolean) => {
-    setStatusFilters(prev => {
+  const handleCheckboxChange = (status: string, checked: boolean) => {
+    setTempStatusFilters(prev => {
         if (checked) {
             return [...prev, status];
         } else {
             return prev.filter(s => s !== status);
         }
     });
+  };
+
+  const applyFilters = () => {
+      setActiveStatusFilters(tempStatusFilters);
+  };
+  
+  const clearFilters = () => {
+      setTempStatusFilters([]);
+      setActiveStatusFilters([]);
   };
 
   const handleStateUpdate = (updatedMotorcycles: Motorcycle[]) => {
@@ -179,7 +192,7 @@ function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
     const isUserAssigned = m.assignedLiaison === user.name;
     if (!isUserAssigned) return false;
 
-    if (statusFilters.length > 0 && !statusFilters.includes(m.status)) {
+    if (activeStatusFilters.length > 0 && !activeStatusFilters.includes(m.status)) {
         return false;
     }
     
@@ -211,34 +224,53 @@ function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
               </p>
           </div>
       </div>
-       <Card>
-          <CardContent className="p-6">
-              <div className="flex items-center justify-end mb-4">
-                 <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="outline">
-                            <Filter className="mr-2 h-4 w-4" />
-                            Filter by Status
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                        <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        {LIAISON_STATUSES.map(status => (
-                             <DropdownMenuCheckboxItem
-                                key={status}
-                                checked={statusFilters.includes(status)}
-                                onCheckedChange={(checked) => handleStatusFilterChange(status, !!checked)}
-                            >
-                                {status}
-                            </DropdownMenuCheckboxItem>
-                        ))}
-                    </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-              <MotorcycleTable motorcycles={filteredMotorcycles} onStateChange={handleStateUpdate} />
-          </CardContent>
-      </Card>
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
+        <div className="lg:col-span-3">
+             <Card>
+                <CardContent className="p-6">
+                    <MotorcycleTable motorcycles={filteredMotorcycles} onStateChange={handleStateUpdate} />
+                </CardContent>
+            </Card>
+        </div>
+        <div className="lg:col-span-1 lg:sticky top-20">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Filters</CardTitle>
+                    <CardDescription>Refine your view</CardDescription>
+                </CardHeader>
+                <CardContent className="grid gap-4">
+                    <div>
+                        <Label className="font-semibold text-sm">Status</Label>
+                         <Separator className="my-2" />
+                        <div className="grid gap-2">
+                           {LIAISON_STATUSES.map(status => (
+                            <div key={status} className="flex items-center gap-2">
+                                <Checkbox 
+                                    id={`filter-${status}`}
+                                    checked={tempStatusFilters.includes(status)}
+                                    onCheckedChange={(checked) => handleCheckboxChange(status, !!checked)}
+                                />
+                                <Label htmlFor={`filter-${status}`} className="font-normal text-sm">
+                                    {status}
+                                </Label>
+                            </div>
+                           ))}
+                        </div>
+                    </div>
+                </CardContent>
+                <CardFooter className="flex flex-col gap-2">
+                    <Button onClick={applyFilters} className="w-full">
+                        <Filter className="mr-2 h-4 w-4" />
+                        Apply Filters
+                    </Button>
+                    <Button onClick={clearFilters} variant="ghost" className="w-full">
+                        <RotateCcw className="mr-2 h-4 w-4" />
+                        Clear
+                    </Button>
+                </CardFooter>
+            </Card>
+        </div>
+      </div>
     </>
   );
 }
@@ -307,3 +339,4 @@ export default function DashboardPage() {
     </ProtectedPage>
   );
 }
+
