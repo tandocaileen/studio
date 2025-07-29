@@ -148,16 +148,22 @@ export default function LiquidationsPage() {
     const allMotorcyclesForLiaison = motorcycles.filter(mc => {
         const ca = cashAdvances.find(c => c.motorcycleIds?.includes(mc.id));
         if (!ca) return false;
-        const isRelevantCA = ['Approved', 'CV Received', 'Liquidated'].includes(ca.status);
+        
+        const isRelevantCA = ['Approved', 'CV Received', 'Liquidated', 'Processing'].includes(ca.status);
         if (!isRelevantCA) return false;
-        if (isLiaison && mc.assignedLiaison !== user.name) return false;
+        
+        if (isLiaison && ca.personnel !== user.name) return false;
+        
         return true;
     });
 
     const pendingLiquidationMotorcycles = allMotorcyclesForLiaison.filter(mc => {
         const ca = cashAdvances.find(c => c.motorcycleIds?.includes(mc.id));
-        const isReadyForLiq = ['Approved', 'CV Received'].includes(ca!.status);
-        const isNotLiquidated = mc.status !== 'For Review';
+        if (!ca) return false;
+        
+        const isReadyForLiq = ['Approved', 'CV Received', 'Processing'].includes(ca.status);
+        const isNotLiquidated = mc.status !== 'For Review' && mc.status !== 'Liquidated';
+
         return isReadyForLiq && isNotLiquidated;
     });
 
