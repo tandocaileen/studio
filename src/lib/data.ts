@@ -559,7 +559,110 @@ const cashAdvances: CashAdvance[] = [
     date: new Date(),
     status: 'Pending',
     motorcycleIds: ['13']
-  }
+  },
+  // Demo Liaison Data
+  {
+    id: 'ca-demo-001',
+    personnel: 'Demo Liaison',
+    purpose: 'Demo registration for 1 unit',
+    amount: 1500,
+    date: addDays(today, -1),
+    status: 'Pending',
+    motorcycleIds: [],
+  },
+  {
+    id: 'ca-demo-002',
+    personnel: 'Demo Liaison',
+    purpose: 'Demo registration for 2 units',
+    amount: 3200,
+    date: addDays(today, -3),
+    status: 'Pending',
+    motorcycleIds: [],
+  },
+  {
+    id: 'ca-demo-003',
+    personnel: 'Demo Liaison',
+    purpose: 'Demo renewal for 1 unit',
+    amount: 1850,
+    date: addDays(today, -5),
+    status: 'Approved',
+    motorcycleIds: [],
+  },
+  {
+    id: 'ca-demo-004',
+    personnel: 'Demo Liaison',
+    purpose: 'Demo registration for 3 units',
+    amount: 5500,
+    date: addDays(today, -7),
+    status: 'Check Voucher Released',
+    checkVoucherNumber: 'CV-DEMO-001',
+    checkVoucherReleaseDate: addDays(today, -6),
+    motorcycleIds: [],
+  },
+  {
+    id: 'ca-demo-005',
+    personnel: 'Demo Liaison',
+    purpose: 'Demo parts purchase',
+    amount: 850,
+    date: addDays(today, -8),
+    status: 'CV Received',
+    checkVoucherNumber: 'CV-DEMO-002',
+    checkVoucherReleaseDate: addDays(today, -7),
+    motorcycleIds: [],
+  },
+  {
+    id: 'ca-demo-006',
+    personnel: 'Demo Liaison',
+    purpose: 'Demo registration for 1 unit',
+    amount: 1980,
+    date: addDays(today, -10),
+    status: 'Liquidated',
+    totalLiquidation: 1980,
+    checkVoucherNumber: 'CV-DEMO-003',
+    checkVoucherReleaseDate: addDays(today, -9),
+    motorcycleIds: [],
+  },
+  {
+    id: 'ca-demo-007',
+    personnel: 'Demo Liaison',
+    purpose: 'Demo travel expenses',
+    amount: 2500,
+    date: addDays(today, -12),
+    status: 'Liquidated',
+    totalLiquidation: 2450,
+    checkVoucherNumber: 'CV-DEMO-004',
+    checkVoucherReleaseDate: addDays(today, -11),
+    motorcycleIds: [],
+  },
+  {
+    id: 'ca-demo-008',
+    personnel: 'Demo Liaison',
+    purpose: 'Demo marketing event',
+    amount: 10000,
+    date: addDays(today, -15),
+    status: 'Rejected',
+    motorcycleIds: [],
+  },
+  {
+    id: 'ca-demo-009',
+    personnel: 'Demo Liaison',
+    purpose: 'Demo unit maintenance',
+    amount: 750,
+    date: addDays(today, -20),
+    status: 'Approved',
+    motorcycleIds: [],
+  },
+  {
+    id: 'ca-demo-010',
+    personnel: 'Demo Liaison',
+    purpose: 'Demo registration for 2 units',
+    amount: 4100,
+    date: addDays(today, -25),
+    status: 'CV Received',
+    checkVoucherNumber: 'CV-DEMO-005',
+    checkVoucherReleaseDate: addDays(today, -24),
+    motorcycleIds: [],
+  },
 ];
 
 const liaisonUsers: LiaisonUser[] = [
@@ -620,6 +723,7 @@ export async function getEndorsements() {
     await new Promise(resolve => setTimeout(resolve, 500));
     return JSON.parse(JSON.stringify(endorsements)).map((e: any) => ({...e, transactionDate: new Date(e.transactionDate)}));
 }
+
 
 
 
