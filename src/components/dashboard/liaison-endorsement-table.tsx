@@ -120,10 +120,10 @@ export function LiaisonEndorsementTable({
 
       const motorcyclesForAI = selectedMotorcycles.map(m => ({
         ...m,
-        purchaseDate: m.purchaseDate.toISOString(),
+        purchaseDate: new Date(m.purchaseDate).toISOString(),
         documents: m.documents.map(d => ({
             ...d,
-            uploadedAt: d.uploadedAt.toISOString(),
+            uploadedAt: new Date(d.uploadedAt).toISOString(),
             expiresAt: d.expiresAt ? new Date(d.expiresAt).toISOString() : undefined,
             type: d.type
         }))
@@ -137,11 +137,9 @@ export function LiaisonEndorsementTable({
 
       console.log('Cash advance generated: ', result);
       
-      const updatedMotorcycles = motorcycles.map(m => 
-          selectedMotorcycles.some(sm => sm.id === m.id) ? { ...m, status: 'Processing' as MotorcycleStatus } : m
-      );
+      const updatedMotorcycles = selectedMotorcycles.map(m => ({ ...m, status: 'Processing' as MotorcycleStatus }));
       
-      if (onStateChange) onStateChange(updatedMotorcycles.filter(m => selectedMotorcycles.some(sm => sm.id === m.id)));
+      if (onStateChange) onStateChange(updatedMotorcycles);
       
       toast({
         title: 'Cash Advance Request Submitted',

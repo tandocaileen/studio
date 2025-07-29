@@ -264,16 +264,17 @@ function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
         return <AppLoader />;
     }
 
-    const handleStateUpdate = (updatedMotorcycles: Motorcycle | Motorcycle[]) => {
+    const handleStateUpdate = (updatedOrNewMotorcycles: Motorcycle | Motorcycle[]) => {
         setMotorcycles(currentMotorcycles => {
             if (!currentMotorcycles) return [];
             const motorcyclesMap = new Map(currentMotorcycles.map(m => [m.id, m]));
 
-            if (Array.isArray(updatedMotorcycles)) {
-                updatedMotorcycles.forEach(um => motorcyclesMap.set(um.id, um));
-            } else {
-                motorcyclesMap.set(updatedMotorcycles.id, updatedMotorcycles);
-            }
+            const itemsToUpdate = Array.isArray(updatedOrNewMotorcycles) ? updatedOrNewMotorcycles : [updatedOrNewMotorcycles];
+
+            itemsToUpdate.forEach(um => {
+                const existing = motorcyclesMap.get(um.id);
+                motorcyclesMap.set(um.id, { ...existing, ...um });
+            });
             
             return Array.from(motorcyclesMap.values());
         });
