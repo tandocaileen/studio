@@ -207,6 +207,7 @@ export function LiaisonEndorsementTable({
             <TableRow>
               <TableHead className="w-[50px]"></TableHead>
               <TableHead>Endorsement Code</TableHead>
+              <TableHead>Branch</TableHead>
               <TableHead>Endorsement Date</TableHead>
               <TableHead>Endorsed By</TableHead>
               <TableHead>Units</TableHead>
@@ -217,6 +218,7 @@ export function LiaisonEndorsementTable({
               const associatedMotorcycles = motorcycles.filter(m => endorsement.motorcycleIds.includes(m.id));
               const eligibleMotorcyclesInGroup = associatedMotorcycles.filter(m => m.status === 'Endorsed - Ready');
               const selectedEligibleInGroupCount = selectedMotorcycles.filter(m => eligibleMotorcyclesInGroup.some(em => em.id === m.id)).length;
+              const endorsementBranch = associatedMotorcycles.length > 0 ? associatedMotorcycles[0].assignedBranch : 'N/A';
 
               const isAllInGroupSelected = eligibleMotorcyclesInGroup.length > 0 && selectedEligibleInGroupCount === eligibleMotorcyclesInGroup.length;
               const isPartiallySelectedInGroup = eligibleMotorcyclesInGroup.length > 0 && selectedEligibleInGroupCount > 0 && !isAllInGroupSelected;
@@ -239,13 +241,14 @@ export function LiaisonEndorsementTable({
                     >
                       {endorsement.id}
                     </TableCell>
+                    <TableCell>{endorsementBranch}</TableCell>
                     <TableCell>{format(new Date(endorsement.transactionDate), 'MMMM dd, yyyy')}</TableCell>
                     <TableCell>{endorsement.createdBy}</TableCell>
                     <TableCell>{endorsement.motorcycleIds.length}</TableCell>
                   </TableRow>
                   <CollapsibleContent asChild>
                     <tr className="bg-muted/20">
-                      <TableCell colSpan={5} className="p-0">
+                      <TableCell colSpan={6} className="p-0">
                           <div className="p-4">
                             <Table>
                                 <TableHeader>
@@ -261,7 +264,6 @@ export function LiaisonEndorsementTable({
                                         </TableHead>
                                         <TableHead>SI No.</TableHead>
                                         <TableHead>Customer Name</TableHead>
-                                        <TableHead>Branch</TableHead>
                                         <TableHead>Account Code</TableHead>
                                         <TableHead>Chassis No.</TableHead>
                                         <TableHead>CSR No.</TableHead>
@@ -283,7 +285,6 @@ export function LiaisonEndorsementTable({
                                             </TableCell>
                                             <TableCell>{mc.salesInvoiceNo}</TableCell>
                                             <TableCell>{mc.customerName}</TableCell>
-                                            <TableCell>{mc.assignedBranch}</TableCell>
                                             <TableCell>{mc.accountCode}</TableCell>
                                             <TableCell>{mc.chassisNumber}</TableCell>
                                             <TableCell>{mc.csrNumber || 'N/A'}</TableCell>
@@ -419,3 +420,5 @@ export function LiaisonEndorsementTable({
   </>
   );
 }
+
+    
