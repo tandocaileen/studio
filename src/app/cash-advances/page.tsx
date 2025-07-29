@@ -95,9 +95,7 @@ function CashAdvancesContent({ searchQuery }: { searchQuery: string }) {
         });
     };
 
-    const relevantAdvances = user.role === 'Liaison' 
-        ? allCAs.filter(ca => ca.personnel === user.name)
-        : allCAs;
+    const relevantAdvances = allCAs;
     
     const applyFilters = () => {
         setActiveDateRange(tempDateRange);
@@ -331,3 +329,5 @@ export default function CashAdvancesPage() {
         </ProtectedPage>
     );
 }
+
+    

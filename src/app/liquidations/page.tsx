@@ -180,7 +180,6 @@ export default function LiquidationsPage() {
         });
 
     const filteredGroupedItems = groupedItems.filter(item => {
-        if(isLiaison && item.cashAdvance.personnel !== user.name) return false;
         return ['CV Received', 'Liquidated', 'Processing'].includes(item.cashAdvance.status) || item.motorcycles.some(m => m.status === 'For Review');
     });
 
@@ -374,3 +373,5 @@ export default function LiquidationsPage() {
         </ProtectedPage>
     );
 }
+
+    
