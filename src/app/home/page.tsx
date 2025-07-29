@@ -39,8 +39,9 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
   const [motorcycles, setMotorcycles] = useState<Motorcycle[] | null>(null);
   const [endorsements, setEndorsements] = useState<Endorsement[] | null>(null);
   
-  const [activeStatusFilters, setActiveStatusFilters] = useState<MotorcycleStatus[]>(ALL_SUPERVISOR_STATUSES);
-  const [tempStatusFilters, setTempStatusFilters] = useState<MotorcycleStatus[]>(ALL_SUPERVISOR_STATUSES);
+  const PRE_FILTERED_STATUSES: MotorcycleStatus[] = ['Incomplete', 'Ready to Register'];
+  const [activeStatusFilters, setActiveStatusFilters] = useState<MotorcycleStatus[]>(PRE_FILTERED_STATUSES);
+  const [tempStatusFilters, setTempStatusFilters] = useState<MotorcycleStatus[]>(PRE_FILTERED_STATUSES);
   
   const [activeDateRange, setActiveDateRange] = useState<DateRange>('all');
   const [tempDateRange, setTempDateRange] = useState<DateRange>('all');
