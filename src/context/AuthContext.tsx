@@ -68,7 +68,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             finalUserData.name = 'Naruto Uzumaki';
         } else if (userData.role === 'Cashier') {
             finalUserData.name = 'Sasuke Uchiha';
+        } else if (userData.role === 'Liaison' && finalUserData.name.startsWith('Demo')) {
+            finalUserData.name = 'Bryle Nikko Hamili';
         }
+
 
         const userString = JSON.stringify(finalUserData);
         setUser(finalUserData);
@@ -80,10 +83,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const logout = () => {
         setUser(null);
         localStorage.removeItem('ltoportal-user');
+        localStorage.removeItem('data_generated_flag');
         // Remove the session cookie
         removeCookie('ltoportal-user');
         // Use window.location to ensure a full page refresh and state clearing
-        window.location.href = '/login';
+        window.location.href = '/login?reset_data=true';
     };
 
     return (

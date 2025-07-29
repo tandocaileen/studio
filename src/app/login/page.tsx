@@ -38,6 +38,10 @@ export default function LoginPage() {
             let name = `Demo ${role}`;
             if (role === 'Liaison') {
                 name = 'Bryle Nikko Hamili';
+            } else if (role === 'Store Supervisor') {
+                name = 'Naruto Uzumaki';
+            } else if (role === 'Cashier') {
+                name = 'Sasuke Uchiha';
             }
             login({ email, name, role });
             // The useEffect will handle the redirect

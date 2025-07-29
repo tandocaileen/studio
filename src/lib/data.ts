@@ -26,21 +26,16 @@ const initialLiaisonUsers: LiaisonUser[] = [
     { id: 'user-014', name: 'GEORGETH YEE', assignedBranch: 'BUENAVISTA', processingFee: 150.00, orFee: 1846.43 }
 ];
 
-// --- DATA GENERATION ---
-let initialMotorcycles: Motorcycle[] = [];
-let initialEndorsements: Endorsement[] = [];
-let initialCashAdvances: CashAdvance[] = [];
 
-// For demo purposes, we will assign all endorsements/CAs to Bryle Nikko Hamili
-const DEMO_LIAISON = initialLiaisonUsers.find(l => l.name === 'BRYLE NIKKO HAMILI')!;
+const generateInitialData = () => {
+    const motorcycles: Motorcycle[] = [];
+    const endorsements: Endorsement[] = [];
+    const cashAdvances: CashAdvance[] = [];
 
-const generateData = () => {
-    // Reset arrays
-    initialMotorcycles = [];
-    initialEndorsements = [];
-    initialCashAdvances = [];
+    const DEMO_LIAISON = initialLiaisonUsers.find(l => l.name === 'BRYLE NIKKO HAMILI')!;
+    const SUPERVISOR_NAME = 'Naruto Uzumaki';
+    const CASHIER_NAME = 'Sasuke Uchiha';
 
-    // 1. Create 20 Motorcycles
     const makes = ['Honda', 'Yamaha', 'Suzuki', 'Kawasaki'];
     const models = ['Click 125i', 'NMAX', 'Raider R150', 'Ninja 400', 'Mio Aerox', 'PCX 160'];
     const customers = [
@@ -49,13 +44,12 @@ const generateData = () => {
         'Teresa Magbanua', 'Emilio Aguinaldo', 'Melchora Aquino', 'Antonio Luna', 'Claro M. Recto',
         'Manuel Quezon', 'Sergio Osmeña', 'Ramon Magsaysay', 'Carlos P. Garcia'
     ];
-    
     const branches = [...new Set(initialLiaisonUsers.map(l => l.assignedBranch))];
 
     for (let i = 1; i <= 20; i++) {
         const isReady = i % 2 === 0;
-        const purchaseDate = addDays(today, - (i * 5) - 30);
-        
+        const purchaseDate = addDays(today, -(i * 5) - 30);
+
         const mc: Motorcycle = {
             id: `mc-${i.toString().padStart(4, '0')}`,
             make: makes[i % makes.length],
@@ -65,17 +59,18 @@ const generateData = () => {
             plateNumber: `${Math.floor(Math.random() * 900) + 100} ABC`,
             engineNumber: `E${Math.random().toString(36).substring(2, 10).toUpperCase()}`,
             chassisNumber: `C${Math.random().toString(36).substring(2, 10).toUpperCase()}`,
-            assignedBranch: branches[i % branches.length], // Assign a branch
+            assignedBranch: branches[i % branches.length],
             purchaseDate: purchaseDate,
             supplier: 'Prestige Honda',
             documents: [],
-            status: isReady ? 'Ready to Register' : 'Incomplete',
-            customerName: customers[i-1],
+            status: 'Incomplete', // Start all as incomplete, will be updated by logic
+            customerName: customers[i - 1],
             salesInvoiceNo: `SI-${Math.floor(Math.random() * 90000) + 10000}`,
             accountCode: `AC-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
         };
-        
+
         if (isReady) {
+            mc.status = 'Ready to Register';
             mc.cocNumber = `COC-${Math.floor(Math.random() * 9000) + 1000}`;
             mc.policyNumber = `POL-${Math.floor(Math.random() * 9000) + 1000}`;
             mc.insuranceType = 'TPL';
@@ -86,86 +81,78 @@ const generateData = () => {
             mc.csrNumber = `CSR-${Math.floor(Math.random() * 9000) + 1000}`;
             mc.crNumber = `CR-${Math.floor(Math.random() * 9000) + 1000}`;
         }
-        
-        initialMotorcycles.push(mc);
+        motorcycles.push(mc);
     }
 
-    // 2. Create Endorsements to Bryle
-    const endorsement1MCs = ['mc-0002', 'mc-0004']; // Both Ready
-    const endorsement2MCs = ['mc-0006', 'mc-0001']; // One Ready, One Incomplete
-    const endorsement3MCs = ['mc-0008', 'mc-0010', 'mc-0003', 'mc-0005']; // Two Ready, Two Incomplete
-    const endorsement4MCs = ['mc-0012', 'mc-0014']; // Both Ready
-    const endorsement5MCs = ['mc-0016', 'mc-0018']; // Both Ready
-
     const createEndorsement = (id: string, date: Date, mcIds: string[], createdBy: string) => {
-        initialEndorsements.push({
-            id: id, transactionDate: date, liaisonId: DEMO_LIAISON.id,
-            liaisonName: DEMO_LIAISON.name, motorcycleIds: mcIds, createdBy: createdBy
+        endorsements.push({
+            id, transactionDate: date, liaisonId: DEMO_LIAISON.id,
+            liaisonName: DEMO_LIAISON.name, motorcycleIds: mcIds, createdBy, remarks: "Please process"
         });
         mcIds.forEach(mcId => {
-            const mc = initialMotorcycles.find(m => m.id === mcId);
+            const mc = motorcycles.find(m => m.id === mcId);
             if (mc) {
                 mc.status = mc.status === 'Ready to Register' ? 'Endorsed - Ready' : 'Endorsed - Incomplete';
                 mc.assignedLiaison = DEMO_LIAISON.name;
             }
         });
     };
-    
-    createEndorsement('ENDO-20240801-001', addDays(today, -15), endorsement1MCs, 'Naruto Uzumaki');
-    createEndorsement('ENDO-20240802-002', addDays(today, -14), endorsement2MCs, 'Sasuke Uchiha');
-    createEndorsement('ENDO-20240803-003', addDays(today, -13), endorsement3MCs, 'Naruto Uzumaki');
-    createEndorsement('ENDO-20240804-004', addDays(today, -12), endorsement4MCs, 'Sasuke Uchiha');
-    createEndorsement('ENDO-20240805-005', addDays(today, -11), endorsement5MCs, 'Naruto Uzumaki');
 
-    // 3. Create Cash Advances for Bryle
+    createEndorsement('ENDO-20240801-001', addDays(today, -15), ['mc-0002', 'mc-0004'], SUPERVISOR_NAME);
+    createEndorsement('ENDO-20240802-002', addDays(today, -14), ['mc-0006', 'mc-0001'], CASHIER_NAME);
+    createEndorsement('ENDO-20240803-003', addDays(today, -13), ['mc-0008', 'mc-0010', 'mc-0003', 'mc-0005'], SUPERVISOR_NAME);
+
     const createCA = (id: string, date: Date, mcIds: string[], status: CashAdvance['status'], cvNumber?: string, cvDate?: Date) => {
-        const amount = mcIds.length * (DEMO_LIAISON.processingFee + DEMO_LIAISON.orFee);
+        const liaison = initialLiaisonUsers.find(l => l.name === DEMO_LIAISON.name);
+        if (!liaison) return;
+        const amount = mcIds.length * (liaison.processingFee + liaison.orFee);
         const ca: CashAdvance = {
-            id, personnel: DEMO_LIAISON.name, personnelBranch: DEMO_LIAISON.assignedBranch, 
+            id, personnel: liaison.name, personnelBranch: liaison.assignedBranch, 
             purpose: `Cash advance for registration of ${mcIds.length} units.`,
             amount, date, status, motorcycleIds: mcIds,
         };
         if (cvNumber) ca.checkVoucherNumber = cvNumber;
         if (cvDate) ca.checkVoucherReleaseDate = cvDate;
-        initialCashAdvances.push(ca);
+        cashAdvances.push(ca);
         mcIds.forEach(mcId => {
-            const mc = initialMotorcycles.find(m => m.id === mcId);
+            const mc = motorcycles.find(m => m.id === mcId);
             if (mc) {
                 mc.status = 'Processing';
             }
         });
     };
-
+    
     // CA 1: Liquidated
-    const ca1_mcIds = ['mc-0002', 'mc-0004']; // From Endorsement 1
+    const ca1_mcIds = ['mc-0002', 'mc-0004'];
     createCA('ca-081524-001', addDays(today, -10), ca1_mcIds, 'Liquidated', 'CV-2024-08-001', addDays(today, -9));
     ca1_mcIds.forEach(mcId => {
-        const mc = initialMotorcycles.find(m => m.id === mcId);
-        if (mc) {
+        const mc = motorcycles.find(m => m.id === mcId);
+        const liaison = initialLiaisonUsers.find(l => l.name === DEMO_LIAISON.name);
+        if (mc && liaison) {
             mc.status = 'For Review';
             mc.liquidationDetails = {
                 parentCaId: 'ca-081524-001', ltoOrNumber: `LTO-OR-${Math.floor(Math.random() * 90000)}`,
-                ltoOrAmount: DEMO_LIAISON.orFee, ltoProcessFee: DEMO_LIAISON.processingFee, 
-                totalLiquidation: DEMO_LIAISON.orFee + DEMO_LIAISON.processingFee,
+                ltoOrAmount: liaison.orFee, ltoProcessFee: liaison.processingFee, 
+                totalLiquidation: liaison.orFee + liaison.processingFee,
                 shortageOverage: 0,
-                remarks: 'Full Liquidation Complete', liquidatedBy: DEMO_LIAISON.name, liquidationDate: addDays(today, -2)
+                remarks: 'Full Liquidation Complete', liquidatedBy: liaison.name, liquidationDate: addDays(today, -2)
             };
         }
     });
-    
-    // CA 2: CV Received (Ready for liquidation)
-    const ca2_mcIds = ['mc-0006']; // From Endorsement 2 (only the 'Ready' one)
-    createCA('ca-081624-002', addDays(today, -8), ca2_mcIds, 'CV Received', 'CV-2024-08-005', addDays(today, -7));
+
+    // CA 2: CV Received
+    createCA('ca-081624-002', addDays(today, -8), ['mc-0006'], 'CV Received', 'CV-2024-08-005', addDays(today, -7));
     
     // CA 3: Processing for CV
-    const ca3_mcIds = ['mc-0008', 'mc-0010']; // From Endorsements 3
-    createCA('ca-081724-003', addDays(today, -5), ca3_mcIds, 'Processing for CV');
+    createCA('ca-081724-003', addDays(today, -5), ['mc-0008', 'mc-0010'], 'Processing for CV');
 
-    // CA 4 & 5: CV Released
-    const ca4_mcIds = ['mc-0012', 'mc-0014']; // From Endorsement 4
-    createCA('ca-081824-004', addDays(today, -4), ca4_mcIds, 'CV Released');
-    const ca5_mcIds = ['mc-0016', 'mc-0018']; // From Endorsement 5
-    createCA('ca-081924-005', addDays(today, -3), ca5_mcIds, 'CV Released');
+    // CA 4 & 5 for "CV Released" Status
+    createEndorsement('ENDO-20240804-004', addDays(today, -12), ['mc-0012', 'mc-0014'], CASHIER_NAME);
+    createEndorsement('ENDO-20240805-005', addDays(today, -11), ['mc-0016', 'mc-0018'], SUPERVISOR_NAME);
+    createCA('ca-081824-004', addDays(today, -4), ['mc-0012', 'mc-0014'], 'CV Released');
+    createCA('ca-081924-005', addDays(today, -3), ['mc-0016', 'mc-0018'], 'CV Released');
+
+    return { motorcycles, endorsements, cashAdvances };
 };
 
 
@@ -173,12 +160,8 @@ const MC_KEY = 'lto_motorcycles';
 const CA_KEY = 'lto_cash_advances';
 const ENDO_KEY = 'lto_endorsements';
 
-const getInitialData = <T,>(key: string, initialData: T[], forceReset: boolean = false): T[] => {
+const getInitialData = <T,>(key: string, initialData: T[]): T[] => {
     if (typeof window === 'undefined') {
-        return initialData;
-    }
-    if (forceReset) {
-        localStorage.setItem(key, JSON.stringify(initialData));
         return initialData;
     }
     const storedData = localStorage.getItem(key);
@@ -187,10 +170,8 @@ const getInitialData = <T,>(key: string, initialData: T[], forceReset: boolean =
         return initialData;
     }
     try {
-        // A simple check to see if the stored data structure matches the initial data.
-        // This can be improved with a versioning system.
         const parsedData = JSON.parse(storedData);
-        if (Array.isArray(parsedData)) { // Loosened check to allow for empty arrays
+        if (Array.isArray(parsedData)) {
              return parsedData;
         }
         throw new Error("Invalid data structure");
@@ -210,12 +191,32 @@ const setData = <T,>(key: string, data: T[]) => {
     }
 }
 
+const ensureDataGenerated = () => {
+    if (typeof window !== 'undefined' && !localStorage.getItem('data_generated_flag')) {
+        const { motorcycles, endorsements, cashAdvances } = generateInitialData();
+        setData(MC_KEY, motorcycles);
+        setData(ENDO_KEY, endorsements);
+        setData(CA_KEY, cashAdvances);
+        localStorage.setItem('data_generated_flag', 'true');
+        // A small delay to allow localStorage to settle before potential reload.
+        setTimeout(() => window.location.reload(), 100);
+    }
+};
+
+// On first load of this module, check if data needs to be generated.
+if (typeof window !== 'undefined') {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('reset_data')) {
+        localStorage.removeItem('data_generated_flag');
+    }
+    ensureDataGenerated();
+}
+
 
 // --- Motorcycles ---
 export async function getMotorcycles(): Promise<Motorcycle[]> {
     await new Promise(resolve => setTimeout(resolve, 50));
-    generateData(); // Regenerate all data every time to ensure consistency
-    return getInitialData(MC_KEY, initialMotorcycles, true);
+    return getInitialData(MC_KEY, []);
 }
 
 export async function updateMotorcycles(updatedMotorcycles: Motorcycle | Motorcycle[]) {
@@ -234,7 +235,7 @@ export async function updateMotorcycles(updatedMotorcycles: Motorcycle | Motorcy
 // --- Cash Advances ---
 export async function getCashAdvances(): Promise<CashAdvance[]> {
     await new Promise(resolve => setTimeout(resolve, 50));
-    return getInitialData(CA_KEY, initialCashAdvances, true);
+    return getInitialData(CA_KEY, []);
 }
 
 export async function addCashAdvance(newAdvance: CashAdvance) {
@@ -265,7 +266,7 @@ export async function getLiaisons(): Promise<LiaisonUser[]> {
 // --- Endorsements ---
 export async function getEndorsements(): Promise<Endorsement[]> {
     await new Promise(resolve => setTimeout(resolve, 50));
-    return getInitialData(ENDO_KEY, initialEndorsements, true);
+    return getInitialData(ENDO_KEY, []);
 }
 
 export async function addEndorsement(newEndorsement: Endorsement) {
