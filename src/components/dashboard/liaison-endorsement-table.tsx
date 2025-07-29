@@ -188,7 +188,7 @@ export function LiaisonEndorsementTable({
                     >
                       {endorsement.id}
                     </TableCell>
-                    <TableCell>{format(endorsement.transactionDate, 'MMMM dd, yyyy')}</TableCell>
+                    <TableCell>{format(new Date(endorsement.transactionDate), 'MMMM dd, yyyy')}</TableCell>
                     <TableCell>{endorsement.createdBy}</TableCell>
                     <TableCell>{endorsement.motorcycleIds.length}</TableCell>
                   </TableRow>
@@ -200,9 +200,13 @@ export function LiaisonEndorsementTable({
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead className="w-[40px]"></TableHead>
-                                        <TableHead>Customer</TableHead>
-                                        <TableHead>Plate No.</TableHead>
-                                        <TableHead>Make & Model</TableHead>
+                                        <TableHead>SI No.</TableHead>
+                                        <TableHead>Customer Name</TableHead>
+                                        <TableHead>Account Code</TableHead>
+                                        <TableHead>Chassis No.</TableHead>
+                                        <TableHead>CSR No.</TableHead>
+                                        <TableHead>CR No.</TableHead>
+                                        <TableHead>HPG Control</TableHead>
                                         <TableHead>Status</TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -216,9 +220,13 @@ export function LiaisonEndorsementTable({
                                                   disabled={mc.status !== 'Endorsed - Ready'}
                                                 />
                                             </TableCell>
+                                            <TableCell>{mc.salesInvoiceNo}</TableCell>
                                             <TableCell>{mc.customerName}</TableCell>
-                                            <TableCell>{mc.plateNumber}</TableCell>
-                                            <TableCell>{mc.make} {mc.model}</TableCell>
+                                            <TableCell>{mc.accountCode}</TableCell>
+                                            <TableCell>{mc.chassisNumber}</TableCell>
+                                            <TableCell>{mc.csrNumber || 'N/A'}</TableCell>
+                                            <TableCell>{mc.crNumber || 'N/A'}</TableCell>
+                                            <TableCell>{mc.hpgControlNumber || 'N/A'}</TableCell>
                                             <TableCell>
                                                 <Badge variant={mc.status === 'Endorsed - Ready' ? 'default' : 'outline'}>
                                                     {mc.status}
