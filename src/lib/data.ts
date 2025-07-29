@@ -525,8 +525,6 @@ const cashAdvances: CashAdvance[] = [
     amount: 5000,
     date: addDays(today, -5),
     status: 'CV Released',
-    checkVoucherNumber: 'CV-2024-07-001',
-    checkVoucherReleaseDate: addDays(today, -5),
     motorcycleIds: ['6', '7']
   },
   {
@@ -595,8 +593,6 @@ const cashAdvances: CashAdvance[] = [
     amount: 5500,
     date: addDays(today, -7),
     status: 'CV Released',
-    checkVoucherNumber: 'CV-DEMO-001',
-    checkVoucherReleaseDate: addDays(today, -6),
     motorcycleIds: [],
   },
   {
@@ -714,10 +710,4 @@ export async function getEndorsements() {
     await new Promise(resolve => setTimeout(resolve, 500));
     return JSON.parse(JSON.stringify(endorsements)).map((e: any) => ({...e, transactionDate: new Date(e.transactionDate)}));
 }
-
-
-
-
-
-
 

@@ -15,11 +15,11 @@ type OverdueAdvancesProps = {
 
 export function OverdueAdvances({ cashAdvances }: OverdueAdvancesProps) {
   const overdueAdvances = cashAdvances.filter(ca => {
-    if (ca.status !== 'Check Voucher Released' || !ca.checkVoucherReleaseDate) {
+    if (ca.status !== 'CV Received' || !ca.checkVoucherReleaseDate) {
       return false;
     }
-    const daysSinceRelease = differenceInDays(new Date(), new Date(ca.checkVoucherReleaseDate));
-    return daysSinceRelease > 3;
+    const daysSinceReceived = differenceInDays(new Date(), new Date(ca.checkVoucherReleaseDate));
+    return daysSinceReceived > 5; // Overdue if not liquidated 5 days after receiving funds
   });
 
   return (
@@ -27,10 +27,10 @@ export function OverdueAdvances({ cashAdvances }: OverdueAdvancesProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
             <AlertCircle className="text-destructive" />
-            Overdue CV Reception Alert
+            Overdue Liquidation Alert
         </CardTitle>
         <CardDescription>
-          These check vouchers were released over 3 days ago but have not been marked as received by the liaison.
+          These cash advances were marked as received over 5 days ago but have not yet been liquidated by the liaison.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -40,7 +40,7 @@ export function OverdueAdvances({ cashAdvances }: OverdueAdvancesProps) {
               <TableRow>
                 <TableHead>Liaison</TableHead>
                 <TableHead>CV Number</TableHead>
-                <TableHead>Release Date</TableHead>
+                <TableHead>Date Received</TableHead>
                 <TableHead className="text-right">Amount</TableHead>
                 <TableHead className="text-right">Days Overdue</TableHead>
               </TableRow>
@@ -63,7 +63,7 @@ export function OverdueAdvances({ cashAdvances }: OverdueAdvancesProps) {
           </Table>
         ) : (
           <div className="flex items-center justify-center p-8 text-center text-muted-foreground">
-            <p>No overdue cash advances to show.</p>
+            <p>No overdue liquidations to show.</p>
           </div>
         )}
       </CardContent>
