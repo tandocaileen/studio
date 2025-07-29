@@ -22,11 +22,17 @@ function EndorsementsContent() {
     const [endorsements, setEndorsements] = React.useState<Endorsement[] | null>(null);
     const [liaisonFilter, setLiaisonFilter] = React.useState<string>('all');
     const [dateRange, setDateRange] = React.useState<DateRange>('7d');
+    const [loadingId, setLoadingId] = React.useState<string | null>(null);
     const router = useRouter();
 
     React.useEffect(() => {
         getEndorsements().then(setEndorsements);
     }, []);
+    
+    const handleViewDetails = (id: string) => {
+        setLoadingId(id);
+        router.push(`/endorsements/${id}`);
+    }
 
     if (!endorsements) {
         return <AppLoader />;
@@ -102,7 +108,7 @@ function EndorsementsContent() {
                                 <TableCell>{format(new Date(e.transactionDate), 'MMMM dd, yyyy')}</TableCell>
                                 <TableCell>{e.motorcycleIds.length}</TableCell>
                                 <TableCell>
-                                    <Button variant="outline" size="sm" onClick={() => router.push(`/endorsements/${e.id}`)}>
+                                    <Button variant="outline" size="sm" onClick={() => handleViewDetails(e.id)} loading={loadingId === e.id}>
                                         <Eye className="mr-2 h-4 w-4" />
                                         View Details
                                     </Button>
