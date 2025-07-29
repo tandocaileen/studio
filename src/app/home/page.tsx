@@ -160,16 +160,18 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
                         </CardHeader>
                         <CardContent className="grid gap-4">
                             <Collapsible defaultOpen>
-                                <CollapsibleTrigger className="flex justify-between items-center w-full">
-                                    <div className="flex items-center gap-2">
-                                        <Checkbox
-                                            id="filter-status-all"
-                                            checked={tempStatusFilters.length === ALL_SUPERVISOR_STATUSES.length}
-                                            onCheckedChange={handleSelectAllStatuses}
-                                        />
-                                        <Label htmlFor="filter-status-all" className="font-semibold text-sm">Status</Label>
+                                <CollapsibleTrigger asChild>
+                                    <div className="flex justify-between items-center w-full cursor-pointer">
+                                        <div className="flex items-center gap-2">
+                                            <Checkbox
+                                                id="filter-status-all"
+                                                checked={tempStatusFilters.length === ALL_SUPERVISOR_STATUSES.length ? true : tempStatusFilters.length > 0 ? "indeterminate" : false}
+                                                onCheckedChange={handleSelectAllStatuses}
+                                            />
+                                            <Label htmlFor="filter-status-all" className="font-semibold text-sm">Status</Label>
+                                        </div>
+                                        <ChevronDown className="h-4 w-4 transition-transform data-[state=open]:rotate-180" />
                                     </div>
-                                    <ChevronDown className="h-4 w-4 transition-transform data-[state=open]:rotate-180" />
                                 </CollapsibleTrigger>
                                 <CollapsibleContent>
                                     <Separator className="my-2" />
@@ -357,16 +359,18 @@ function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
                             </CardHeader>
                             <CardContent className="grid gap-4">
                                 <Collapsible defaultOpen>
-                                    <CollapsibleTrigger className="flex justify-between items-center w-full">
-                                        <div className="flex items-center gap-2">
-                                            <Checkbox
-                                                id="filter-endorser-all"
-                                                checked={tempEndorserFilters.length === uniqueEndorsers.length}
-                                                onCheckedChange={handleSelectAllEndorsers}
-                                            />
-                                            <Label htmlFor="filter-endorser-all" className="font-semibold text-sm">Endorsed By</Label>
+                                    <CollapsibleTrigger asChild>
+                                        <div className="flex justify-between items-center w-full cursor-pointer">
+                                            <div className="flex items-center gap-2">
+                                                <Checkbox
+                                                    id="filter-endorser-all"
+                                                    checked={tempEndorserFilters.length === uniqueEndorsers.length ? true : tempEndorserFilters.length > 0 ? "indeterminate" : false}
+                                                    onCheckedChange={handleSelectAllEndorsers}
+                                                />
+                                                <Label htmlFor="filter-endorser-all" className="font-semibold text-sm">Endorsed By</Label>
+                                            </div>
+                                            <ChevronDown className="h-4 w-4 transition-transform data-[state=open]:rotate-180" />
                                         </div>
-                                        <ChevronDown className="h-4 w-4 transition-transform data-[state=open]:rotate-180" />
                                     </CollapsibleTrigger>
                                     <CollapsibleContent>
                                         <Separator className="my-2" />
@@ -490,3 +494,5 @@ export default function DashboardPage() {
     </ProtectedPage>
   );
 }
+
+    

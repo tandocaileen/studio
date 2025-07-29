@@ -174,16 +174,18 @@ function CashAdvancesContent({ searchQuery }: { searchQuery: string }) {
                         </CardHeader>
                         <CardContent className="grid gap-4">
                              <Collapsible defaultOpen>
-                                <CollapsibleTrigger className="flex justify-between items-center w-full">
-                                     <div className="flex items-center gap-2">
-                                        <Checkbox
-                                            id="filter-status-all"
-                                            checked={tempStatusFilters.length === ALL_CA_STATUSES.length}
-                                            onCheckedChange={handleSelectAllStatuses}
-                                        />
-                                        <Label htmlFor="filter-status-all" className="font-semibold text-sm">Status</Label>
+                                <CollapsibleTrigger asChild>
+                                    <div className="flex justify-between items-center w-full cursor-pointer">
+                                        <div className="flex items-center gap-2">
+                                            <Checkbox
+                                                id="filter-status-all"
+                                                checked={tempStatusFilters.length === ALL_CA_STATUSES.length ? true : tempStatusFilters.length > 0 ? "indeterminate" : false}
+                                                onCheckedChange={handleSelectAllStatuses}
+                                            />
+                                            <Label htmlFor="filter-status-all" className="font-semibold text-sm">Status</Label>
+                                        </div>
+                                        <ChevronDown className="h-4 w-4 transition-transform data-[state=open]:rotate-180" />
                                     </div>
-                                    <ChevronDown className="h-4 w-4 transition-transform data-[state=open]:rotate-180" />
                                 </CollapsibleTrigger>
                                 <CollapsibleContent>
                                     <Separator className="my-2" />
@@ -203,16 +205,18 @@ function CashAdvancesContent({ searchQuery }: { searchQuery: string }) {
                             </Collapsible>
                             {user.role !== 'Liaison' && (
                                 <Collapsible defaultOpen>
-                                    <CollapsibleTrigger className="flex justify-between items-center w-full">
-                                        <div className="flex items-center gap-2">
-                                            <Checkbox
-                                                id="filter-liaison-all"
-                                                checked={tempLiaisonFilters.length === uniqueLiaisonsInCAs.length}
-                                                onCheckedChange={handleSelectAllLiaisons}
-                                            />
-                                            <Label htmlFor="filter-liaison-all" className="font-semibold text-sm">Liaison</Label>
+                                    <CollapsibleTrigger asChild>
+                                         <div className="flex justify-between items-center w-full cursor-pointer">
+                                            <div className="flex items-center gap-2">
+                                                <Checkbox
+                                                    id="filter-liaison-all"
+                                                    checked={tempLiaisonFilters.length === uniqueLiaisonsInCAs.length ? true : tempLiaisonFilters.length > 0 ? 'indeterminate' : false}
+                                                    onCheckedChange={handleSelectAllLiaisons}
+                                                />
+                                                <Label htmlFor="filter-liaison-all" className="font-semibold text-sm">Liaison</Label>
+                                            </div>
+                                            <ChevronDown className="h-4 w-4 transition-transform data-[state=open]:rotate-180" />
                                         </div>
-                                        <ChevronDown className="h-4 w-4 transition-transform data-[state=open]:rotate-180" />
                                     </CollapsibleTrigger>
                                     <CollapsibleContent>
                                         <Separator className="my-2" />
@@ -289,3 +293,5 @@ export default function CashAdvancesPage() {
         </ProtectedPage>
     );
 }
+
+    
