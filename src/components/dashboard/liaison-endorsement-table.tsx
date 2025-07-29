@@ -244,84 +244,86 @@ export function LiaisonEndorsementTable({
 
 
               return (
-                <Collapsible asChild key={endorsement.id}>
-                  <>
-                  <TableRow className="hover:bg-muted/50">
-                    <TableCell>
-                      <CollapsibleTrigger asChild>
-                        <Button variant="ghost" size="sm">
-                            <ChevronDown className="h-4 w-4 transition-transform data-[state=open]:rotate-180" />
-                        </Button>
-                      </CollapsibleTrigger>
-                    </TableCell>
-                    <TableCell 
-                      className="font-medium text-primary hover:underline cursor-pointer"
-                      onClick={() => handleViewDetails(endorsement)}
-                    >
-                      {endorsement.id}
-                    </TableCell>
-                    <TableCell>{endorsementBranch}</TableCell>
-                    <TableCell>{format(new Date(endorsement.transactionDate), 'MMMM dd, yyyy')}</TableCell>
-                    <TableCell>{endorsement.createdBy}</TableCell>
-                    <TableCell>{endorsement.motorcycleIds.length}</TableCell>
-                  </TableRow>
-                  <CollapsibleContent asChild>
-                    <tr>
-                      <TableCell colSpan={6} className="p-0 bg-muted/20">
-                          <div className="p-4">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead className="w-[40px]">
-                                           <Checkbox
-                                                checked={isPartiallySelectedInGroup ? 'indeterminate' : isAllInGroupSelected}
-                                                onCheckedChange={(checked) => handleSelectAllInGroup(associatedMotorcycles, checked)}
-                                                aria-label="Select all in this group"
-                                                disabled={eligibleMotorcyclesInGroup.length === 0}
-                                            />
-                                        </TableHead>
-                                        <TableHead>SI No.</TableHead>
-                                        <TableHead>Customer Name</TableHead>
-                                        <TableHead>Account Code</TableHead>
-                                        <TableHead>Chassis No.</TableHead>
-                                        <TableHead>Status</TableHead>
-                                        <TableHead>Action</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {associatedMotorcycles.map(mc => (
-                                        <TableRow key={mc.id} data-state={selectedMotorcycles.some(sm => sm.id === mc.id) ? "selected" : undefined}>
-                                            <TableCell>
-                                                <Checkbox
-                                                  checked={selectedMotorcycles.some(sm => sm.id === mc.id)}
-                                                  onCheckedChange={(checked) => handleSelectMotorcycle(mc, !!checked)}
-                                                  disabled={mc.status !== 'Endorsed - Ready'}
+                <React.Fragment key={endorsement.id}>
+                  <Collapsible asChild>
+                    <>
+                      <TableRow className="hover:bg-muted/50">
+                        <TableCell>
+                          <CollapsibleTrigger asChild>
+                            <Button variant="ghost" size="sm">
+                                <ChevronDown className="h-4 w-4 transition-transform data-[state=open]:rotate-180" />
+                            </Button>
+                          </CollapsibleTrigger>
+                        </TableCell>
+                        <TableCell 
+                          className="font-medium text-primary hover:underline cursor-pointer"
+                          onClick={() => handleViewDetails(endorsement)}
+                        >
+                          {endorsement.id}
+                        </TableCell>
+                        <TableCell>{endorsementBranch}</TableCell>
+                        <TableCell>{format(new Date(endorsement.transactionDate), 'MMMM dd, yyyy')}</TableCell>
+                        <TableCell>{endorsement.createdBy}</TableCell>
+                        <TableCell>{endorsement.motorcycleIds.length}</TableCell>
+                      </TableRow>
+                      <CollapsibleContent asChild>
+                        <tr>
+                          <TableCell colSpan={6} className="p-0 bg-muted/20">
+                              <div className="p-4">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead className="w-[40px]">
+                                              <Checkbox
+                                                    checked={isPartiallySelectedInGroup ? 'indeterminate' : isAllInGroupSelected}
+                                                    onCheckedChange={(checked) => handleSelectAllInGroup(associatedMotorcycles, checked)}
+                                                    aria-label="Select all in this group"
+                                                    disabled={eligibleMotorcyclesInGroup.length === 0}
                                                 />
-                                            </TableCell>
-                                            <TableCell>{mc.salesInvoiceNo}</TableCell>
-                                            <TableCell>{mc.customerName}</TableCell>
-                                            <TableCell>{mc.accountCode}</TableCell>
-                                            <TableCell>{mc.chassisNumber}</TableCell>
-                                            <TableCell>
-                                                <Badge variant={mc.status === 'Endorsed - Incomplete' ? 'destructive' : mc.status === 'Endorsed - Ready' ? 'default' : 'outline'}>
-                                                    {mc.status}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Button variant="ghost" size="icon" onClick={() => handleViewMotorcycle(mc)}>
-                                                    <Eye className="h-4 w-4" />
-                                                </Button>
-                                            </TableCell>
+                                            </TableHead>
+                                            <TableHead>SI No.</TableHead>
+                                            <TableHead>Customer Name</TableHead>
+                                            <TableHead>Account Code</TableHead>
+                                            <TableHead>Chassis No.</TableHead>
+                                            <TableHead>Status</TableHead>
+                                            <TableHead>Action</TableHead>
                                         </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                          </div>
-                      </TableCell>
-                    </tr>
-                  </CollapsibleContent>
-                  </>
-                </Collapsible>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {associatedMotorcycles.map(mc => (
+                                            <TableRow key={mc.id} data-state={selectedMotorcycles.some(sm => sm.id === mc.id) ? "selected" : undefined}>
+                                                <TableCell>
+                                                    <Checkbox
+                                                      checked={selectedMotorcycles.some(sm => sm.id === mc.id)}
+                                                      onCheckedChange={(checked) => handleSelectMotorcycle(mc, !!checked)}
+                                                      disabled={mc.status !== 'Endorsed - Ready'}
+                                                    />
+                                                </TableCell>
+                                                <TableCell>{mc.salesInvoiceNo}</TableCell>
+                                                <TableCell>{mc.customerName}</TableCell>
+                                                <TableCell>{mc.accountCode}</TableCell>
+                                                <TableCell>{mc.chassisNumber}</TableCell>
+                                                <TableCell>
+                                                    <Badge variant={mc.status === 'Endorsed - Incomplete' ? 'destructive' : mc.status === 'Endorsed - Ready' ? 'default' : 'outline'}>
+                                                        {mc.status}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Button variant="ghost" size="icon" onClick={() => handleViewMotorcycle(mc)}>
+                                                        <Eye className="h-4 w-4" />
+                                                    </Button>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                              </div>
+                          </TableCell>
+                        </tr>
+                      </CollapsibleContent>
+                    </>
+                  </Collapsible>
+                </React.Fragment>
               );
             })}
           </TableBody>
@@ -431,3 +433,5 @@ export function LiaisonEndorsementTable({
   </>
   );
 }
+
+    
