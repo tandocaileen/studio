@@ -78,7 +78,7 @@ const prompt = ai.definePrompt({
     You are an AI assistant that creates a single, consolidated cash advance request for multiple vehicle registrations.
     
     Instructions:
-    1.  Calculate the total amount by summing the 'processingFee' and 'orFee' for every motorcycle in the list.
+    1.  Calculate the total amount by summing the 'processingFee' and 'orFee' for EVERY motorcycle in the list.
     2.  Create a single cash advance object.
     3.  The purpose should be a summary, like "Cash advance for registration of X units".
     4.  If remarks are provided, append them to the purpose. For example: "Cash advance for registration of X units. Remarks: [remarks]".
@@ -104,18 +104,23 @@ const generateCashAdvanceFlow = ai.defineFlow(
     outputSchema: GenerateCashAdvanceOutputSchema,
   },
   async (input) => {
+    
     const { output } = await prompt(input);
     
     if (!output) {
         throw new Error("AI failed to generate a cash advance response.");
     }
+    
+    const totalAmount = input.motorcycles.reduce((sum, mc) => {
+        return sum + (mc.processingFee || 0) + (mc.orFee || 0);
+    }, 0);
 
-    // Ensure the date field in the output is a valid ISO string.
-    const datedOutput = {
+    const finalOutput = {
         ...output,
+        amount: totalAmount,
         date: new Date().toISOString()
     };
 
-    return datedOutput;
+    return finalOutput;
   }
 );
