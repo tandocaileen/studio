@@ -4,7 +4,7 @@
 import { Header } from "@/components/layout/header";
 import { AppSidebar } from "@/components/layout/sidebar";
 import { MotorcycleTable } from "@/components/dashboard/motorcycle-table";
-import { getCashAdvances, getEndorsements, getMotorcycles } from "@/lib/data";
+import { getCashAdvances, getEndorsements, getLiaisons, getMotorcycles } from "@/lib/data";
 import React, { useState, useEffect } from "react";
 import { AppLoader } from "@/components/layout/loader";
 import { ProtectedPage } from "@/components/auth/protected-page";
@@ -25,8 +25,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { LiaisonEndorsementTable } from "@/components/dashboard/liaison-endorsement-table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-const ALL_STATUSES: MotorcycleStatus[] = ['Incomplete', 'Ready to Register', 'Endorsed - Incomplete', 'Endorsed - Ready', 'Processing', 'For Review'];
+const ALL_SUPERVISOR_STATUSES: MotorcycleStatus[] = ['Incomplete', 'Ready to Register', 'Endorsed - Incomplete', 'Endorsed - Ready', 'Processing', 'For Review'];
+const ALL_LIAISON_STATUSES: MotorcycleStatus[] = ['Endorsed - Incomplete', 'Endorsed - Ready', 'Processing', 'For Review'];
+
+type DateRange = '7d' | '30d' | 'all';
+
 
 function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
   const [motorcycles, setMotorcycles] = useState<Motorcycle[] | null>(null);
@@ -134,7 +139,7 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
                         <Label className="font-semibold text-sm">Status</Label>
                          <Separator className="my-2" />
                         <div className="grid gap-2">
-                           {ALL_STATUSES.map(status => (
+                           {ALL_SUPERVISOR_STATUSES.map(status => (
                             <div key={status} className="flex items-center gap-2">
                                 <Checkbox 
                                     id={`filter-${status}`}
@@ -169,6 +174,9 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
 function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
   const [motorcycles, setMotorcycles] = useState<Motorcycle[] | null>(null);
   const [endorsements, setEndorsements] = useState<Endorsement[] | null>(null);
+  const [statusFilter, setStatusFilter] = React.useState<string>('all');
+  const [endorsedByFilter, setEndorsedByFilter] = React.useState<string>('all');
+  const [dateRange, setDateRange] = React.useState<DateRange>('all');
   
   const { user } = useAuth();
 
@@ -179,11 +187,10 @@ function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
             getEndorsements()
         ]).then(([motorcycleData, endorsementData]) => {
             const userEndorsements = endorsementData.filter(e => e.liaisonName === user.name);
-            const userMotorcycleIds = new Set(userEndorsements.flatMap(e => e.motorcycleIds));
-            const userMotorcycles = motorcycleData.filter(m => userMotorcycleIds.has(m.id));
-
             setEndorsements(userEndorsements);
-            setMotorcycles(userMotorcycles);
+            
+            // We need all motorcycles to resolve IDs in endorsements
+            setMotorcycles(motorcycleData);
         });
     }
   }, [user]);
@@ -209,15 +216,32 @@ function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
       });
   };
 
+  const uniqueEndorsers = [...new Set(endorsements.map(e => e.createdBy))];
+
   const filteredEndorsements = endorsements.filter(e => {
-    if (!searchQuery) return true;
-    const query = searchQuery.toLowerCase();
-    if (e.id.toLowerCase().includes(query)) return true;
-    if (e.createdBy.toLowerCase().includes(query)) return true;
-    const associatedMotorcycles = motorcycles.filter(m => e.motorcycleIds.includes(m.id));
-    if (associatedMotorcycles.some(m => m.customerName?.toLowerCase().includes(query))) return true;
-    if (associatedMotorcycles.some(m => m.plateNumber?.toLowerCase().includes(query))) return true;
-    return false;
+    // Date Range Filter
+    if (dateRange !== 'all') {
+        const days = dateRange === '7d' ? 7 : 30;
+        const cutoff = new Date();
+        cutoff.setDate(cutoff.getDate() - days);
+        if (new Date(e.transactionDate) < cutoff) return false;
+    }
+
+    // Endorsed By Filter
+    if (endorsedByFilter !== 'all' && e.createdBy !== endorsedByFilter) {
+        return false;
+    }
+
+    // Status Filter
+    if (statusFilter !== 'all') {
+        const hasMatchingMotorcycle = e.motorcycleIds.some(mcId => {
+            const motorcycle = motorcycles.find(m => m.id === mcId);
+            return motorcycle && motorcycle.status === statusFilter;
+        });
+        if (!hasMatchingMotorcycle) return false;
+    }
+    
+    return true;
   });
 
   return (
@@ -233,11 +257,52 @@ function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
               </p>
           </div>
       </div>
-      <LiaisonEndorsementTable 
-        endorsements={filteredEndorsements}
-        motorcycles={motorcycles}
-        onStateChange={handleStateUpdate}
-      />
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-4">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-[240px]">
+                      <SelectValue placeholder="Filter by status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                      <SelectItem value="all">All Statuses</SelectItem>
+                      {ALL_LIAISON_STATUSES.map(status => (
+                          <SelectItem key={status} value={status}>{status}</SelectItem>
+                      ))}
+                  </SelectContent>
+              </Select>
+               <Select value={endorsedByFilter} onValueChange={setEndorsedByFilter}>
+                  <SelectTrigger className="w-[240px]">
+                      <SelectValue placeholder="Filter by endorser" />
+                  </SelectTrigger>
+                  <SelectContent>
+                      <SelectItem value="all">All Endorsers</SelectItem>
+                       {uniqueEndorsers.map(endorser => (
+                          <SelectItem key={endorser} value={endorser}>{endorser}</SelectItem>
+                      ))}
+                  </SelectContent>
+              </Select>
+              <Select value={dateRange} onValueChange={(value) => setDateRange(value as DateRange)}>
+                  <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Select date range" />
+                  </SelectTrigger>
+                  <SelectContent>
+                      <SelectItem value="7d">Last 7 days</SelectItem>
+                      <SelectItem value="30d">Last 30 days</SelectItem>
+                      <SelectItem value="all">All time</SelectItem>
+                  </SelectContent>
+              </Select>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <LiaisonEndorsementTable 
+            endorsements={filteredEndorsements}
+            motorcycles={motorcycles}
+            onStateChange={handleStateUpdate}
+            searchQuery={searchQuery}
+          />
+        </CardContent>
+      </Card>
     </>
   );
 }

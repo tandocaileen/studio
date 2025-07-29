@@ -36,6 +36,7 @@ type LiaisonEndorsementTableProps = {
   endorsements: Endorsement[];
   motorcycles: Motorcycle[];
   onStateChange?: (updatedMotorcycles: Motorcycle | Motorcycle[]) => void;
+  searchQuery: string;
 };
 
 type EnrichedEndorsement = {
@@ -46,7 +47,8 @@ type EnrichedEndorsement = {
 export function LiaisonEndorsementTable({
   endorsements,
   motorcycles,
-  onStateChange
+  onStateChange,
+  searchQuery,
 }: LiaisonEndorsementTableProps) {
   const [selectedMotorcycles, setSelectedMotorcycles] = React.useState<Motorcycle[]>([]);
   const [isPreviewingCa, setIsPreviewingCa] = React.useState(false);
@@ -167,23 +169,35 @@ export function LiaisonEndorsementTable({
     setEditingMotorcycle(motorcycle);
   };
 
+  const filteredEndorsements = endorsements.filter(e => {
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
+    if (e.id.toLowerCase().includes(query)) return true;
+    if (e.createdBy.toLowerCase().includes(query)) return true;
+    
+    const associatedMotorcycles = motorcycles.filter(m => e.motorcycleIds.includes(m.id));
+    if (associatedMotorcycles.some(m => m.customerName?.toLowerCase().includes(query))) return true;
+    if (associatedMotorcycles.some(m => m.plateNumber?.toLowerCase().includes(query))) return true;
+    
+    return false;
+  });
+
 
   return (
     <>
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <div>
-          <CardTitle>My Endorsements</CardTitle>
-          <CardDescription>
+    <div className='flex items-center justify-between'>
+        <div className='flex-1'>
+          <h3 className='text-lg font-semibold'>My Endorsements</h3>
+          <p className='text-sm text-muted-foreground'>
             Select units from your endorsements to generate a cash advance.
-          </CardDescription>
+          </p>
         </div>
         <Button size="sm" className="gap-1" onClick={handleOpenCaPreview} loading={isGeneratingCa} disabled={selectedMotorcycles.length === 0}>
             <DollarSign className="h-4 w-4" />
             <span>Generate CA ({selectedMotorcycles.length})</span>
         </Button>
-      </CardHeader>
-      <CardContent>
+      </div>
+
         <Table>
           <TableHeader>
             <TableRow>
@@ -195,7 +209,7 @@ export function LiaisonEndorsementTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {endorsements.map(endorsement => {
+            {filteredEndorsements.map(endorsement => {
               const associatedMotorcycles = motorcycles.filter(m => endorsement.motorcycleIds.includes(m.id));
               const eligibleMotorcyclesInGroup = associatedMotorcycles.filter(m => m.status === 'Endorsed - Ready');
               const selectedEligibleInGroupCount = selectedMotorcycles.filter(m => eligibleMotorcyclesInGroup.some(em => em.id === m.id)).length;
@@ -293,13 +307,11 @@ export function LiaisonEndorsementTable({
             })}
           </TableBody>
         </Table>
-        {endorsements.length === 0 && (
+        {filteredEndorsements.length === 0 && (
           <div className="text-center py-12 text-muted-foreground">
-              <p>You have no endorsements.</p>
+              <p>You have no endorsements matching the current filters.</p>
           </div>
         )}
-      </CardContent>
-    </Card>
 
     {/* CA Preview Dialog */}
     <Dialog open={isPreviewingCa} onOpenChange={setIsPreviewingCa}>
