@@ -257,12 +257,13 @@ const motorcycles: Motorcycle[] = [
     assignedBranch: 'DAVAO',
     purchaseDate: new Date('2024-07-01'),
     supplier: 'Suzuki Dagupan',
-    status: 'Ready to Register',
+    status: 'Endorsed - Ready',
     documents: [
         { type: 'COC', url: '#', uploadedAt: new Date('2024-07-05') },
         { type: 'Insurance', url: '#', uploadedAt: new Date('2024-07-05'), expiresAt: addDays(today, 365) },
     ],
     customerName: 'Melchora Aquino',
+    assignedLiaison: 'ALI VIN SALEH COLINA',
     processingFee: 244.82,
     orFee: 1836.43-244.82,
     salesInvoiceNo: 'SI-00130',
@@ -287,9 +288,10 @@ const motorcycles: Motorcycle[] = [
     assignedBranch: 'CEBU',
     purchaseDate: new Date('2023-10-10'),
     supplier: 'Honda Prestige',
-    status: 'Incomplete',
+    status: 'Endorsed - Incomplete',
     documents: [],
     customerName: 'Lapu-Lapu',
+    assignedLiaison: 'BRYLE NIKKO HAMILI',
     processingFee: 300,
     orFee: 1826.43-300,
     salesInvoiceNo: 'SI-00131',
@@ -577,13 +579,14 @@ const liaisonUsers: LiaisonUser[] = [
 ];
 
 const endorsements: Endorsement[] = [
-    { id: 'ENDO-20240720-001', transactionDate: addDays(today, -10), liaisonId: '8', liaisonName: 'BRYLE NIKKO HAMILI', motorcycleIds: ['4'], remarks: 'Please prioritize processing for this unit.', createdBy: 'Supervisor A'},
-    { id: 'ENDO-20240722-001', transactionDate: addDays(today, -8), liaisonId: '8', liaisonName: 'BRYLE NIKKO HAMILI', motorcycleIds: ['1', '3'], createdBy: 'Cashier B'},
-    { id: 'ENDO-20240725-001', transactionDate: addDays(today, -5), liaisonId: '8', liaisonName: 'BRYLE NIKKO HAMILI', motorcycleIds: ['5', '6', '7', '16'], remarks: 'For registration.', createdBy: 'Supervisor A'},
+    { id: 'ENDO-20240720-001', transactionDate: addDays(today, -10), liaisonId: '8', liaisonName: 'BRYLE NIKKO HAMILI', motorcycleIds: ['4', '9'], remarks: 'Please prioritize processing for this unit.', createdBy: 'Supervisor A'},
+    { id: 'ENDO-20240722-001', transactionDate: addDays(today, -8), liaisonId: '8', liaisonName: 'BRYLE NIKKO HAMILI', motorcycleIds: ['1', '6', '7'], createdBy: 'Cashier B'},
+    { id: 'ENDO-20240725-001', transactionDate: addDays(today, -5), liaisonId: '8', liaisonName: 'BRYLE NIKKO HAMILI', motorcycleIds: ['5', '16'], remarks: 'For registration.', createdBy: 'Supervisor A'},
     { id: 'ENDO-20240728-001', transactionDate: addDays(today, -2), liaisonId: '3', liaisonName: 'RODEL PASTRANO', motorcycleIds: ['2', '13'], remarks: 'For renewal.', createdBy: 'Cashier B'},
-    { id: 'ENDO-20240728-002', transactionDate: addDays(today, -2), liaisonId: '10', liaisonName: 'RODERICK GUTIERREZ', motorcycleIds: ['10'], createdBy: 'Supervisor A'},
-    { id: 'ENDO-20240729-001', transactionDate: addDays(today, -1), liaisonId: '1', liaisonName: 'JINKY JOY AGBALOG', motorcycleIds: ['11'], remarks: 'Urgent', createdBy: 'Supervisor A'},
-    { id: 'ENDO-20240730-001', transactionDate: addDays(today, -1), liaisonId: '7', liaisonName: 'BENJO SEQUIERO', motorcycleIds: ['12'], remarks: 'Please complete details', createdBy: 'Supervisor A'},
+    { id: 'ENDO-20240728-002', transactionDate: addDays(today, -2), liaisonId: '10', liaisonName: 'RODERICK GUTIERREZ', motorcycleIds: ['10', '14'], createdBy: 'Supervisor A'},
+    { id: 'ENDO-20240729-001', transactionDate: addDays(today, -1), liaisonId: '1', liaisonName: 'JINKY JOY AGBALOG', motorcycleIds: ['11', '15'], remarks: 'Urgent', createdBy: 'Supervisor A'},
+    { id: 'ENDO-20240730-001', transactionDate: addDays(today, -1), liaisonId: '7', liaisonName: 'BENJO SEQUIERO', motorcycleIds: ['12', '3'], remarks: 'Please complete details', createdBy: 'Supervisor A'},
+    { id: 'ENDO-20240730-002', transactionDate: addDays(today, -1), liaisonId: '12', liaisonName: 'ALI VIN SALEH COLINA', motorcycleIds: ['8'], remarks: 'Davao units.', createdBy: 'Supervisor A'},
 ]
 
 export async function getMotorcycles() {
