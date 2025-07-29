@@ -45,7 +45,6 @@ import { cn } from '@/lib/utils';
 import { ScrollArea } from '../ui/scroll-area';
 import { useAuth } from '@/context/AuthContext';
 import { CashAdvancePreview } from './cash-advance-preview';
-import { InsuranceControlForm } from './insurance-control-form';
 
 type MotorcycleTableProps = {
   motorcycles: Motorcycle[];
@@ -215,17 +214,6 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
       ...editingMotorcycle,
       ...editedData,
     };
-
-    if (
-        editedData.cocNumber &&
-        editedData.policyNumber &&
-        editedData.insuranceType &&
-        editedData.hpgControlNumber &&
-        editedData.sarCode &&
-        editingMotorcycle.status === 'Incomplete'
-    ) {
-        updatedMotorcycle.status = 'Ready to Register';
-    }
     
     const updatedMotorcycles = motorcycles.map(m => 
       m.id === editingMotorcycle.id ? updatedMotorcycle : m
@@ -332,14 +320,14 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                   </TableHead>
                 )}
                  {!isLiaison && (isSupervisor || isCashier) && <TableHead className="w-[40px]"></TableHead>}
-                <SortableHeader column="id">SALES ID</SortableHeader>
-                <SortableHeader column="salesInvoiceNo">SI NO.</SortableHeader>
-                <SortableHeader column="customerName">CUSTOMER NAME</SortableHeader>
-                <SortableHeader column="accountCode">ACCOUNT CODE</SortableHeader>
-                <SortableHeader column="chassisNumber">CHASSIS NO</SortableHeader>
-                <SortableHeader column="csrNumber">CSR NO</SortableHeader>
-                <SortableHeader column="crNumber">CR NO</SortableHeader>
-                <SortableHeader column="hpgControlNumber">HPG CONTROL</SortableHeader>
+                <SortableHeader column="id">Sales ID</SortableHeader>
+                <SortableHeader column="salesInvoiceNo">SI No.</SortableHeader>
+                <SortableHeader column="customerName">Customer Name</SortableHeader>
+                <SortableHeader column="accountCode">Account Code</SortableHeader>
+                <SortableHeader column="chassisNumber">Chassis No.</SortableHeader>
+                <SortableHeader column="csrNumber">CSR No.</SortableHeader>
+                <SortableHeader column="crNumber">CR No.</SortableHeader>
+                <SortableHeader column="hpgControlNumber">HPG Control</SortableHeader>
                 <TableHead className="w-[100px]">
                   <span className="sr-only">Actions</span>
                 </TableHead>
@@ -448,31 +436,31 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                 <div className="grid gap-4 py-4 pr-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="grid gap-2">
-                          <Label htmlFor="edit-id">SALES ID</Label>
+                          <Label htmlFor="edit-id">Sales ID</Label>
                           <Input id="edit-id" value={editedData.id || ''} disabled />
                       </div>
                        <div className="grid gap-2">
-                          <Label htmlFor="edit-salesInvoiceNo">SI NO</Label>
+                          <Label htmlFor="edit-salesInvoiceNo">SI No.</Label>
                           <Input id="edit-salesInvoiceNo" value={editedData.salesInvoiceNo || ''} disabled />
                       </div>
                        <div className="grid gap-2">
-                          <Label htmlFor="edit-customerName">CUSTOMER NAME</Label>
+                          <Label htmlFor="edit-customerName">Customer Name</Label>
                           <Input id="edit-customerName" value={editedData.customerName || ''} disabled />
                       </div>
                        <div className="grid gap-2">
-                          <Label htmlFor="edit-accountCode">ACCOUNT CODE</Label>
+                          <Label htmlFor="edit-accountCode">Account Code</Label>
                           <Input id="edit-accountCode" value={editedData.accountCode || ''} disabled />
                       </div>
                        <div className="grid gap-2">
-                          <Label htmlFor="edit-csrNumber">CSR NO</Label>
+                          <Label htmlFor="edit-csrNumber">CSR No.</Label>
                           <Input id="edit-csrNumber" name="csrNumber" value={editedData.csrNumber || ''} onChange={(e) => handleDataChange('csrNumber', e.target.value)} />
                       </div>
                        <div className="grid gap-2">
-                          <Label htmlFor="edit-crNumber">CR NO</Label>
+                          <Label htmlFor="edit-crNumber">CR No.</Label>
                           <Input id="edit-crNumber" name="crNumber" value={editedData.crNumber || ''} onChange={(e) => handleDataChange('crNumber', e.target.value)} />
                       </div>
                        <div className="grid gap-2 md:col-span-2">
-                          <Label htmlFor="edit-hpgControlNumber">HPG CONTROL NO</Label>
+                          <Label htmlFor="edit-hpgControlNumber">HPG Control No.</Label>
                           <Input id="edit-hpgControlNumber" name="hpgControlNumber" value={editedData.hpgControlNumber || ''} onChange={(e) => handleDataChange('hpgControlNumber', e.target.value)} />
                       </div>
                     </div>
