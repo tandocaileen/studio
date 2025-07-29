@@ -43,6 +43,11 @@ export const CashAdvanceRequestDocument = React.forwardRef<HTMLDivElement, CashA
                          <p className="text-sm">
                             <span className="font-bold">Date:</span> {format(new Date(advance.date), 'MMMM dd, yyyy')}
                         </p>
+                         {advance.checkVoucherNumber && (
+                            <p className="text-sm">
+                                <span className="font-bold">CV Number:</span> {advance.checkVoucherNumber}
+                            </p>
+                        )}
                     </div>
                 </div>
             </section>
