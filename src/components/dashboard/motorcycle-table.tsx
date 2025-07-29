@@ -337,6 +337,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                   </TableHead>
                 )}
                  {!isLiaison && (isSupervisor || isCashier) && <TableHead className="w-[40px]"></TableHead>}
+                <SortableHeader column="status">Status</SortableHeader>
                 <SortableHeader column="salesInvoiceNo">SI No.</SortableHeader>
                 <SortableHeader column="customerName">Customer Name</SortableHeader>
                 <SortableHeader column="accountCode">Account Code</SortableHeader>
@@ -344,7 +345,6 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                 <SortableHeader column="csrNumber">CSR No.</SortableHeader>
                 <SortableHeader column="crNumber">CR No.</SortableHeader>
                 <SortableHeader column="hpgControlNumber">HPG Control</SortableHeader>
-                <SortableHeader column="status">Status</SortableHeader>
                 <TableHead className="w-[100px]">
                   <span className="sr-only">Actions</span>
                 </TableHead>
@@ -364,6 +364,9 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                       </TableCell>
                     )}
                     {!isLiaison && (isSupervisor || isCashier) && <TableCell></TableCell>}
+                    <TableCell>
+                      <Badge variant={statusVariant(motorcycle.status)}>{motorcycle.status}</Badge>
+                    </TableCell>
                     <TableCell>{motorcycle.salesInvoiceNo}</TableCell>
                     <TableCell className="font-medium">{motorcycle.customerName}</TableCell>
                     <TableCell>{motorcycle.accountCode}</TableCell>
@@ -371,9 +374,6 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                     <TableCell>{motorcycle.csrNumber || 'N/A'}</TableCell>
                     <TableCell>{motorcycle.crNumber || 'N/A'}</TableCell>
                     <TableCell>{motorcycle.hpgControlNumber || 'N/A'}</TableCell>
-                    <TableCell>
-                      <Badge variant={statusVariant(motorcycle.status)}>{motorcycle.status}</Badge>
-                    </TableCell>
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -470,3 +470,4 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
     </>
   );
 }
+
