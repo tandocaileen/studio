@@ -211,10 +211,33 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
   const handleSaveEdit = () => {
     if (!editingMotorcycle) return;
 
-    const updatedMotorcycle = {
+    let updatedMotorcycle = {
       ...editingMotorcycle,
       ...editedData,
     };
+    
+    // Check if all required fields are filled to auto-update status
+    const requiredFields: (keyof Motorcycle)[] = [
+        'csrNumber', 'crNumber', 'hpgControlNumber', 
+        'cocNumber', 'policyNumber', 'insuranceEffectiveDate', 'insuranceExpirationDate'
+    ];
+    const allFieldsFilled = requiredFields.every(field => !!updatedMotorcycle[field]);
+
+    if (allFieldsFilled) {
+        if (updatedMotorcycle.status === 'Incomplete') {
+            updatedMotorcycle.status = 'Ready to Register';
+            toast({
+                title: 'Status Updated',
+                description: `Motorcycle status automatically set to "Ready to Register".`,
+            });
+        } else if (updatedMotorcycle.status === 'Endorsed - Incomplete') {
+            updatedMotorcycle.status = 'Endorsed - Ready';
+            toast({
+                title: 'Status Updated',
+                description: `Motorcycle status automatically set to "Endorsed - Ready".`,
+            });
+        }
+    }
     
     const updatedMotorcycles = motorcycles.map(m => 
       m.id === editingMotorcycle.id ? updatedMotorcycle : m
@@ -465,7 +488,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                           <Label htmlFor="edit-engineNumber">Engine No.</Label>
                           <Input id="edit-engineNumber" value={editedData.engineNumber || ''} disabled />
                       </div>
-                       <div className="grid gap-2">
+                      <div className="grid gap-2">
                           <Label htmlFor="edit-status">Status</Label>
                           <Input id="edit-status" value={editedData.status || ''} disabled />
                       </div>
@@ -482,7 +505,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                           <Label htmlFor="edit-crNumber">CR No. <span className="text-destructive">*</span></Label>
                           <Input id="edit-crNumber" name="crNumber" value={editedData.crNumber || ''} onChange={(e) => handleDataChange('crNumber', e.target.value)} className={cn(!editedData.crNumber && 'border-destructive')} />
                       </div>
-                       <div className="grid gap-2 md:col-span-2">
+                       <div className="grid gap-2">
                           <Label htmlFor="edit-hpgControlNumber">HPG Control No. <span className="text-destructive">*</span></Label>
                           <Input id="edit-hpgControlNumber" name="hpgControlNumber" value={editedData.hpgControlNumber || ''} onChange={(e) => handleDataChange('hpgControlNumber', e.target.value)} className={cn(!editedData.hpgControlNumber && 'border-destructive')} />
                       </div>
@@ -524,3 +547,5 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
     </>
   );
 }
+
+    
