@@ -86,16 +86,16 @@ const generateInitialData = () => {
     
     // --- Endorsements to Bryle ---
     const endorsementData = [
-      { id: 'ENDO-20240801-001', date: -20, mcIds: ['mc-0001', 'mc-0002'], creator: SUPERVISOR_NAME },
-      { id: 'ENDO-20240802-002', date: -19, mcIds: ['mc-0003', 'mc-0004'], creator: CASHIER_NAME },
-      { id: 'ENDO-20240803-003', date: -18, mcIds: ['mc-0005', 'mc-0006'], creator: SUPERVISOR_NAME },
-      { id: 'ENDO-20240804-004', date: -17, mcIds: ['mc-0007', 'mc-0008'], creator: CASHIER_NAME },
-      { id: 'ENDO-20240805-005', date: -16, mcIds: ['mc-0009', 'mc-0010'], creator: SUPERVISOR_NAME },
+      { id: 'ENDO-20240801-001', date: -2, mcIds: ['mc-0001', 'mc-0002'], creator: SUPERVISOR_NAME },
+      { id: 'ENDO-20240802-002', date: -3, mcIds: ['mc-0003', 'mc-0004'], creator: CASHIER_NAME },
+      { id: 'ENDO-20240803-003', date: -4, mcIds: ['mc-0005', 'mc-0006'], creator: SUPERVISOR_NAME },
+      { id: 'ENDO-20240804-004', date: -5, mcIds: ['mc-0007', 'mc-0008'], creator: CASHIER_NAME },
+      { id: 'ENDO-20240805-005', date: -6, mcIds: ['mc-0009', 'mc-0010'], creator: SUPERVISOR_NAME },
       { id: 'ENDO-20240806-006', date: -15, mcIds: ['mc-0011', 'mc-0012'], creator: CASHIER_NAME },
-      { id: 'ENDO-20240807-007', date: -14, mcIds: ['mc-0013', 'mc-0014'], creator: SUPERVISOR_NAME },
-      { id: 'ENDO-20240808-008', date: -13, mcIds: ['mc-0015', 'mc-0016'], creator: CASHIER_NAME },
-      { id: 'ENDO-20240809-009', date: -12, mcIds: ['mc-0017', 'mc-0018'], creator: SUPERVISOR_NAME },
-      { id: 'ENDO-20240810-010', date: -11, mcIds: ['mc-0019', 'mc-0020'], creator: CASHIER_NAME },
+      { id: 'ENDO-20240807-007', date: -16, mcIds: ['mc-0013', 'mc-0014'], creator: SUPERVISOR_NAME },
+      { id: 'ENDO-20240808-008', date: -17, mcIds: ['mc-0015', 'mc-0016'], creator: CASHIER_NAME },
+      { id: 'ENDO-20240809-009', date: -18, mcIds: ['mc-0017', 'mc-0018'], creator: SUPERVISOR_NAME },
+      { id: 'ENDO-20240810-010', date: -19, mcIds: ['mc-0019', 'mc-0020'], creator: CASHIER_NAME },
     ];
 
     endorsementData.forEach(e => {
