@@ -13,7 +13,7 @@ const SINGLE_LIAISON_USER: LiaisonUser = { id: 'user-001', name: 'Bryle Nikko Ha
 
 
 const initialMotorcycles: Motorcycle[] = [
-    // --- 10 Ready to Register Motorcycles ---
+    // 10 'Ready to Register' Motorcycles
     {
         id: 'mc-001', make: 'Honda', model: 'Click 125i', year: 2024, color: 'Red', plateNumber: 'TBA-001', engineNumber: 'ENG001', chassisNumber: 'CHS001', assignedBranch: 'CEBU', purchaseDate: addDays(today, -60), supplier: 'Honda Prestige',
         status: 'Ready to Register', customerName: 'Andres Bonifacio', salesInvoiceNo: 'SI-001', accountCode: 'AC-001',
@@ -64,7 +64,7 @@ const initialMotorcycles: Motorcycle[] = [
         status: 'Ready to Register', customerName: 'Melchora Aquino', salesInvoiceNo: 'SI-010', accountCode: 'AC-010',
         cocNumber: 'COC-010', policyNumber: 'POL-010', insuranceType: 'Comprehensive', insuranceEffectiveDate: addDays(today, -38), insuranceExpirationDate: addDays(today, 327), hpgControlNumber: 'HPG-010', sarCode: 'SAR-010', crNumber: 'CR-010', csrNumber: 'CSR-010', documents: []
     },
-    // --- 10 Incomplete Motorcycles ---
+    // 10 'Incomplete' Motorcycles
     {
         id: 'mc-011', make: 'Honda', model: 'PCX160', year: 2024, color: 'Matte Grey', plateNumber: 'TBA-011', engineNumber: 'ENG011', chassisNumber: 'CHS011', assignedBranch: 'CEBU', purchaseDate: addDays(today, -35), supplier: 'Honda Prestige',
         status: 'Incomplete', customerName: 'Teresa Magbanua', salesInvoiceNo: 'SI-011', accountCode: 'AC-011', documents: []
