@@ -14,7 +14,7 @@ import { SummaryCards } from "@/components/dashboard/summary-cards";
 import { OverdueAdvances } from "@/components/dashboard/overdue-advances";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Filter, PlusCircle, RotateCcw } from "lucide-react";
+import { ChevronDown, Filter, PlusCircle, RotateCcw } from "lucide-react";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ReceiveLtoDocs } from "@/components/dashboard/receive-lto-docs";
 import { EndorsedIncompleteTable } from "@/components/dashboard/endorsed-incomplete-table";
@@ -27,6 +27,7 @@ import { Separator } from "@/components/ui/separator";
 import { LiaisonEndorsementTable } from "@/components/dashboard/liaison-endorsement-table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 const ALL_SUPERVISOR_STATUSES: MotorcycleStatus[] = ['Incomplete', 'Ready to Register', 'Endorsed - Incomplete', 'Endorsed - Ready', 'Processing', 'For Review'];
 const ALL_LIAISON_STATUSES: MotorcycleStatus[] = ['Endorsed - Incomplete', 'Endorsed - Ready', 'Processing', 'For Review'];
@@ -215,41 +216,51 @@ function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
                             <CardTitle>Filters</CardTitle>
                             <CardDescription>Refine endorsements</CardDescription>
                         </CardHeader>
-                        <CardContent className="grid gap-6">
-                            <div>
-                                <Label className="font-semibold text-sm">Endorsed By</Label>
-                                <Separator className="my-2" />
-                                <div className="grid gap-2">
-                                    {uniqueEndorsers.map(endorser => (
-                                        <div key={endorser} className="flex items-center gap-2">
-                                            <Checkbox 
-                                                id={`filter-endorser-${endorser}`}
-                                                checked={tempEndorserFilters.includes(endorser)}
-                                                onCheckedChange={(checked) => handleEndorserCheckboxChange(endorser, !!checked)}
-                                            />
-                                            <Label htmlFor={`filter-endorser-${endorser}`} className="font-normal text-sm">{endorser}</Label>
+                        <CardContent className="grid gap-4">
+                            <Collapsible defaultOpen>
+                                <CollapsibleTrigger className="flex justify-between items-center w-full [&[data-state=open]>svg]:rotate-180">
+                                    <Label className="font-semibold text-sm">Endorsed By</Label>
+                                    <ChevronDown className="h-4 w-4 transition-transform" />
+                                </CollapsibleTrigger>
+                                <CollapsibleContent>
+                                    <Separator className="my-2" />
+                                    <div className="grid gap-2">
+                                        {uniqueEndorsers.map(endorser => (
+                                            <div key={endorser} className="flex items-center gap-2">
+                                                <Checkbox 
+                                                    id={`filter-endorser-${endorser}`}
+                                                    checked={tempEndorserFilters.includes(endorser)}
+                                                    onCheckedChange={(checked) => handleEndorserCheckboxChange(endorser, !!checked)}
+                                                />
+                                                <Label htmlFor={`filter-endorser-${endorser}`} className="font-normal text-sm">{endorser}</Label>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </CollapsibleContent>
+                            </Collapsible>
+                             <Collapsible defaultOpen>
+                                <CollapsibleTrigger className="flex justify-between items-center w-full [&[data-state=open]>svg]:rotate-180">
+                                    <Label className="font-semibold text-sm">Date Range</Label>
+                                     <ChevronDown className="h-4 w-4 transition-transform" />
+                                </CollapsibleTrigger>
+                                <CollapsibleContent>
+                                    <Separator className="my-2" />
+                                    <RadioGroup value={tempDateRange} onValueChange={(v) => setTempDateRange(v as DateRange)}>
+                                        <div className="flex items-center space-x-2">
+                                            <RadioGroupItem value="7d" id="r-7d" />
+                                            <Label htmlFor="r-7d" className="font-normal text-sm">Last 7 days</Label>
                                         </div>
-                                    ))}
-                                </div>
-                            </div>
-                            <div>
-                                <Label className="font-semibold text-sm">Date Range</Label>
-                                <Separator className="my-2" />
-                                <RadioGroup value={tempDateRange} onValueChange={(v) => setTempDateRange(v as DateRange)}>
-                                    <div className="flex items-center space-x-2">
-                                        <RadioGroupItem value="7d" id="r-7d" />
-                                        <Label htmlFor="r-7d" className="font-normal text-sm">Last 7 days</Label>
-                                    </div>
-                                    <div className="flex items-center space-x-2">
-                                        <RadioGroupItem value="30d" id="r-30d" />
-                                        <Label htmlFor="r-30d" className="font-normal text-sm">Last 30 days</Label>
-                                    </div>
-                                    <div className="flex items-center space-x-2">
-                                        <RadioGroupItem value="all" id="r-all" />
-                                        <Label htmlFor="r-all" className="font-normal text-sm">All time</Label>
-                                    </div>
-                                </RadioGroup>
-                            </div>
+                                        <div className="flex items-center space-x-2">
+                                            <RadioGroupItem value="30d" id="r-30d" />
+                                            <Label htmlFor="r-30d" className="font-normal text-sm">Last 30 days</Label>
+                                        </div>
+                                        <div className="flex items-center space-x-2">
+                                            <RadioGroupItem value="all" id="r-all" />
+                                            <Label htmlFor="r-all" className="font-normal text-sm">All time</Label>
+                                        </div>
+                                    </RadioGroup>
+                                </CollapsibleContent>
+                            </Collapsible>
                         </CardContent>
                         <CardFooter className="flex flex-col gap-2">
                              <Button onClick={applyFilters} className="w-full">
@@ -332,4 +343,5 @@ export default function DashboardPage() {
     </ProtectedPage>
   );
 }
+
 
