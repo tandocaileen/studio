@@ -49,9 +49,9 @@ export const CashAdvancePreview = React.forwardRef<HTMLDivElement, CashAdvancePr
                                 <TableCell>{format(new Date(mc.purchaseDate), 'MMM dd, yyyy')}</TableCell>
                                 <TableCell>{mc.accountCode}</TableCell>
                                 <TableCell>{mc.customerName}</TableCell>
-                                <TableCell className="text-right font-mono">₱{(mc.processingFee || 0).toLocaleString()}</TableCell>
-                                <TableCell className="text-right font-mono">₱{(mc.orFee || 0).toLocaleString()}</TableCell>
-                                <TableCell className="text-right font-mono">₱{((mc.orFee || 0) + (mc.processingFee || 0)).toLocaleString()}</TableCell>
+                                <TableCell className="text-right font-mono">₱{(mc.processingFee || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</TableCell>
+                                <TableCell className="text-right font-mono">₱{(mc.orFee || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</TableCell>
+                                <TableCell className="text-right font-mono">₱{((mc.orFee || 0) + (mc.processingFee || 0)).toLocaleString('en-US', { minimumFractionDigits: 2 })}</TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
