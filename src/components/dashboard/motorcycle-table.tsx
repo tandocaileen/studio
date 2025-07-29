@@ -45,6 +45,7 @@ import { cn } from '@/lib/utils';
 import { ScrollArea } from '../ui/scroll-area';
 import { useAuth } from '@/context/AuthContext';
 import { CashAdvancePreview } from './cash-advance-preview';
+import { InsuranceControlForm } from './insurance-control-form';
 
 type MotorcycleTableProps = {
   motorcycles: Motorcycle[];
@@ -464,6 +465,13 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                           <Input id="edit-hpgControlNumber" name="hpgControlNumber" value={editedData.hpgControlNumber || ''} onChange={(e) => handleDataChange('hpgControlNumber', e.target.value)} />
                       </div>
                     </div>
+                    
+                    <InsuranceControlForm 
+                        editedData={editedData}
+                        onDataChange={handleDataChange}
+                        canEdit={canEditInsuranceAndControl}
+                    />
+
                 </div>
               </ScrollArea>
               <DialogFooter>
@@ -494,5 +502,3 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
     </>
   );
 }
-
-    

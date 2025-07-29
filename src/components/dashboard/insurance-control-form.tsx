@@ -111,5 +111,3 @@ export function InsuranceControlForm({ editedData, onDataChange, canEdit }: Insu
         </div>
     );
 }
-
-    
