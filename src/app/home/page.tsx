@@ -257,8 +257,10 @@ function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
 
     const handleStateUpdate = async (updatedOrNewMotorcycles: Motorcycle | Motorcycle[]) => {
         await updateMotorcycles(updatedOrNewMotorcycles);
-        const updatedData = await getMotorcycles();
-        setMotorcycles(updatedData);
+        const updatedMotorcycleData = await getMotorcycles();
+        const updatedEndorsementData = await getEndorsements();
+        setMotorcycles(updatedMotorcycleData);
+        setEndorsements(updatedEndorsementData.filter(e => e.liaisonName === user.name));
     };
 
     const uniqueEndorsers = [...new Set(endorsements.map(e => e.createdBy))];
