@@ -36,7 +36,7 @@ This role is responsible for the initial data entry, financial oversight, and ap
 - **Dashboard**:
   - View a high-level financial overview with key metrics.
   - **"Endorsed Units with Incomplete Details" Tab**: A prioritized work queue of endorsed units that require insurance and control details before a CA can be generated.
-  - **"Motorcycle Fleet" Tab**: A comprehensive table of all motorcycles in the system.
+  - **"Motorcycle Fleet" Tab**: A comprehensive table of all motorcycles in the system. The view defaults to "Unendorsed" units (`Incomplete` or `Ready to Register` status) to help prioritize units for the next step.
 - **Receive MC Docs**:
   - From the dashboard, they can access a dialog to confirm the bulk reception of motorcycle documents.
 - **Motorcycle Management**:
@@ -63,7 +63,7 @@ This role is the "on-the-ground" agent responsible for processing vehicle regist
 - **Home Page**:
   - A personalized dashboard showing all motorcycles assigned to them, with a default filter for "Pending Assignments" (any `Endorsed` status).
 - **Cash Advance Generation**:
-  - Select one or more motorcycles with the `Endorsed - Ready` status to request funds.
+  - Select one or more motorcycles with the `Endorsed - Ready` status to request funds. The selection is restricted to only these units.
   - The system uses AI to generate a consolidated cash advance request.
   - Submitting the request automatically changes the motorcycles' status to `Processing`.
 - **Cash Advances Tab**:
