@@ -42,14 +42,14 @@ const generateInitialData = () => {
         'Juan Dela Cruz', 'Maria Santos', 'Peter Jones', 'Mei Lin', 'Kenji Tanaka', 'Fatima Al-Jamil',
         'Andres Bonifacio', 'Gabriela Silang', 'Jose Rizal', 'Apolinario Mabini', 'Gregorio Del Pilar',
         'Teresa Magbanua', 'Emilio Aguinaldo', 'Melchora Aquino', 'Antonio Luna', 'Claro M. Recto',
-        'Manuel Quezon', 'Sergio Osmeña', 'Ramon Magsaysay', 'Carlos P. Garcia', 'Diego Silang', 'Lapu-Lapu'
+        'Manuel Quezon', 'Sergio Osmeña', 'Ramon Magsaysay', 'Carlos P. Garcia'
     ];
-    const branches = [...new Set(initialLiaisonUsers.map(l => l.assignedBranch))];
+     const branches = [...new Set(initialLiaisonUsers.map(l => l.assignedBranch))];
 
-    for (let i = 1; i <= 22; i++) {
+    // 1. Create Motorcycles
+    for (let i = 1; i <= 20; i++) {
         const isReady = i % 2 === 0;
         const purchaseDate = addDays(today, -(i * 5) - 30);
-
         const mc: Motorcycle = {
             id: `mc-${i.toString().padStart(4, '0')}`,
             make: makes[i % makes.length],
@@ -63,14 +63,12 @@ const generateInitialData = () => {
             purchaseDate: purchaseDate,
             supplier: 'Prestige Honda',
             documents: [],
-            status: 'Incomplete', 
+            status: isReady ? 'Ready to Register' : 'Incomplete',
             customerName: customers[i - 1],
             salesInvoiceNo: `SI-${Math.floor(Math.random() * 90000) + 10000}`,
             accountCode: `AC-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
         };
-
         if (isReady) {
-            mc.status = 'Ready to Register';
             mc.cocNumber = `COC-${Math.floor(Math.random() * 9000) + 1000}`;
             mc.policyNumber = `POL-${Math.floor(Math.random() * 9000) + 1000}`;
             mc.insuranceType = 'TPL';
@@ -83,87 +81,78 @@ const generateInitialData = () => {
         }
         motorcycles.push(mc);
     }
-    
-    // --- Endorsements to Bryle ---
+
+    // 2. Create Endorsements to Bryle
     const endorsementData = [
-      { id: 'ENDO-20240801-001', date: -1, mcIds: ['mc-0001', 'mc-0002'], creator: SUPERVISOR_NAME },
-      { id: 'ENDO-20240802-002', date: -3, mcIds: ['mc-0003', 'mc-0004'], creator: CASHIER_NAME },
-      { id: 'ENDO-20240803-003', date: -5, mcIds: ['mc-0005', 'mc-0006'], creator: SUPERVISOR_NAME },
-      { id: 'ENDO-20240804-004', date: -8, mcIds: ['mc-0007', 'mc-0008'], creator: CASHIER_NAME },
-      { id: 'ENDO-20240805-005', date: -10, mcIds: ['mc-0009', 'mc-0010'], creator: SUPERVISOR_NAME },
-      { id: 'ENDO-20240806-006', date: -12, mcIds: ['mc-0011', 'mc-0012'], creator: CASHIER_NAME },
-      { id: 'ENDO-20240807-007', date: -15, mcIds: ['mc-0013', 'mc-0014'], creator: SUPERVISOR_NAME },
-      { id: 'ENDO-20240808-008', date: -18, mcIds: ['mc-0015', 'mc-0016'], creator: CASHIER_NAME },
-      { id: 'ENDO-20240809-009', date: -20, mcIds: ['mc-0017', 'mc-0018'], creator: SUPERVISOR_NAME },
-      { id: 'ENDO-20240810-010', date: -25, mcIds: ['mc-0019', 'mc-0020'], creator: CASHIER_NAME },
+      { id: 'ENDO-202407-001', mcIds: ['mc-0001', 'mc-0002'], daysAgo: 1, creator: SUPERVISOR_NAME },
+      { id: 'ENDO-202407-002', mcIds: ['mc-0003', 'mc-0004'], daysAgo: 3, creator: CASHIER_NAME },
+      { id: 'ENDO-202407-003', mcIds: ['mc-0005', 'mc-0006'], daysAgo: 5, creator: SUPERVISOR_NAME },
+      { id: 'ENDO-202407-004', mcIds: ['mc-0007', 'mc-0008'], daysAgo: 8, creator: CASHIER_NAME },
+      { id: 'ENDO-202407-005', mcIds: ['mc-0009', 'mc-0010'], daysAgo: 10, creator: SUPERVISOR_NAME },
+      { id: 'ENDO-202407-006', mcIds: ['mc-0011', 'mc-0012'], daysAgo: 12, creator: CASHIER_NAME },
+      { id: 'ENDO-202407-007', mcIds: ['mc-0013', 'mc-0014'], daysAgo: 15, creator: SUPERVISOR_NAME },
+      { id: 'ENDO-202407-008', mcIds: ['mc-0015', 'mc-0016'], daysAgo: 18, creator: CASHIER_NAME },
+      { id: 'ENDO-202407-009', mcIds: ['mc-0017', 'mc-0018'], daysAgo: 20, creator: SUPERVISOR_NAME },
+      { id: 'ENDO-202407-010', mcIds: ['mc-0019', 'mc-0020'], daysAgo: 25, creator: CASHIER_NAME },
     ];
 
     endorsementData.forEach(e => {
         endorsements.push({
-            id: e.id, transactionDate: addDays(today, e.date), liaisonId: DEMO_LIAISON.id,
+            id: e.id, transactionDate: addDays(today, -e.daysAgo), liaisonId: DEMO_LIAISON.id,
             liaisonName: DEMO_LIAISON.name, motorcycleIds: e.mcIds, createdBy: e.creator, remarks: "Generated for mock data"
         });
         e.mcIds.forEach(mcId => {
-            const mc = motorcycles.find(m => m.id === mcId);
-            if (mc) {
-                mc.status = mc.status === 'Ready to Register' ? 'Endorsed - Ready' : 'Endorsed - Incomplete';
-                mc.assignedLiaison = DEMO_LIAISON.name;
-            }
+            const mc = motorcycles.find(m => m.id === mcId)!;
+            mc.status = mc.status === 'Ready to Register' ? 'Endorsed - Ready' : 'Endorsed - Incomplete';
+            mc.assignedLiaison = DEMO_LIAISON.name;
         });
     });
 
+    // 3. Create a few CAs and Liquidations for realism
     const createCA = (id: string, date: Date, mcIds: string[], status: CashAdvance['status'], cvNumber?: string, cvDate?: Date) => {
-        const liaison = initialLiaisonUsers.find(l => l.name === DEMO_LIAISON.name);
-        if (!liaison) return;
-        const amount = mcIds.reduce((sum) => {
-             return sum + (liaison.processingFee || 0) + (liaison.orFee || 0);
-        }, 0);
-        
+        const liaison = DEMO_LIAISON;
+        const amount = mcIds.length * (liaison.processingFee + liaison.orFee);
+
         const ca: CashAdvance = {
-            id, personnel: liaison.name, personnelBranch: liaison.assignedBranch, 
+            id, personnel: liaison.name, personnelBranch: liaison.assignedBranch,
             purpose: `Cash advance for registration of ${mcIds.length} units.`,
             amount, date, status, motorcycleIds: mcIds,
         };
         if (cvNumber) ca.checkVoucherNumber = cvNumber;
         if (cvDate) ca.checkVoucherReleaseDate = cvDate;
         cashAdvances.push(ca);
+
+        // Update motorcycle status to processing
         mcIds.forEach(mcId => {
-            const mc = motorcycles.find(m => m.id === mcId);
-            if (mc && (mc.status === 'Endorsed - Ready' || mc.status === 'Endorsed - Incomplete')) {
-                 mc.status = 'Processing';
-            }
+             const mc = motorcycles.find(m => m.id === mcId)!;
+             mc.status = 'Processing';
         });
     };
-    
-    // --- Cash Advances with Various Statuses ---
-    // CA 1: Liquidated
-    const ca1_mcIds = ['mc-0002', 'mc-0004'];
-    createCA('ca-081524-001', addDays(today, -10), ca1_mcIds, 'Liquidated', 'CV-2024-08-001', addDays(today, -9));
-    ca1_mcIds.forEach(mcId => {
-        const mc = motorcycles.find(m => m.id === mcId);
-        const liaison = initialLiaisonUsers.find(l => l.name === DEMO_LIAISON.name);
-        if (mc && liaison) {
-            mc.status = 'For Review';
-            mc.liquidationDetails = {
-                parentCaId: 'ca-081524-001', ltoOrNumber: `LTO-OR-${Math.floor(Math.random() * 90000)}`,
-                ltoOrAmount: liaison.orFee, ltoProcessFee: liaison.processingFee, 
-                totalLiquidation: liaison.orFee + liaison.processingFee,
-                shortageOverage: 0,
-                remarks: 'Full Liquidation Complete', liquidatedBy: liaison.name, liquidationDate: addDays(today, -2)
-            };
-        }
+
+    // CA 1: Fully Liquidated
+    const liqMcIds = ['mc-0019', 'mc-0020'];
+    createCA('ca-061524-001', addDays(today, -30), liqMcIds, 'Liquidated', 'CV-2024-06-001', addDays(today, -28));
+    liqMcIds.forEach(mcId => {
+        const mc = motorcycles.find(m => m.id === mcId)!;
+        mc.status = 'For Review';
+        mc.liquidationDetails = {
+            parentCaId: 'ca-061524-001', ltoOrNumber: `LTO-OR-${Math.floor(Math.random() * 90000)}`,
+            ltoOrAmount: DEMO_LIAISON.orFee, ltoProcessFee: DEMO_LIAISON.processingFee,
+            totalLiquidation: DEMO_LIAISON.orFee + DEMO_LIAISON.processingFee,
+            shortageOverage: 0,
+            remarks: 'Full Liquidation Complete', liquidatedBy: DEMO_LIAISON.name, liquidationDate: addDays(today, -25)
+        };
     });
 
     // CA 2: CV Received
-    createCA('ca-081624-002', addDays(today, -8), ['mc-0006'], 'CV Received', 'CV-2024-08-005', addDays(today, -7));
-    
+    createCA('ca-070124-002', addDays(today, -15), ['mc-0017'], 'CV Received', 'CV-2024-07-005', addDays(today, -14));
+
     // CA 3: Processing for CV
-    createCA('ca-081724-003', addDays(today, -5), ['mc-0008', 'mc-0010'], 'Processing for CV');
+    createCA('ca-070224-003', addDays(today, -13), ['mc-0015', 'mc-0016'], 'Processing for CV');
 
-    // CA 4 & 5 for "CV Released" Status
-    createCA('ca-081824-004', addDays(today, -4), ['mc-0012'], 'CV Released');
-
-    createCA('ca-081924-005', addDays(today, -3), ['mc-0014'], 'CV Released');
+    // CA 4 & 5: CV Released
+    createCA('ca-070324-004', addDays(today, -11), ['mc-0013'], 'CV Released');
+    createCA('ca-070424-005', addDays(today, -9), ['mc-0014'], 'CV Released');
 
     return { motorcycles, endorsements, cashAdvances };
 };
@@ -172,16 +161,16 @@ const generateInitialData = () => {
 const MC_KEY = 'lto_motorcycles';
 const CA_KEY = 'lto_cash_advances';
 const ENDO_KEY = 'lto_endorsements';
-const DATA_FLAG = 'data_generated_flag_v3'; // Increment version to force reset
+const DATA_FLAG = 'data_generated_flag_v4'; // Increment version to force reset
 
 const initializeData = () => {
     if (typeof window !== 'undefined') {
         const needsReset = localStorage.getItem(DATA_FLAG) !== 'true' || window.location.search.includes('reset_data=true');
-        
+
         if (needsReset) {
             console.log("Forcing data reset. Generating fresh, consistent data set...");
             const { motorcycles, endorsements, cashAdvances } = generateInitialData();
-            
+
             localStorage.setItem(MC_KEY, JSON.stringify(motorcycles));
             localStorage.setItem(ENDO_KEY, JSON.stringify(endorsements));
             localStorage.setItem(CA_KEY, JSON.stringify(cashAdvances));
@@ -191,19 +180,16 @@ const initializeData = () => {
                 const url = new URL(window.location.href);
                 url.searchParams.delete('reset_data');
                 window.history.replaceState({}, '', url.toString());
-                // Force a reload to ensure all components re-fetch the new data
                 window.location.reload();
             }
         }
     }
 };
 
-// Run initialization logic when the module is loaded
 initializeData();
 
 const getData = <T,>(key: string): T[] => {
     if (typeof window === 'undefined') {
-        // Return empty array for server-side rendering
         return [];
     }
     const storedData = localStorage.getItem(key);
@@ -232,7 +218,7 @@ export async function getMotorcycles(): Promise<Motorcycle[]> {
 export async function updateMotorcycles(updatedMotorcycles: Motorcycle | Motorcycle[]) {
     const allMotorcycles = await getMotorcycles();
     const motorcyclesMap = new Map(allMotorcycles.map((m: Motorcycle) => [m.id, m]));
-    
+
     const toUpdate = Array.isArray(updatedMotorcycles) ? updatedMotorcycles : [updatedMotorcycles];
     toUpdate.forEach(um => motorcyclesMap.set(um.id, um));
 
@@ -255,13 +241,12 @@ export async function updateCashAdvances(updatedCAs: CashAdvance | CashAdvance[]
 
     const toUpdate = Array.isArray(updatedCAs) ? updatedCAs : [updatedCAs];
     toUpdate.forEach(uca => caMap.set(uca.id, uca));
-    
+
     setData(CA_KEY, Array.from(caMap.values()));
 }
 
 // --- Liaisons ---
 export async function getLiaisons(): Promise<LiaisonUser[]> {
-    // This data is static and doesn't need to be in local storage
     return Promise.resolve(initialLiaisonUsers);
 }
 
