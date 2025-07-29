@@ -27,7 +27,7 @@ export default function LoginPage() {
         // After a successful login, the user object will be updated.
         // This effect will then trigger the redirect to the homepage.
         if (user) {
-          router.push('/');
+          router.push('/home');
         }
     }, [user, router]);
 

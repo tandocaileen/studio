@@ -35,8 +35,8 @@ type NavItem = {
 }
 
 const navItems: NavItem[] = [
-  { href: '/', icon: Home, label: 'Dashboard', allowedRoles: ['Store Supervisor', 'Cashier'] },
-  { href: '/', icon: Home, label: 'Home', allowedRoles: ['Liaison'] },
+  { href: '/home', icon: Home, label: 'Dashboard', allowedRoles: ['Store Supervisor', 'Cashier'] },
+  { href: '/home', icon: Home, label: 'Home', allowedRoles: ['Liaison'] },
   { href: '/endorsements', icon: FilePenLine, label: 'Endorsements', allowedRoles: ['Store Supervisor', 'Cashier'] },
   { href: '/cash-advances', icon: DollarSign, label: 'Cash Advances', allowedRoles: ['Liaison', 'Cashier', 'Store Supervisor'] },
   { href: '/liquidations', icon: Receipt, label: 'Liquidations', allowedRoles: ['Store Supervisor', 'Liaison', 'Cashier'] },
@@ -70,8 +70,7 @@ export function AppSidebar() {
                 href={item.href}
                 className={cn(
                   'flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8',
-                  pathname.startsWith(item.href) && item.href !== '/' && 'bg-accent text-accent-foreground',
-                  pathname === '/' && item.href === '/' && 'bg-accent text-accent-foreground'
+                  pathname.startsWith(item.href) && 'bg-accent text-accent-foreground'
                 )}
               >
                 <item.icon className="h-5 w-5" />
@@ -100,8 +99,7 @@ export function AppSidebar() {
               href={item.href}
               className={cn(
                 'flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground',
-                 pathname.startsWith(item.href) && item.href !== '/' && 'text-foreground',
-                  pathname === '/' && item.href === '/' && 'text-foreground'
+                 pathname.startsWith(item.href) && 'text-foreground'
               )}
             >
               <item.icon className="h-5 w-5" />

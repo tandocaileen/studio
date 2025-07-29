@@ -8,7 +8,7 @@ export function middleware(request: NextRequest) {
 
   // If the user is logged in, and tries to access /login, redirect to home
   if (isLoggedIn && pathname === '/login') {
-    return NextResponse.redirect(new URL('/', request.url))
+    return NextResponse.redirect(new URL('/home', request.url))
   }
 
   // If the user is not logged in and is trying to access any page other than /login,

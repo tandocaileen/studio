@@ -30,7 +30,7 @@ function UnauthorizedAccess() {
                         <div className="text-sm [&_p]:leading-relaxed">
                             You do not have the necessary permissions to view this page. Please contact an administrator if you believe this is an error.
                             <div className="mt-4">
-                                <Button onClick={() => router.push('/')}>Go to Dashboard</Button>
+                                <Button onClick={() => router.push('/home')}>Go to Dashboard</Button>
                             </div>
                         </div>
                     </Alert>
