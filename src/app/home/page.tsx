@@ -135,10 +135,11 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
   );
 }
 
+const LIAISON_STATUSES: MotorcycleStatus[] = ['Endorsed - Incomplete', 'Endorsed - Ready', 'Processing', 'For Review'];
 
 function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
   const [motorcycles, setMotorcycles] = useState<Motorcycle[] | null>(null);
-  const [viewFilter, setViewFilter] = useState<'pending' | 'all'>('pending');
+  const [statusFilters, setStatusFilters] = useState<string[]>(['Endorsed - Ready', 'Endorsed - Incomplete']);
   
   useEffect(() => {
     getMotorcycles().then(setMotorcycles);
@@ -150,6 +151,16 @@ function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
   if (!user || !motorcycles) {
     return <AppLoader />;
   }
+  
+  const handleStatusFilterChange = (status: string, checked: boolean) => {
+    setStatusFilters(prev => {
+        if (checked) {
+            return [...prev, status];
+        } else {
+            return prev.filter(s => s !== status);
+        }
+    });
+  };
 
   const handleStateUpdate = (updatedMotorcycles: Motorcycle[]) => {
      if (Array.isArray(updatedMotorcycles)) {
@@ -168,9 +179,8 @@ function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
     const isUserAssigned = m.assignedLiaison === user.name;
     if (!isUserAssigned) return false;
 
-    if (viewFilter === 'pending') {
-        const isPending = ['Endorsed - Ready', 'Endorsed - Incomplete'].includes(m.status);
-        if(!isPending) return false;
+    if (statusFilters.length > 0 && !statusFilters.includes(m.status)) {
+        return false;
     }
     
     if (!searchQuery) return true;
@@ -201,15 +211,34 @@ function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
               </p>
           </div>
       </div>
-      <div className="flex items-center gap-4">
-        <Tabs value={viewFilter} onValueChange={(value) => setViewFilter(value as 'pending' | 'all')}>
-            <TabsList>
-                <TabsTrigger value="pending">Pending Assignments</TabsTrigger>
-                <TabsTrigger value="all">View All</TabsTrigger>
-            </TabsList>
-        </Tabs>
-      </div>
-      <MotorcycleTable motorcycles={filteredMotorcycles} onStateChange={handleStateUpdate} />
+       <Card>
+          <CardContent className="p-6">
+              <div className="flex items-center justify-end mb-4">
+                 <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline">
+                            <Filter className="mr-2 h-4 w-4" />
+                            Filter by Status
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                        <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        {LIAISON_STATUSES.map(status => (
+                             <DropdownMenuCheckboxItem
+                                key={status}
+                                checked={statusFilters.includes(status)}
+                                onCheckedChange={(checked) => handleStatusFilterChange(status, !!checked)}
+                            >
+                                {status}
+                            </DropdownMenuCheckboxItem>
+                        ))}
+                    </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+              <MotorcycleTable motorcycles={filteredMotorcycles} onStateChange={handleStateUpdate} />
+          </CardContent>
+      </Card>
     </>
   );
 }
