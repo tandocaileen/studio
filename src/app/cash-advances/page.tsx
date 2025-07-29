@@ -171,22 +171,20 @@ function CashAdvancesContent({ searchQuery }: { searchQuery: string }) {
                         </CardHeader>
                         <CardContent className="grid gap-4">
                              <Collapsible defaultOpen>
-                                <CollapsibleTrigger className="flex justify-between items-center w-full [&[data-state=open]>svg]:rotate-180">
-                                    <Label className="font-semibold text-sm">Status</Label>
-                                    <ChevronDown className="h-4 w-4 transition-transform" />
+                                <CollapsibleTrigger className="flex justify-between items-center w-full">
+                                     <div className="flex items-center gap-2">
+                                        <Checkbox
+                                            id="filter-status-all"
+                                            checked={tempStatusFilters.length === ALL_CA_STATUSES.length}
+                                            onCheckedChange={handleSelectAllStatuses}
+                                        />
+                                        <Label htmlFor="filter-status-all" className="font-semibold text-sm">Status</Label>
+                                    </div>
+                                    <ChevronDown className="h-4 w-4 transition-transform data-[state=open]:rotate-180" />
                                 </CollapsibleTrigger>
                                 <CollapsibleContent>
                                     <Separator className="my-2" />
-                                    <div className="grid gap-2">
-                                        <div className="flex items-center gap-2">
-                                            <Checkbox 
-                                                id="filter-status-all"
-                                                checked={tempStatusFilters.length === ALL_CA_STATUSES.length}
-                                                onCheckedChange={handleSelectAllStatuses}
-                                            />
-                                            <Label htmlFor="filter-status-all" className="font-semibold text-sm">Select All</Label>
-                                        </div>
-                                        <Separator className="my-1" />
+                                    <div className="grid gap-2 pl-6">
                                         {ALL_CA_STATUSES.map(status => (
                                             <div key={status} className="flex items-center gap-2">
                                                 <Checkbox 
@@ -201,22 +199,20 @@ function CashAdvancesContent({ searchQuery }: { searchQuery: string }) {
                                 </CollapsibleContent>
                             </Collapsible>
                              <Collapsible defaultOpen>
-                                <CollapsibleTrigger className="flex justify-between items-center w-full [&[data-state=open]>svg]:rotate-180">
-                                    <Label className="font-semibold text-sm">Liaison</Label>
-                                    <ChevronDown className="h-4 w-4 transition-transform" />
+                                <CollapsibleTrigger className="flex justify-between items-center w-full">
+                                    <div className="flex items-center gap-2">
+                                        <Checkbox
+                                            id="filter-liaison-all"
+                                            checked={tempLiaisonFilters.length === uniqueLiaisonsInCAs.length}
+                                            onCheckedChange={handleSelectAllLiaisons}
+                                        />
+                                        <Label htmlFor="filter-liaison-all" className="font-semibold text-sm">Liaison</Label>
+                                    </div>
+                                    <ChevronDown className="h-4 w-4 transition-transform data-[state=open]:rotate-180" />
                                 </CollapsibleTrigger>
                                 <CollapsibleContent>
                                     <Separator className="my-2" />
-                                    <div className="grid gap-2">
-                                        <div className="flex items-center gap-2">
-                                            <Checkbox 
-                                                id="filter-liaison-all"
-                                                checked={tempLiaisonFilters.length === uniqueLiaisonsInCAs.length}
-                                                onCheckedChange={handleSelectAllLiaisons}
-                                            />
-                                            <Label htmlFor="filter-liaison-all" className="font-semibold text-sm">Select All</Label>
-                                        </div>
-                                        <Separator className="my-1" />
+                                    <div className="grid gap-2 pl-6">
                                         {uniqueLiaisonsInCAs.map(liaison => (
                                             <div key={liaison} className="flex items-center gap-2">
                                                 <Checkbox 

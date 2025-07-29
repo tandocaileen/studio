@@ -160,25 +160,23 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
                         </CardHeader>
                         <CardContent className="grid gap-4">
                             <Collapsible defaultOpen>
-                                <CollapsibleTrigger className="flex justify-between items-center w-full [&[data-state=open]>svg]:rotate-180">
-                                    <Label className="font-semibold text-sm">Status</Label>
-                                    <ChevronDown className="h-4 w-4 transition-transform" />
+                                <CollapsibleTrigger className="flex justify-between items-center w-full">
+                                    <div className="flex items-center gap-2">
+                                        <Checkbox
+                                            id="filter-status-all"
+                                            checked={tempStatusFilters.length === ALL_SUPERVISOR_STATUSES.length}
+                                            onCheckedChange={handleSelectAllStatuses}
+                                        />
+                                        <Label htmlFor="filter-status-all" className="font-semibold text-sm">Status</Label>
+                                    </div>
+                                    <ChevronDown className="h-4 w-4 transition-transform data-[state=open]:rotate-180" />
                                 </CollapsibleTrigger>
                                 <CollapsibleContent>
                                     <Separator className="my-2" />
-                                    <div className="grid gap-2">
-                                        <div className="flex items-center gap-2">
-                                            <Checkbox 
-                                                id="filter-status-all"
-                                                checked={tempStatusFilters.length === ALL_SUPERVISOR_STATUSES.length}
-                                                onCheckedChange={handleSelectAllStatuses}
-                                            />
-                                            <Label htmlFor="filter-status-all" className="font-semibold text-sm">Select All</Label>
-                                        </div>
-                                        <Separator className="my-1" />
+                                    <div className="grid gap-2 pl-6">
                                         {ALL_SUPERVISOR_STATUSES.map(status => (
                                             <div key={status} className="flex items-center gap-2">
-                                                <Checkbox 
+                                                <Checkbox
                                                     id={`filter-status-${status}`}
                                                     checked={tempStatusFilters.includes(status)}
                                                     onCheckedChange={(checked) => handleStatusCheckboxChange(status, !!checked)}
@@ -359,22 +357,20 @@ function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
                             </CardHeader>
                             <CardContent className="grid gap-4">
                                 <Collapsible defaultOpen>
-                                    <CollapsibleTrigger className="flex justify-between items-center w-full [&[data-state=open]>svg]:rotate-180">
-                                        <Label className="font-semibold text-sm">Endorsed By</Label>
-                                        <ChevronDown className="h-4 w-4 transition-transform" />
+                                    <CollapsibleTrigger className="flex justify-between items-center w-full">
+                                        <div className="flex items-center gap-2">
+                                            <Checkbox
+                                                id="filter-endorser-all"
+                                                checked={tempEndorserFilters.length === uniqueEndorsers.length}
+                                                onCheckedChange={handleSelectAllEndorsers}
+                                            />
+                                            <Label htmlFor="filter-endorser-all" className="font-semibold text-sm">Endorsed By</Label>
+                                        </div>
+                                        <ChevronDown className="h-4 w-4 transition-transform data-[state=open]:rotate-180" />
                                     </CollapsibleTrigger>
                                     <CollapsibleContent>
                                         <Separator className="my-2" />
-                                        <div className="grid gap-2">
-                                            <div className="flex items-center gap-2">
-                                                <Checkbox 
-                                                    id="filter-endorser-all"
-                                                    checked={tempEndorserFilters.length === uniqueEndorsers.length}
-                                                    onCheckedChange={handleSelectAllEndorsers}
-                                                />
-                                                <Label htmlFor="filter-endorser-all" className="font-semibold text-sm">Select All</Label>
-                                            </div>
-                                            <Separator className="my-1" />
+                                        <div className="grid gap-2 pl-6">
                                             {uniqueEndorsers.map(endorser => (
                                                 <div key={endorser} className="flex items-center gap-2">
                                                     <Checkbox 
