@@ -31,6 +31,7 @@ import { useRouter } from 'next/navigation';
 import { ScrollArea } from '../ui/scroll-area';
 import { Label } from '../ui/label';
 import { MotorcycleDetailsDialog } from './motorcycle-details-dialog';
+import { Textarea } from '../ui/textarea';
 
 type LiaisonEndorsementTableProps = {
   endorsements: Endorsement[];
@@ -55,6 +56,7 @@ export function LiaisonEndorsementTable({
   const [isGeneratingCa, setIsGeneratingCa] = React.useState(false);
   const [viewingEndorsement, setViewingEndorsement] = React.useState<EnrichedEndorsement | null>(null);
   const [editingMotorcycle, setEditingMotorcycle] = React.useState<Motorcycle | null>(null);
+  const [remarks, setRemarks] = React.useState('');
   
   const { toast } = useToast();
   const { user } = useAuth();
@@ -130,6 +132,7 @@ export function LiaisonEndorsementTable({
       const result = await generateCashAdvance({ 
           motorcycles: motorcyclesForAI,
           liaison: user.name,
+          remarks: remarks,
       });
 
       console.log('Cash advance generated: ', result);
@@ -155,6 +158,7 @@ export function LiaisonEndorsementTable({
         setIsGeneratingCa(false);
         setIsPreviewingCa(false);
         setSelectedMotorcycles([]);
+        setRemarks('');
     }
   };
   
@@ -322,8 +326,19 @@ export function LiaisonEndorsementTable({
                   Review the details below. The total amount will be requested for cash advance.
               </DialogDescription>
           </DialogHeader>
-          <div className="mt-4 max-h-[70vh] overflow-y-auto p-2 border rounded-md">
-              <CashAdvancePreview motorcycles={selectedMotorcycles} />
+          <div className="grid gap-4">
+            <div className="mt-4 max-h-[60vh] overflow-y-auto p-2 border rounded-md">
+                <CashAdvancePreview motorcycles={selectedMotorcycles} />
+            </div>
+            <div className="grid gap-2">
+                <Label htmlFor="remarks">Remarks (Optional)</Label>
+                <Textarea 
+                    id="remarks" 
+                    placeholder="Add any notes for the cashier..."
+                    value={remarks}
+                    onChange={(e) => setRemarks(e.target.value)}
+                />
+            </div>
           </div>
           <DialogFooter>
               <Button variant="outline" onClick={() => setIsPreviewingCa(false)}>Cancel</Button>

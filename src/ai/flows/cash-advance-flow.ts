@@ -28,7 +28,7 @@ const MotorcycleSchema = z.object({
     uploadedAt: z.string().describe('The upload date of the document.'),
     expiresAt: z.string().optional().describe('The expiration date of the document.'),
   })),
-  status: z.enum(['Incomplete', 'Ready to Register', 'Registered', 'For Renewal']),
+  status: z.enum(['Incomplete', 'Ready to Register', 'Registered', 'For Renewal', 'Endorsed - Ready', 'Endorsed - Incomplete', 'Processing', 'For Review']),
   processingFee: z.number().optional(),
   orFee: z.number().optional(),
   customerName: z.string().optional(),
@@ -39,6 +39,7 @@ const MotorcycleSchema = z.object({
 const GenerateCashAdvanceInputSchema = z.object({
   motorcycles: z.array(MotorcycleSchema).describe("An array of motorcycle objects that need cash advances for renewal."),
   liaison: z.string().describe("The name of the liaison requesting the cash advance."),
+  remarks: z.string().optional().describe("Optional remarks from the liaison."),
 });
 export type GenerateCashAdvanceInput = z.infer<typeof GenerateCashAdvanceInputSchema>;
 
@@ -80,10 +81,11 @@ const prompt = ai.definePrompt({
     1.  Calculate the total amount by summing the 'processingFee' and 'orFee' for every motorcycle in the list.
     2.  Create a single cash advance object.
     3.  The purpose should be a summary, like "Cash advance for registration of X units".
-    4.  The personnel should be the requesting liaison.
-    5.  Collect all motorcycle IDs into the 'motorcycleIds' array.
-    6.  Set the status to 'Pending' and the date to today's date in ISO format.
-    7.  Generate a unique ID for the cash advance following the format 'ca-MMDDYY-XXX'.
+    4.  If remarks are provided, append them to the purpose. For example: "Cash advance for registration of X units. Remarks: [remarks]".
+    5.  The personnel should be the requesting liaison.
+    6.  Collect all motorcycle IDs into the 'motorcycleIds' array.
+    7.  Set the status to 'Pending' and the date to today's date in ISO format.
+    8.  Generate a unique ID for the cash advance following the format 'ca-MMDDYY-XXX'.
 
     Motorcycles for processing:
     {{#each motorcycles}}
@@ -91,6 +93,7 @@ const prompt = ai.definePrompt({
     {{/each}}
 
     Requesting Liaison: {{liaison}}
+    {{#if remarks}}Remarks: {{remarks}}{{/if}}
   `,
 });
 
