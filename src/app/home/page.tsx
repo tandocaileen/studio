@@ -236,8 +236,8 @@ function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
     const [activeEndorserFilters, setActiveEndorserFilters] = useState<string[]>([]);
     const [tempEndorserFilters, setTempEndorserFilters] = useState<string[]>([]);
 
-    const [activeDateRange, setActiveDateRange] = useState<DateRange>('all');
-    const [tempDateRange, setTempDateRange] = useState<DateRange>('all');
+    const [activeDateRange, setActiveDateRange] = useState<DateRange>('7d');
+    const [tempDateRange, setTempDateRange] = useState<DateRange>('7d');
     
     const [isFilterPanelVisible, setIsFilterPanelVisible] = useState(true);
 
