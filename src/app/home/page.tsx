@@ -15,7 +15,7 @@ import { OverdueAdvances } from "@/components/dashboard/overdue-advances";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
-import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ReceiveLtoDocs } from "@/components/dashboard/receive-lto-docs";
 import { EndorsedIncompleteTable } from "@/components/dashboard/endorsed-incomplete-table";
 import { cn } from "@/lib/utils";
@@ -147,6 +147,12 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
                                         </Button>
                                     </DialogTrigger>
                                     <DialogContent className="max-w-4xl">
+                                         <DialogHeader>
+                                            <DialogTitle>Receive MC Docs & Details from NIVI</DialogTitle>
+                                            <DialogDescription>
+                                                Select the motorcycles for which you have received physical documents and details.
+                                            </DialogDescription>
+                                        </DialogHeader>
                                         <ReceiveLtoDocs motorcycles={motorcyclesPendingDocs} onSave={handleStateUpdate} />
                                     </DialogContent>
                                 </Dialog>

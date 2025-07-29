@@ -728,6 +728,9 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Documents for {viewingDocumentsMotorcycle?.plateNumber}</DialogTitle>
+             <DialogDescription>
+                View all uploaded documents for this motorcycle.
+            </DialogDescription>
           </DialogHeader>
           <div className="mt-4">
             {viewingDocumentsMotorcycle?.documents && viewingDocumentsMotorcycle.documents.length > 0 ? (

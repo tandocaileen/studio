@@ -9,6 +9,7 @@ import { Button } from "../ui/button";
 import { Checkbox } from "../ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { DialogClose } from "@radix-ui/react-dialog";
+import { DialogFooter } from "../ui/dialog";
 
 type ReceiveLtoDocsProps = {
     motorcycles: Motorcycle[];
@@ -51,13 +52,7 @@ export function ReceiveLtoDocs({ motorcycles, onSave }: ReceiveLtoDocsProps) {
 
     return (
         <>
-            <CardHeader>
-                <CardTitle>Receive MC Docs & Details from NIVI</CardTitle>
-                <CardDescription>
-                    Select the motorcycles for which you have received physical documents and details.
-                </CardDescription>
-            </CardHeader>
-            <CardContent className="max-h-[60vh] overflow-y-auto">
+            <div className="max-h-[60vh] overflow-y-auto">
                 <Table>
                     <TableHeader className="sticky top-0 bg-background">
                         <TableRow>
@@ -103,8 +98,8 @@ export function ReceiveLtoDocs({ motorcycles, onSave }: ReceiveLtoDocsProps) {
                         <p>No motorcycles are pending document reception.</p>
                     </div>
                 )}
-            </CardContent>
-            <CardContent className="flex justify-end gap-2 pt-6">
+            </div>
+             <DialogFooter className="pt-4">
                 <DialogClose asChild>
                     <Button variant="outline">Cancel</Button>
                 </DialogClose>
@@ -116,7 +111,7 @@ export function ReceiveLtoDocs({ motorcycles, onSave }: ReceiveLtoDocsProps) {
                         Receive Selected ({selectedMotorcycles.length})
                     </Button>
                 </DialogClose>
-            </CardContent>
+            </DialogFooter>
         </>
     );
 }
