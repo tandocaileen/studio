@@ -82,6 +82,7 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
   }
 
   const isCashierOrSupervisor = user?.role === 'Cashier' || user?.role === 'Store Supervisor';
+  const isCashier = user?.role === 'Cashier';
 
   const totalPages = Math.ceil(advances.length / ITEMS_PER_PAGE);
   const paginatedAdvances = advances.slice(
@@ -168,19 +169,23 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
                         <Eye className="mr-2 h-4 w-4" />
                         <span>Preview/Print</span>
                       </DropdownMenuItem>
-                      {isCashierOrSupervisor && (
-                        <>
-                           <DropdownMenuSeparator />
+                      
+                      {(isCashierOrSupervisor) && <DropdownMenuSeparator />}
+                      
+                      {isCashier && (
                           <DropdownMenuItem disabled={advance.cashAdvance.status !== 'Processing for CV'} onClick={() => handleAction(`CV released for ${advance.cashAdvance.personnel}.`)}>
                             <FileCheck className="mr-2 h-4 w-4" />
                             <span>Release CV</span>
                           </DropdownMenuItem>
+                      )}
+
+                      {isCashierOrSupervisor && (
                           <DropdownMenuItem disabled={advance.cashAdvance.status !== 'Check Voucher Released'} onClick={() => handleAction(`Marked as CV Received for ${advance.cashAdvance.personnel}.`)}>
                             <Banknote className="mr-2 h-4 w-4" />
                             <span>Mark as CV Received</span>
                           </DropdownMenuItem>
-                        </>
                       )}
+
                       {user?.role === 'Liaison' && (
                          <DropdownMenuItem disabled={!['CV Received'].includes(advance.cashAdvance.status)} onClick={() => handleAction(`Liquidated advance for ${advance.cashAdvance.personnel}.`)}>
                             <FileUp className="mr-2 h-4 w-4" />
