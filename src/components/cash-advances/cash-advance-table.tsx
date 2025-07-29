@@ -162,6 +162,7 @@ export function CashAdvanceTable({ advances, onBulkUpdate }: CashAdvanceTablePro
 
   const isCashier = user?.role === 'Cashier';
   const isSupervisor = user?.role === 'Store Supervisor';
+  const isLiaison = user?.role === 'Liaison';
   const isCashierOrSupervisor = isCashier || isSupervisor;
   
   const handleSelectAll = (checked: boolean | 'indeterminate') => {
@@ -264,8 +265,8 @@ export function CashAdvanceTable({ advances, onBulkUpdate }: CashAdvanceTablePro
                     />
                 </TableHead>
               )}
-              <TableHead>{isCashierOrSupervisor ? 'Liaison' : 'Customer'}</TableHead>
-              {isCashierOrSupervisor ? <TableHead>Purpose</TableHead> : <TableHead>Motorcycle</TableHead>}
+              <TableHead>{isLiaison ? 'Primary Customer' : 'Liaison'}</TableHead>
+              <TableHead>{isLiaison ? 'Primary Motorcycle' : 'Purpose'}</TableHead>
               <TableHead className="text-right">Amount</TableHead>
               <TableHead>Date</TableHead>
               <TableHead>Status</TableHead>
@@ -290,10 +291,10 @@ export function CashAdvanceTable({ advances, onBulkUpdate }: CashAdvanceTablePro
                      </TableCell>
                  )}
                  <TableCell className="font-medium">
-                  {isCashierOrSupervisor ? advance.cashAdvance.personnel : getPrimaryCustomer(advance)}
+                  {isLiaison ? getPrimaryCustomer(advance) : advance.cashAdvance.personnel}
                 </TableCell>
                 <TableCell className="max-w-[300px] truncate">
-                  {isCashierOrSupervisor ? advance.cashAdvance.purpose : getPrimaryMotorcycle(advance)}
+                  {isLiaison ? getPrimaryMotorcycle(advance) : advance.cashAdvance.purpose}
                 </TableCell>
                 <TableCell className="text-right">₱{advance.cashAdvance.amount.toLocaleString()}</TableCell>
                 <TableCell>{format(new Date(advance.cashAdvance.date), 'MMM dd, yyyy')}</TableCell>

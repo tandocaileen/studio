@@ -56,24 +56,9 @@ export function LiaisonEndorsementTable({
   const [viewingEndorsement, setViewingEndorsement] = React.useState<EnrichedEndorsement | null>(null);
   const [editingMotorcycle, setEditingMotorcycle] = React.useState<Motorcycle | null>(null);
   const [remarks, setRemarks] = React.useState('');
-  const [liaisonFees, setLiaisonFees] = React.useState<{processingFee: number, orFee: number} | null>(null);
   
   const { toast } = useToast();
   const { user } = useAuth();
-  
-  React.useEffect(() => {
-    if (user) {
-        getLiaisons().then(liaisons => {
-            const currentUserLiaison = liaisons.find(l => l.name === user.name);
-            if(currentUserLiaison) {
-                setLiaisonFees({
-                    processingFee: currentUserLiaison.processingFee,
-                    orFee: currentUserLiaison.orFee
-                });
-            }
-        });
-    }
-  }, [user]);
 
   const handleSelectMotorcycle = (motorcycle: Motorcycle, checked: boolean) => {
     setSelectedMotorcycles(prev =>
@@ -128,12 +113,12 @@ export function LiaisonEndorsementTable({
     });
 
     try {
-      if (!user || !liaisonFees) throw new Error("User or fees not found");
+      if (!user) throw new Error("User not found");
       
       const motorcyclesWithFees = selectedMotorcycles.map(m => ({
           ...m,
-          processingFee: liaisonFees.processingFee,
-          orFee: liaisonFees.orFee,
+          processingFee: 300,
+          orFee: 1796.43,
       }));
 
       const result = await generateCashAdvance({ 
@@ -201,8 +186,8 @@ export function LiaisonEndorsementTable({
 
   const motorcyclesForPreview = selectedMotorcycles.map(mc => ({
     ...mc,
-    processingFee: liaisonFees?.processingFee || 0,
-    orFee: liaisonFees?.orFee || 0
+    processingFee: 300,
+    orFee: 1796.43
   }));
 
 
