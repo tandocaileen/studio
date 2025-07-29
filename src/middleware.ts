@@ -2,18 +2,18 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-// This function can be marked `async` if using `await` inside
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   const isLoggedIn = request.cookies.has('ltoportal-user')
 
-  // Redirect authenticated users from /login to the homepage
-  if (isLoggedIn && pathname.startsWith('/login')) {
+  // If the user is logged in, and tries to access /login, redirect to home
+  if (isLoggedIn && pathname === '/login') {
     return NextResponse.redirect(new URL('/', request.url))
   }
 
-  // Redirect unauthenticated users to /login for any protected page
-  if (!isLoggedIn && !pathname.startsWith('/login')) {
+  // If the user is not logged in and is trying to access any page other than /login,
+  // redirect them to /login.
+  if (!isLoggedIn && pathname !== '/login') {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
