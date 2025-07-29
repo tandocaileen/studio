@@ -273,7 +273,8 @@ function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
 
             itemsToUpdate.forEach(um => {
                 const existing = motorcyclesMap.get(um.id);
-                motorcyclesMap.set(um.id, { ...existing, ...um });
+                // Ensure we merge, not just replace, to keep all motorcycle details intact
+                motorcyclesMap.set(um.id, { ...(existing || {}), ...um } as Motorcycle);
             });
             
             return Array.from(motorcyclesMap.values());

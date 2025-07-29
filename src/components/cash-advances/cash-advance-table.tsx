@@ -47,13 +47,12 @@ import {
 
 type CashAdvanceTableProps = {
   advances: EnrichedCashAdvance[];
-  onBulkUpdate: (updatedItems: EnrichedCashAdvance[]) => void;
+  onBulkUpdate: (updatedItems: CashAdvance[]) => void;
 };
 
 const ITEMS_PER_PAGE = 10;
 
 export function CashAdvanceTable({ advances: initialAdvances, onBulkUpdate }: CashAdvanceTableProps) {
-  const [advances, setAdvances] = React.useState(initialAdvances);
   const [selectedAdvances, setSelectedAdvances] = React.useState<EnrichedCashAdvance[]>([]);
 
   const [previewingAdvance, setPreviewingAdvance] = React.useState<EnrichedCashAdvance | null>(null);
@@ -74,16 +73,15 @@ export function CashAdvanceTable({ advances: initialAdvances, onBulkUpdate }: Ca
   const [currentPage, setCurrentPage] = React.useState(1);
 
   React.useEffect(() => {
-    setAdvances(initialAdvances);
     setSelectedAdvances([]);
     setCurrentPage(1);
   }, [initialAdvances]);
   
-  const handleUpdate = (updatedItem: EnrichedCashAdvance) => {
+  const handleUpdate = (updatedItem: CashAdvance) => {
     onBulkUpdate([updatedItem]);
   };
   
-  const handleBulkUpdate = (updatedItems: EnrichedCashAdvance[]) => {
+  const handleBulkUpdate = (updatedItems: CashAdvance[]) => {
       onBulkUpdate(updatedItems);
       setSelectedAdvances([]);
   };
@@ -91,8 +89,8 @@ export function CashAdvanceTable({ advances: initialAdvances, onBulkUpdate }: Ca
   const handleReleaseCvSubmit = () => {
     if (!releasingCvAdvance) return;
     const updatedItem = {
-      ...releasingCvAdvance,
-      cashAdvance: { ...releasingCvAdvance.cashAdvance, status: 'CV Released' as const }
+      ...releasingCvAdvance.cashAdvance, 
+      status: 'CV Released' as const
     };
     handleUpdate(updatedItem);
     toast({ title: 'Success', description: `Cash advance #${releasingCvAdvance.cashAdvance.id} marked as "CV Released".` });
@@ -106,13 +104,10 @@ export function CashAdvanceTable({ advances: initialAdvances, onBulkUpdate }: Ca
         return;
     }
     const updatedItem = {
-      ...confirmingCvReceiptAdvance,
-      cashAdvance: {
-        ...confirmingCvReceiptAdvance.cashAdvance,
-        status: 'CV Received' as const,
-        checkVoucherNumber: cvNumber,
-        checkVoucherReleaseDate: new Date(),
-      }
+      ...confirmingCvReceiptAdvance.cashAdvance,
+      status: 'CV Received' as const,
+      checkVoucherNumber: cvNumber,
+      checkVoucherReleaseDate: new Date(),
     };
     handleUpdate(updatedItem);
     toast({ title: 'Success', description: `Cash advance #${confirmingCvReceiptAdvance.cashAdvance.id} marked as "CV Received".` });
@@ -122,8 +117,8 @@ export function CashAdvanceTable({ advances: initialAdvances, onBulkUpdate }: Ca
 
   const handleBulkReleaseCv = () => {
     const updated = selectedAdvances.map(item => ({
-        ...item,
-        cashAdvance: { ...item.cashAdvance, status: 'CV Released' as const }
+        ...item.cashAdvance,
+        status: 'CV Released' as const
     }));
     handleBulkUpdate(updated);
     toast({ title: 'Success', description: `${updated.length} cash advances marked as "CV Released".` });
@@ -136,13 +131,10 @@ export function CashAdvanceTable({ advances: initialAdvances, onBulkUpdate }: Ca
         return;
     }
     const updated = selectedAdvances.map(item => ({
-        ...item,
-        cashAdvance: {
-            ...item.cashAdvance,
-            status: 'CV Received' as const,
-            checkVoucherNumber: cvNumber,
-            checkVoucherReleaseDate: new Date(),
-        }
+        ...item.cashAdvance,
+        status: 'CV Received' as const,
+        checkVoucherNumber: cvNumber,
+        checkVoucherReleaseDate: new Date(),
     }));
     handleBulkUpdate(updated);
     toast({ title: 'Success', description: `${updated.length} cash advances marked as "CV Received".` });
@@ -190,8 +182,8 @@ export function CashAdvanceTable({ advances: initialAdvances, onBulkUpdate }: Ca
     }
   };
 
-  const totalPages = Math.ceil(advances.length / ITEMS_PER_PAGE);
-  const paginatedAdvances = advances.slice(
+  const totalPages = Math.ceil(initialAdvances.length / ITEMS_PER_PAGE);
+  const paginatedAdvances = initialAdvances.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
@@ -352,14 +344,14 @@ export function CashAdvanceTable({ advances: initialAdvances, onBulkUpdate }: Ca
             ))}
           </TableBody>
         </Table>
-         {advances.length === 0 && (
+         {initialAdvances.length === 0 && (
               <div className="text-center p-8 text-muted-foreground">No cash advances to display.</div>
           )}
       </CardContent>
        <CardFooter>
             <div className="flex items-center justify-between w-full">
                 <div className="text-xs text-muted-foreground">
-                    Showing {Math.min(paginatedAdvances.length, advances.length)} of {advances.length} cash advances.
+                    Showing {Math.min(paginatedAdvances.length, initialAdvances.length)} of {initialAdvances.length} cash advances.
                 </div>
                 <div className="flex items-center gap-2">
                     <Button

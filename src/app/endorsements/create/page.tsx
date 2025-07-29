@@ -40,8 +40,15 @@ function CreateEndorsementContent() {
     const router = useRouter();
 
     React.useEffect(() => {
-        getMotorcycles().then(setMotorcycles);
-        getLiaisons().then(setLiaisons);
+        setIsLoading(true);
+        Promise.all([
+            getMotorcycles(),
+            getLiaisons()
+        ]).then(([motorcycleData, liaisonData]) => {
+            setMotorcycles(motorcycleData);
+            setLiaisons(liaisonData);
+            setIsLoading(false);
+        });
     }, []);
 
     const handleSelectMotorcycle = (motorcycle: Motorcycle, checked: boolean | 'indeterminate') => {
@@ -87,7 +94,7 @@ function CreateEndorsementContent() {
         }, 1000);
     }
 
-    if (!motorcycles || !liaisons) {
+    if (isLoading || !motorcycles || !liaisons) {
         return <AppLoader />;
     }
 

@@ -35,8 +35,13 @@ function EndorsementsContent() {
     const router = useRouter();
 
     React.useEffect(() => {
-        getEndorsements().then(setEndorsements);
-        getMotorcycles().then(setMotorcycles);
+        Promise.all([
+            getEndorsements(),
+            getMotorcycles()
+        ]).then(([endorsementData, motorcycleData]) => {
+            setEndorsements(endorsementData);
+            setMotorcycles(motorcycleData);
+        });
     }, []);
     
     const handleViewDetails = (endorsement: Endorsement) => {

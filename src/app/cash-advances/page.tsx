@@ -33,7 +33,8 @@ const ALL_CA_STATUSES: CashAdvanceStatus[] = ['Processing for CV', 'CV Released'
 
 
 function CashAdvancesContent({ searchQuery }: { searchQuery: string }) {
-    const [advances, setAdvances] = useState<EnrichedCashAdvance[] | null>(null);
+    const [allCAs, setAllCAs] = useState<CashAdvance[] | null>(null);
+    const [allMotorcycles, setAllMotorcycles] = useState<Motorcycle[] | null>(null);
     const [liaisons, setLiaisons] = useState<LiaisonUser[] | null>(null);
     const { user } = useAuth();
     
@@ -54,23 +55,8 @@ function CashAdvancesContent({ searchQuery }: { searchQuery: string }) {
         if (!user) return;
 
         Promise.all([getCashAdvances(), getMotorcycles(), getLiaisons()]).then(([cashAdvances, motorcycles, liaisonData]) => {
-            
-            const relevantAdvances = user.role === 'Liaison' 
-                ? cashAdvances.filter(ca => ca.personnel === user.name)
-                : cashAdvances;
-
-            const enriched: EnrichedCashAdvance[] = relevantAdvances.map(ca => {
-                const associatedMotorcycles = ca.motorcycleIds
-                    ? ca.motorcycleIds.map(id => motorcycles.find(m => m.id === id)).filter(Boolean) as Motorcycle[]
-                    : (ca.motorcycleId ? [motorcycles.find(m => m.id === ca.motorcycleId)!].filter(Boolean) as Motorcycle[] : []);
-                
-                return { 
-                    cashAdvance: ca, 
-                    motorcycles: associatedMotorcycles
-                };
-            });
-
-            setAdvances(enriched);
+            setAllCAs(cashAdvances);
+            setAllMotorcycles(motorcycles);
             setLiaisons(liaisonData);
             
             // Set role-based pre-filters
@@ -87,9 +73,26 @@ function CashAdvancesContent({ searchQuery }: { searchQuery: string }) {
         });
     }, [user]);
     
-    if (!advances || !user || !liaisons) {
+    if (!allCAs || !user || !liaisons || !allMotorcycles) {
         return <AppLoader />;
     }
+
+    const enrichCashAdvances = (cas: CashAdvance[], motorcycles: Motorcycle[]): EnrichedCashAdvance[] => {
+        return cas.map(ca => {
+            const associatedMotorcycles = ca.motorcycleIds
+                ? ca.motorcycleIds.map(id => motorcycles.find(m => m.id === id)).filter(Boolean) as Motorcycle[]
+                : (ca.motorcycleId ? [motorcycles.find(m => m.id === ca.motorcycleId)!].filter(Boolean) as Motorcycle[] : []);
+            
+            return { 
+                cashAdvance: ca, 
+                motorcycles: associatedMotorcycles
+            };
+        });
+    };
+
+    const relevantAdvances = user.role === 'Liaison' 
+        ? allCAs.filter(ca => ca.personnel === user.name)
+        : allCAs;
     
     const applyFilters = () => {
         setActiveDateRange(tempDateRange);
@@ -114,7 +117,7 @@ function CashAdvancesContent({ searchQuery }: { searchQuery: string }) {
         setTempLiaisonFilters(prev => checked ? [...prev, liaisonName] : prev.filter(l => l !== liaisonName));
     };
     
-    const uniqueLiaisonsInCAs = [...new Set(advances.map(a => a.cashAdvance.personnel))];
+    const uniqueLiaisonsInCAs = [...new Set(relevantAdvances.map(a => a.personnel))];
     
     const handleSelectAllStatuses = (checked: boolean | 'indeterminate') => {
         if(checked) {
@@ -132,31 +135,31 @@ function CashAdvancesContent({ searchQuery }: { searchQuery: string }) {
         }
     };
 
-    const filteredByFilters = advances.filter(item => {
-        const { cashAdvance } = item;
-        
+    const filteredByFilters = relevantAdvances.filter(item => {
         // Date Range Filter
         if (activeDateRange !== 'all') {
             const days = activeDateRange === '7d' ? 7 : 30;
             const cutoff = new Date();
             cutoff.setDate(cutoff.getDate() - days);
-            if (new Date(cashAdvance.date) < cutoff) return false;
+            if (new Date(item.date) < cutoff) return false;
         }
 
         // Status Filter
-        if (activeStatusFilters.length > 0 && !activeStatusFilters.includes(cashAdvance.status)) {
+        if (activeStatusFilters.length > 0 && !activeStatusFilters.includes(item.status)) {
             return false;
         }
 
         // Liaison Filter
-        if (activeLiaisonFilters.length > 0 && !activeLiaisonFilters.includes(cashAdvance.personnel)) {
+        if (activeLiaisonFilters.length > 0 && !activeLiaisonFilters.includes(item.personnel)) {
             return false;
         }
 
         return true;
     });
 
-    const filteredBySearch = filteredByFilters.filter(item => {
+    const enrichedAdvances = enrichCashAdvances(filteredByFilters, allMotorcycles);
+
+    const filteredBySearch = enrichedAdvances.filter(item => {
         const { cashAdvance, motorcycles } = item;
         const query = searchQuery.toLowerCase();
 
@@ -173,14 +176,14 @@ function CashAdvancesContent({ searchQuery }: { searchQuery: string }) {
         return false;
     });
     
-    const handleUpdateAdvances = (updatedItems: EnrichedCashAdvance[]) => {
-        const updatedMap = new Map(updatedItems.map(item => [item.cashAdvance.id, item.cashAdvance]));
+    const handleUpdateAdvances = (updatedItems: CashAdvance[]) => {
+        const updatedMap = new Map(updatedItems.map(item => [item.id, item]));
         
-        setAdvances(currentAdvances => {
-            if (!currentAdvances) return [];
-            return currentAdvances.map(item => {
-                if (updatedMap.has(item.cashAdvance.id)) {
-                    return { ...item, cashAdvance: updatedMap.get(item.cashAdvance.id)! };
+        setAllCAs(currentCAs => {
+            if (!currentCAs) return [];
+            return currentCAs.map(item => {
+                if (updatedMap.has(item.id)) {
+                    return updatedMap.get(item.id)!;
                 }
                 return item;
             });
@@ -327,5 +330,4 @@ export default function CashAdvancesPage() {
             </div>
         </ProtectedPage>
     );
-
     
