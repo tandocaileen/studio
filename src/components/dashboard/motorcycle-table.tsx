@@ -21,7 +21,7 @@ import {
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Document, Motorcycle, DocumentType } from '@/types';
+import { Motorcycle, Document, DocumentType } from '@/types';
 import { MoreHorizontal, PlusCircle, FileText, Truck, Wrench, DollarSign, ExternalLink, Save, XCircle, Trash2, CalendarIcon } from 'lucide-react';
 import { getBranches, getLiaisons } from '@/lib/data';
 import {
@@ -51,16 +51,6 @@ type MotorcycleTableProps = {
   onStateChange?: (updatedMotorcycles: Motorcycle | Motorcycle[]) => void;
 };
 
-type NewDocument = {
-  id: number;
-  type: DocumentType;
-  file: File | null;
-  url?: string;
-  uploadedAt?: Date;
-  expiresAt?: Date;
-};
-
-const ALL_DOC_TYPES: DocumentType[] = ['OR/CR', 'COC', 'Insurance', 'CSR', 'HPG Control Form'];
 const ITEMS_PER_PAGE = 10;
 
 export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange }: MotorcycleTableProps) {
@@ -68,9 +58,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
   const [selectedMotorcycles, setSelectedMotorcycles] = React.useState<Motorcycle[]>([]);
   const [editingMotorcycle, setEditingMotorcycle] = React.useState<Motorcycle | null>(null);
   const [editedData, setEditedData] = React.useState<Partial<Motorcycle>>({});
-  const [editedDocuments, setEditedDocuments] = React.useState<NewDocument[]>([]);
   const [viewingDocumentsMotorcycle, setViewingDocumentsMotorcycle] = React.useState<Motorcycle | null>(null);
-  const [newDocuments, setNewDocuments] = React.useState<NewDocument[]>([]);
   const [isPreviewingCa, setIsPreviewingCa] = React.useState(false);
   const [isGeneratingCa, setIsGeneratingCa] = React.useState(false);
   const [liaisons, setLiaisons] = React.useState<any[]>([]);
@@ -209,21 +197,11 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
   const handleEditClick = (motorcycle: Motorcycle) => {
     setEditingMotorcycle(motorcycle);
     setEditedData(motorcycle);
-    setEditedDocuments(motorcycle.documents.map((doc, index) => ({
-      id: index,
-      type: doc.type,
-      file: null,
-      url: doc.url,
-      uploadedAt: doc.uploadedAt,
-      expiresAt: doc.expiresAt
-    })));
   };
 
   const handleCancelEdit = () => {
     setEditingMotorcycle(null);
     setEditedData({});
-    setEditedDocuments([]);
-    setNewDocuments([]);
   };
 
   const handleSaveEdit = () => {
@@ -251,33 +229,6 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
     setEditedData(prev => ({ ...prev, [name]: type === 'number' ? parseFloat(value) : value }));
   };
   
-  const handleSelectChange = (name: string, value: string) => {
-    setEditedData(prev => ({ ...prev, [name]: value as any }));
-  };
-  
-  const handleAddNewDocument = () => {
-    setNewDocuments(prev => [...prev, { id: Date.now(), type: 'OR/CR', file: null }]);
-  }
-
-  const handleRemoveDocument = (id: number, isNew: boolean) => {
-    if (isNew) {
-      setNewDocuments(prev => prev.filter(doc => doc.id !== id));
-    } else {
-      setEditedDocuments(prev => prev.filter(doc => doc.id !== id));
-    }
-  }
-
-  const handleDocumentChange = (id: number, field: keyof NewDocument, value: any, isNew: boolean) => {
-    const setDocs = isNew ? setNewDocuments : setEditedDocuments;
-    setDocs(prev => prev.map(doc => doc.id === id ? { ...doc, [field]: value } : doc));
-  }
-
-  const handleFileChange = (id: number, e: React.ChangeEvent<HTMLInputElement>, isNew: boolean) => {
-    if (e.target.files && e.target.files.length > 0) {
-      handleDocumentChange(id, 'file', e.target.files[0], isNew);
-    }
-  };
-
   const isGenerateCaDisabled = selectedMotorcycles.length === 0 || selectedMotorcycles.some(m => m.status !== 'Endorsed - Ready');
 
   const totalPages = Math.ceil(motorcycles.length / ITEMS_PER_PAGE);
@@ -510,31 +461,8 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                           </Select>
                       </div>
                        <div className="grid gap-2">
-                          <Label htmlFor="edit-assignedLiaison">Assign Liaison</Label>
-                           <Select value={editedData.assignedLiaison} disabled>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select a liaison" />
-                            </SelectTrigger>
-                            <SelectContent>
-                               {liaisons.map(l => <SelectItem key={l.id} value={l.name}>{l.name}</SelectItem>)}
-                            </SelectContent>
-                          </Select>
-                      </div>
-                      <div className="grid gap-2">
-                        <Label htmlFor="status">Status</Label>
-                        <Select value={editedData.status} onValueChange={(value) => handleSelectChange('status', value)} disabled>
-                          <SelectTrigger>
-                            <SelectValue/>
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Incomplete">Incomplete</SelectItem>
-                            <SelectItem value="Ready to Register">Ready to Register</SelectItem>
-                            <SelectItem value="Endorsed - Incomplete">Endorsed - Incomplete</SelectItem>
-                            <SelectItem value="Endorsed - Ready">Endorsed - Ready</SelectItem>
-                            <SelectItem value="Processing">Processing</SelectItem>
-                            <SelectItem value="For Review">For Review</SelectItem>
-                          </SelectContent>
-                        </Select>
+                          <Label htmlFor="edit-accountCode">Account Code</Label>
+                          <Input id="edit-accountCode" name="accountCode" value={editedData.accountCode || ''} disabled />
                       </div>
                     </div>
 
@@ -559,18 +487,6 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                         <div className="grid gap-2">
                             <Label htmlFor="edit-sarCode">SAR Code</Label>
                             <Input id="edit-sarCode" name="sarCode" value={editedData.sarCode || ''} onChange={handleInputChange} disabled={!canEditInsuranceAndControl} required />
-                        </div>
-                     </div>
-
-                     <h3 className="font-semibold text-lg border-b pb-2 mt-4 mb-2">Fees</h3>
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="grid gap-2">
-                            <Label htmlFor="edit-processingFee">Processing Fee</Label>
-                            <Input id="edit-processingFee" name="processingFee" value={editedData.processingFee || 1500} type="number" disabled />
-                        </div>
-                         <div className="grid gap-2">
-                            <Label htmlFor="edit-orFee">OR Fee</Label>
-                            <Input id="edit-orFee" name="orFee" value={editedData.orFee || 1000} type="number" disabled />
                         </div>
                      </div>
                 </div>
@@ -610,9 +526,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                         <TableCell>{doc.expiresAt ? format(new Date(doc.expiresAt), 'MMM dd, yyyy') : 'N/A'}</TableCell>
                         <TableCell>
                             <Button variant="outline" size="sm" onClick={() => window.open(doc.url, '_blank')}>
-                              <span>
                                 View <ExternalLink className="ml-2 h-3 w-3 inline-block" />
-                              </span>
                             </Button>
                         </TableCell>
                     </TableRow>
@@ -647,5 +561,3 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
     </>
   );
 }
-
-    
