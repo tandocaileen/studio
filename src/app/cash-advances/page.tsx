@@ -51,8 +51,15 @@ function CashAdvancesContent({ searchQuery }: { searchQuery: string }) {
 
 
     useEffect(() => {
+        if (!user) return;
+
         Promise.all([getCashAdvances(), getMotorcycles(), getLiaisons()]).then(([cashAdvances, motorcycles, liaisonData]) => {
-            const enriched: EnrichedCashAdvance[] = cashAdvances.map(ca => {
+            
+            const relevantAdvances = user.role === 'Liaison' 
+                ? cashAdvances.filter(ca => ca.personnel === user.name)
+                : cashAdvances;
+
+            const enriched: EnrichedCashAdvance[] = relevantAdvances.map(ca => {
                 const associatedMotorcycles = ca.motorcycleIds
                     ? motorcycles.filter(m => ca.motorcycleIds!.includes(m.id))
                     : (ca.motorcycleId ? [motorcycles.find(m => m.id === ca.motorcycleId)!] : []);
@@ -65,7 +72,7 @@ function CashAdvancesContent({ searchQuery }: { searchQuery: string }) {
             setAdvances(enriched);
             setLiaisons(liaisonData);
         });
-    }, []);
+    }, [user]);
     
     if (!advances || !user || !liaisons) {
         return <AppLoader />;
@@ -140,10 +147,6 @@ function CashAdvancesContent({ searchQuery }: { searchQuery: string }) {
         const { cashAdvance, motorcycles } = item;
         const query = searchQuery.toLowerCase();
 
-        if (user.role === 'Liaison' && cashAdvance.personnel !== user.name) {
-            return false;
-        }
-
         if (motorcycles && motorcycles.length > 0) { 
             if (motorcycles.some(m => m.customerName?.toLowerCase().includes(query))) return true;
             if (motorcycles.some(m => m.model.toLowerCase().includes(query))) return true;
@@ -198,34 +201,36 @@ function CashAdvancesContent({ searchQuery }: { searchQuery: string }) {
                                     </div>
                                 </CollapsibleContent>
                             </Collapsible>
-                             <Collapsible defaultOpen>
-                                <CollapsibleTrigger className="flex justify-between items-center w-full">
-                                    <div className="flex items-center gap-2">
-                                        <Checkbox
-                                            id="filter-liaison-all"
-                                            checked={tempLiaisonFilters.length === uniqueLiaisonsInCAs.length}
-                                            onCheckedChange={handleSelectAllLiaisons}
-                                        />
-                                        <Label htmlFor="filter-liaison-all" className="font-semibold text-sm">Liaison</Label>
-                                    </div>
-                                    <ChevronDown className="h-4 w-4 transition-transform data-[state=open]:rotate-180" />
-                                </CollapsibleTrigger>
-                                <CollapsibleContent>
-                                    <Separator className="my-2" />
-                                    <div className="grid gap-2 pl-6">
-                                        {uniqueLiaisonsInCAs.map(liaison => (
-                                            <div key={liaison} className="flex items-center gap-2">
-                                                <Checkbox 
-                                                    id={`filter-liaison-${liaison}`}
-                                                    checked={tempLiaisonFilters.includes(liaison)}
-                                                    onCheckedChange={(checked) => handleLiaisonCheckboxChange(liaison, !!checked)}
-                                                />
-                                                <Label htmlFor={`filter-liaison-${liaison}`} className="font-normal text-sm">{liaison}</Label>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </CollapsibleContent>
-                            </Collapsible>
+                            {user.role !== 'Liaison' && (
+                                <Collapsible defaultOpen>
+                                    <CollapsibleTrigger className="flex justify-between items-center w-full">
+                                        <div className="flex items-center gap-2">
+                                            <Checkbox
+                                                id="filter-liaison-all"
+                                                checked={tempLiaisonFilters.length === uniqueLiaisonsInCAs.length}
+                                                onCheckedChange={handleSelectAllLiaisons}
+                                            />
+                                            <Label htmlFor="filter-liaison-all" className="font-semibold text-sm">Liaison</Label>
+                                        </div>
+                                        <ChevronDown className="h-4 w-4 transition-transform data-[state=open]:rotate-180" />
+                                    </CollapsibleTrigger>
+                                    <CollapsibleContent>
+                                        <Separator className="my-2" />
+                                        <div className="grid gap-2 pl-6">
+                                            {uniqueLiaisonsInCAs.map(liaison => (
+                                                <div key={liaison} className="flex items-center gap-2">
+                                                    <Checkbox 
+                                                        id={`filter-liaison-${liaison}`}
+                                                        checked={tempLiaisonFilters.includes(liaison)}
+                                                        onCheckedChange={(checked) => handleLiaisonCheckboxChange(liaison, !!checked)}
+                                                    />
+                                                    <Label htmlFor={`filter-liaison-${liaison}`} className="font-normal text-sm">{liaison}</Label>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </CollapsibleContent>
+                                </Collapsible>
+                            )}
                             <Collapsible defaultOpen>
                                 <CollapsibleTrigger className="flex justify-between items-center w-full [&[data-state=open]>svg]:rotate-180">
                                     <Label className="font-semibold text-sm">Date Range</Label>
