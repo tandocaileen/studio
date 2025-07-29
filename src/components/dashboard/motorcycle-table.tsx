@@ -243,6 +243,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
       .filter(pm => pm.status === 'Endorsed - Ready')
       .every(pm => selectedMotorcycles.some(sm => sm.id === pm.id));
 
+  const insuranceTypes = ['TPL', 'Comprehensive', 'TPL + OD', 'TPL + Theft'];
 
   return (
     <>
@@ -474,7 +475,20 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="edit-insuranceType">Insurance Type</Label>
-                            <Input id="edit-insuranceType" name="insuranceType" value={editedData.insuranceType || ''} onChange={handleInputChange} disabled={!canEditInsuranceAndControl} required />
+                             <Select
+                                value={editedData.insuranceType || ''}
+                                onValueChange={(value) => setEditedData(prev => ({ ...prev, insuranceType: value }))}
+                                disabled={!canEditInsuranceAndControl}
+                            >
+                                <SelectTrigger id="edit-insuranceType">
+                                    <SelectValue placeholder="Select insurance type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {insuranceTypes.map(type => (
+                                        <SelectItem key={type} value={type}>{type}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="edit-hpgControlNumber">HPG Control No.</Label>
@@ -521,9 +535,9 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                         <TableCell>{format(new Date(doc.uploadedAt), 'MMM dd, yyyy')}</TableCell>
                         <TableCell>{doc.expiresAt ? format(new Date(doc.expiresAt), 'MMM dd, yyyy') : 'N/A'}</TableCell>
                         <TableCell>
-                            <Button variant="outline" size="sm" onClick={() => window.open(doc.url, '_blank')}>
+                           <Button variant="outline" size="sm" onClick={() => window.open(doc.url, '_blank')}>
                                 View <ExternalLink className="ml-2 h-3 w-3 inline-block" />
-                            </Button>
+                           </Button>
                         </TableCell>
                     </TableRow>
                 ))}
