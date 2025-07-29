@@ -351,7 +351,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                 <TableHead>Account Code</TableHead>
                 <TableHead>Customer Name</TableHead>
                 <TableHead>Plate No.</TableHead>
-                <TableHead>Make & Model</TableHead>
+                <TableHead>Make &amp; Model</TableHead>
                 <TableHead>Engine No.</TableHead>
                 <TableHead>Chassis No.</TableHead>
                 <TableHead>Status</TableHead>
@@ -608,12 +608,10 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                                 <Label htmlFor={`edit-doc-file-${index}`} className="text-right">File</Label>
                                 <div className="col-span-3 flex items-center gap-2">
                                     <Input id={`edit-doc-file-${index}`} type="file" className="flex-grow" onChange={(e) => handleFileChange(doc.id, e, false)} disabled={!canEditInsuranceAndControl} />
-                                    <Button variant="outline" size="sm" asChild>
-                                        <a href={doc.url} target="_blank" rel="noopener noreferrer">
-                                          <span>
-                                            View Current <ExternalLink className="ml-2 h-3 w-3 inline-block" />
-                                          </span>
-                                        </a>
+                                    <Button variant="outline" size="sm" onClick={() => window.open(doc.url, '_blank')}>
+                                      <span>
+                                        View <ExternalLink className="ml-2 h-3 w-3 inline-block" />
+                                      </span>
                                     </Button>
                                 </div>
                             </div>
@@ -752,12 +750,10 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                         <TableCell>{format(new Date(doc.uploadedAt), 'MMM dd, yyyy')}</TableCell>
                         <TableCell>{doc.expiresAt ? format(new Date(doc.expiresAt), 'MMM dd, yyyy') : 'N/A'}</TableCell>
                         <TableCell>
-                            <Button variant="outline" size="sm" asChild>
-                                <a href={doc.url} target="_blank" rel="noopener noreferrer">
-                                  <span>
-                                    View <ExternalLink className="ml-2 h-3 w-3 inline-block" />
-                                  </span>
-                                </a>
+                            <Button variant="outline" size="sm" onClick={() => window.open(doc.url, '_blank')}>
+                              <span>
+                                View <ExternalLink className="ml-2 h-3 w-3 inline-block" />
+                              </span>
                             </Button>
                         </TableCell>
                     </TableRow>
