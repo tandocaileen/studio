@@ -18,13 +18,13 @@ export const CashAdvanceRequestDocument = React.forwardRef<HTMLDivElement, CashA
 
     return (
         <div ref={ref} className="bg-white text-black p-8 font-sans">
-             <header className="flex justify-between items-center pb-4 border-b-2 border-black">
+             <header className="flex justify-between items-start pb-4 border-b-2 border-black">
                 <div>
                     <h1 className="text-3xl font-bold">CASH ADVANCE</h1>
                     <p className="text-sm">Control No: <span className="font-mono">{advance.id}</span></p>
                 </div>
                 <div className="text-right">
-                    <h2 className="text-2xl font-bold">LTO Portal Inc.</h2>
+                    <h2 className="text-xl font-bold">LTO Portal Inc.</h2>
                     <p className="text-xs">123 Business Rd, Finance City, PH</p>
                 </div>
             </header>
@@ -50,30 +50,35 @@ export const CashAdvanceRequestDocument = React.forwardRef<HTMLDivElement, CashA
                         )}
                     </div>
                 </div>
+                 <p className="text-sm mt-4">
+                    <span className="font-bold">Purpose:</span> {advance.purpose}
+                </p>
             </section>
 
              <section className="mt-6">
-                <p className="font-semibold mb-2">Purpose: <span className="font-normal">{advance.purpose}</span></p>
-                <Table>
+                <Table className="text-sm">
                     <TableHeader>
                         <TableRow>
-                            <TableHead>Make & Model</TableHead>
-                            <TableHead>Customer</TableHead>
-                            <TableHead className="text-right">Processing Fee</TableHead>
-                            <TableHead className="text-right">OR Fee</TableHead>
-                            <TableHead className="text-right">Subtotal</TableHead>
+                            <TableHead className="text-black font-bold">Make & Model</TableHead>
+                            <TableHead className="text-black font-bold">Customer</TableHead>
+                            <TableHead className="text-right text-black font-bold">Processing Fee</TableHead>
+                            <TableHead className="text-right text-black font-bold">OR Fee</TableHead>
+                            <TableHead className="text-right text-black font-bold">Subtotal</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {motorcycles.map(mc => (
-                            <TableRow key={mc.id}>
-                                <TableCell>{mc.make} {mc.model}</TableCell>
-                                <TableCell>{mc.customerName}</TableCell>
-                                <TableCell className="text-right font-mono">₱{(mc.processingFee || 0).toLocaleString()}</TableCell>
-                                <TableCell className="text-right font-mono">₱{(mc.orFee || 0).toLocaleString()}</TableCell>
-                                <TableCell className="text-right font-mono">₱{((mc.orFee || 0) + (mc.processingFee || 0)).toLocaleString()}</TableCell>
-                            </TableRow>
-                        ))}
+                        {motorcycles.map(mc => {
+                            const subtotal = (mc.processingFee || 0) + (mc.orFee || 0);
+                            return (
+                                <TableRow key={mc.id}>
+                                    <TableCell>{mc.make} {mc.model}</TableCell>
+                                    <TableCell>{mc.customerName}</TableCell>
+                                    <TableCell className="text-right font-mono">₱{(mc.processingFee || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</TableCell>
+                                    <TableCell className="text-right font-mono">₱{(mc.orFee || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</TableCell>
+                                    <TableCell className="text-right font-mono">₱{subtotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}</TableCell>
+                                </TableRow>
+                            )
+                        })}
                     </TableBody>
                     <TableFooter>
                          <TableRow className="font-bold text-lg bg-gray-100">
@@ -83,27 +88,6 @@ export const CashAdvanceRequestDocument = React.forwardRef<HTMLDivElement, CashA
                     </TableFooter>
                 </Table>
             </section>
-            
-            <section className="mt-8">
-                <p className="text-sm leading-relaxed">
-                    Received from LTO Portal Inc. the sum of <span className="font-bold">________________</span> PESOS (₱{advance.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}) as Cash Advance for the purpose stated above. I agree to liquidate this amount within five (5) working days from the completion of the task.
-                </p>
-            </section>
-            
-            <footer className="mt-16 grid grid-cols-3 gap-8 text-center text-xs">
-                <div>
-                    <p className="border-t-2 border-black pt-2 mt-8">Prepared by:</p>
-                    <p className="font-bold mt-2">Accounting Department</p>
-                </div>
-                 <div>
-                    <p className="border-t-2 border-black pt-2 mt-8">Noted by:</p>
-                    <p className="font-bold mt-2">Finance Manager</p>
-                </div>
-                <div>
-                    <p className="border-t-2 border-black pt-2 mt-8">Received by:</p>
-                    <p className="font-bold mt-2">{advance.personnel}</p>
-                </div>
-            </footer>
         </div>
     );
 });
