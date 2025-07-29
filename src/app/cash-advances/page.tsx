@@ -84,9 +84,9 @@ function CashAdvancesContent({ searchQuery }: { searchQuery: string }) {
 
     const enrichCashAdvances = (cas: CashAdvance[], motorcycles: Motorcycle[]): EnrichedCashAdvance[] => {
         return cas.map(ca => {
-            const associatedMotorcycles = ca.motorcycleIds
-                ? ca.motorcycleIds.map(id => motorcycles.find(m => m.id === id)).filter(Boolean) as Motorcycle[]
-                : (ca.motorcycleId ? [motorcycles.find(m => m.id === ca.motorcycleId)!].filter(Boolean) as Motorcycle[] : []);
+            const associatedMotorcycles = (ca.motorcycleIds || [])
+                .map(id => motorcycles.find(m => m.id === id))
+                .filter((m): m is Motorcycle => !!m);
             
             return { 
                 cashAdvance: ca, 

@@ -25,10 +25,9 @@ const initialMotorcycles: Motorcycle[] = [
     assignedBranch: 'CEBU',
     purchaseDate: new Date('2023-01-15'),
     supplier: 'Yamaha Motors',
-    status: 'Endorsed - Ready',
+    status: 'Ready to Register',
     documents: [],
     customerName: 'Apolinario Mabini',
-    assignedLiaison: SINGLE_LIAISON_USER.name,
     salesInvoiceNo: 'SI-00123',
     accountCode: 'AC-JDC-001',
     hpgControlNumber: 'HPG-CTRL-001',
@@ -53,10 +52,9 @@ const initialMotorcycles: Motorcycle[] = [
     assignedBranch: 'CEBU',
     purchaseDate: new Date('2024-05-20'),
     supplier: 'Honda Prestige',
-    status: 'Endorsed - Ready',
+    status: 'Ready to Register',
     documents: [],
     customerName: 'Emilio Aguinaldo',
-    assignedLiaison: SINGLE_LIAISON_USER.name,
     salesInvoiceNo: 'SI-00124',
     accountCode: 'AC-MCL-001',
     hpgControlNumber: 'HPG-CTRL-002',
@@ -118,28 +116,13 @@ const initialMotorcycles: Motorcycle[] = [
   },
 ];
 
-const initialCashAdvances: CashAdvance[] = [
-  {
-    id: 'ca-070124-001',
-    personnel: SINGLE_LIAISON_USER.name,
-    purpose: 'Registration for 1 unit',
-    amount: 2500,
-    date: addDays(today, -30),
-    status: 'Liquidated',
-    motorcycleIds: ['mc-001'],
-    totalLiquidation: 1800,
-    checkVoucherNumber: 'CV-2024-06-010',
-    checkVoucherReleaseDate: addDays(today, -28),
-  },
-];
+const initialCashAdvances: CashAdvance[] = [];
 
 const initialLiaisonUsers: LiaisonUser[] = [
     SINGLE_LIAISON_USER
 ];
 
-const initialEndorsements: Endorsement[] = [
-    { id: 'ENDO-20240728-001', transactionDate: addDays(today, -2), liaisonId: SINGLE_LIAISON_USER.id, liaisonName: SINGLE_LIAISON_USER.name, motorcycleIds: ['mc-001', 'mc-002'], remarks: 'For processing.', createdBy: 'Demo Supervisor'},
-];
+const initialEndorsements: Endorsement[] = [];
 
 const MC_KEY = 'lto_motorcycles';
 const CA_KEY = 'lto_cash_advances';
