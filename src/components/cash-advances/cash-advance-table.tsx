@@ -60,11 +60,15 @@ export function CashAdvanceTable({ advances: initialAdvances, onBulkUpdate }: Ca
   const [selectedAdvances, setSelectedAdvances] = React.useState<EnrichedCashAdvance[]>([]);
 
   const [previewingAdvance, setPreviewingAdvance] = React.useState<EnrichedCashAdvance | null>(null);
-  const [releasingCvAdvance, setReleasingCvAdvance] = React.useState<EnrichedCashAdvance | null>(null);
-  const [cvNumber, setCvNumber] = React.useState('');
   
+  // State for single-item actions
+  const [releasingCvAdvance, setReleasingCvAdvance] = React.useState<EnrichedCashAdvance | null>(null);
+  const [confirmingCvReceiptAdvance, setConfirmingCvReceiptAdvance] = React.useState<EnrichedCashAdvance | null>(null);
+
+  // State for bulk actions
   const [isBulkReleaseCvDialogOpen, setIsBulkReleaseCvDialogOpen] = React.useState(false);
   const [isBulkReceiveCvDialogOpen, setIsBulkReceiveCvDialogOpen] = React.useState(false);
+  const [cvNumber, setCvNumber] = React.useState('');
   
   const { toast } = useToast();
   const documentRef = React.useRef(null);
@@ -77,10 +81,47 @@ export function CashAdvanceTable({ advances: initialAdvances, onBulkUpdate }: Ca
     setCurrentPage(1);
   }, [initialAdvances]);
   
+  const handleUpdate = (updatedItem: EnrichedCashAdvance) => {
+    onBulkUpdate([updatedItem]);
+  };
+  
   const handleBulkUpdate = (updatedItems: EnrichedCashAdvance[]) => {
       onBulkUpdate(updatedItems);
       setSelectedAdvances([]);
-  }
+  };
+
+  const handleReleaseCvSubmit = () => {
+    if (!releasingCvAdvance) return;
+    if (!cvNumber) {
+        toast({ title: 'CV Number Required', description: 'Please enter a Check Voucher number.', variant: 'destructive' });
+        return;
+    }
+    const updatedItem = {
+      ...releasingCvAdvance,
+      cashAdvance: {
+        ...releasingCvAdvance.cashAdvance,
+        status: 'CV Released' as const,
+        checkVoucherNumber: cvNumber,
+        checkVoucherReleaseDate: new Date(),
+      }
+    };
+    handleUpdate(updatedItem);
+    toast({ title: 'Success', description: `Cash advance #${releasingCvAdvance.cashAdvance.id} marked as "CV Released".` });
+    setReleasingCvAdvance(null);
+    setCvNumber('');
+  };
+  
+  const handleConfirmCvReceiptSubmit = () => {
+      if (!confirmingCvReceiptAdvance) return;
+      const updatedItem = {
+          ...confirmingCvReceiptAdvance,
+          cashAdvance: { ...confirmingCvReceiptAdvance.cashAdvance, status: 'CV Received' as const }
+      };
+      handleUpdate(updatedItem);
+      toast({ title: 'Success', description: `Cash advance #${confirmingCvReceiptAdvance.cashAdvance.id} marked as "CV Received".` });
+      setConfirmingCvReceiptAdvance(null);
+  };
+
 
   const handleBulkReleaseCv = () => {
     if (!cvNumber) {
@@ -287,11 +328,29 @@ export function CashAdvanceTable({ advances: initialAdvances, onBulkUpdate }: Ca
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                       <DropdownMenuItem onClick={() => setPreviewingAdvance(advance)}>
-                        <Eye className="mr-2 h-4 w-4" />
-                        <span>Preview/Print</span>
-                      </DropdownMenuItem>
+                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuItem onClick={() => setPreviewingAdvance(advance)}>
+                            <Eye className="mr-2 h-4 w-4" />
+                            <span>Preview/Print</span>
+                        </DropdownMenuItem>
+                        {isCashier && (
+                             <DropdownMenuItem 
+                                disabled={advance.cashAdvance.status !== 'Processing for CV'}
+                                onSelect={() => setReleasingCvAdvance(advance)}
+                            >
+                                <Banknote className="mr-2 h-4 w-4" />
+                                Release CV
+                            </DropdownMenuItem>
+                        )}
+                        {isCashierOrSupervisor && (
+                            <DropdownMenuItem
+                                disabled={advance.cashAdvance.status !== 'CV Released'}
+                                onSelect={() => setConfirmingCvReceiptAdvance(advance)}
+                            >
+                                <PackageCheck className="mr-2 h-4 w-4" />
+                                Confirm CV Receipt
+                            </DropdownMenuItem>
+                        )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
@@ -359,6 +418,50 @@ export function CashAdvanceTable({ advances: initialAdvances, onBulkUpdate }: Ca
             </DialogFooter>
         </DialogContent>
     </Dialog>
+
+    <Dialog open={!!releasingCvAdvance} onOpenChange={(open) => !open && setReleasingCvAdvance(null)}>
+        <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+                <DialogTitle>Release CV for CA #{releasingCvAdvance?.cashAdvance.id}</DialogTitle>
+                <DialogDescription>
+                    Enter the Check Voucher number to release this cash advance.
+                </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="single-cv-number" className="text-right">
+                        CV Number
+                    </Label>
+                    <Input 
+                        id="single-cv-number" 
+                        value={cvNumber}
+                        onChange={(e) => setCvNumber(e.target.value)}
+                        className="col-span-3"
+                        placeholder="e.g., CV-2024-08-001"
+                    />
+                </div>
+            </div>
+            <DialogFooter>
+                <Button variant="outline" onClick={() => setReleasingCvAdvance(null)}>Cancel</Button>
+                <Button onClick={handleReleaseCvSubmit}>Release</Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
+
+    <AlertDialog open={!!confirmingCvReceiptAdvance} onOpenChange={(open) => !open && setConfirmingCvReceiptAdvance(null)}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+            <AlertDialogTitle>Confirm CV Receipt?</AlertDialogTitle>
+            <AlertDialogDescription>
+                This will mark cash advance #{confirmingCvReceiptAdvance?.cashAdvance.id} as "CV Received". This action cannot be undone.
+            </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmCvReceiptSubmit}>Confirm Receipt</AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+    </AlertDialog>
     
     <Dialog open={isBulkReleaseCvDialogOpen} onOpenChange={setIsBulkReleaseCvDialogOpen}>
         <DialogContent className="sm:max-w-md">
@@ -407,5 +510,3 @@ export function CashAdvanceTable({ advances: initialAdvances, onBulkUpdate }: Ca
     </>
   );
 }
-
-    
