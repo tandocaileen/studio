@@ -86,6 +86,10 @@ export function MotorcycleDetailsDialog({ motorcycle, isOpen, onClose, onSave }:
                 <Label htmlFor="edit-engineNumber">Engine No.</Label>
                 <Input id="edit-engineNumber" value={editedData.engineNumber || ''} disabled />
               </div>
+               <div className="grid gap-2">
+                <Label htmlFor="edit-branchCode">Branch</Label>
+                <Input id="edit-branchCode" value={editedData.assignedBranch || ''} disabled />
+              </div>
               <div className="grid gap-2">
                 <Label htmlFor="edit-status">Status</Label>
                 <Input id="edit-status" value={editedData.status || ''} disabled />

@@ -261,6 +261,7 @@ export function LiaisonEndorsementTable({
                                         </TableHead>
                                         <TableHead>SI No.</TableHead>
                                         <TableHead>Customer Name</TableHead>
+                                        <TableHead>Branch</TableHead>
                                         <TableHead>Account Code</TableHead>
                                         <TableHead>Chassis No.</TableHead>
                                         <TableHead>CSR No.</TableHead>
@@ -282,6 +283,7 @@ export function LiaisonEndorsementTable({
                                             </TableCell>
                                             <TableCell>{mc.salesInvoiceNo}</TableCell>
                                             <TableCell>{mc.customerName}</TableCell>
+                                            <TableCell>{mc.assignedBranch}</TableCell>
                                             <TableCell>{mc.accountCode}</TableCell>
                                             <TableCell>{mc.chassisNumber}</TableCell>
                                             <TableCell>{mc.csrNumber || 'N/A'}</TableCell>
