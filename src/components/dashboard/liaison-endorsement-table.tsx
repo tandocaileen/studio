@@ -255,11 +255,10 @@ export function LiaisonEndorsementTable({
                                     <TableRow>
                                         <TableHead className="w-[40px]">
                                            <Checkbox
-                                                checked={isAllInGroupSelected || isPartiallySelectedInGroup}
+                                                checked={isPartiallySelectedInGroup ? 'indeterminate' : isAllInGroupSelected}
                                                 onCheckedChange={(checked) => handleSelectAllInGroup(associatedMotorcycles, checked)}
                                                 aria-label="Select all in this group"
                                                 disabled={eligibleMotorcyclesInGroup.length === 0}
-                                                data-state={isPartiallySelectedInGroup ? "indeterminate" : isAllInGroupSelected ? "checked" : "unchecked"}
                                             />
                                         </TableHead>
                                         <TableHead>SI No.</TableHead>

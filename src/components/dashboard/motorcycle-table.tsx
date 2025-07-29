@@ -47,6 +47,7 @@ import { useAuth } from '@/context/AuthContext';
 import { CashAdvancePreview } from './cash-advance-preview';
 import { InsuranceControlForm } from './insurance-control-form';
 import { MotorcycleDetailsDialog } from './motorcycle-details-dialog';
+import { Textarea } from '../ui/textarea';
 
 type MotorcycleTableProps = {
   motorcycles: Motorcycle[];
@@ -63,6 +64,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
   const [editingMotorcycle, setEditingMotorcycle] = React.useState<Motorcycle | null>(null);
   const [isPreviewingCa, setIsPreviewingCa] = React.useState(false);
   const [isGeneratingCa, setIsGeneratingCa] = React.useState(false);
+  const [remarks, setRemarks] = React.useState('');
   const [liaisons, setLiaisons] = React.useState<any[]>([]);
   const [currentPage, setCurrentPage] = React.useState(1);
   const [sortColumn, setSortColumn] = React.useState<SortableColumn>('status');
@@ -139,6 +141,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
       const result = await generateCashAdvance({ 
           motorcycles: motorcyclesForAI,
           liaison: user.name,
+          remarks: remarks
       });
 
       console.log('Cash advance generated: ', result);
@@ -147,7 +150,10 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
           selectedMotorcycles.some(sm => sm.id === m.id) ? { ...m, status: 'Processing' as MotorcycleStatus } : m
       );
       setMotorcycles(updatedMotorcycles);
-      if (onStateChange) onStateChange(updatedMotorcycles);
+      if (onStateChange) {
+          const changedMotorcycles = updatedMotorcycles.filter(m => selectedMotorcycles.some(sm => sm.id === m.id));
+          onStateChange(changedMotorcycles);
+      }
       
       toast({
         title: 'Cash Advance Request Submitted',
@@ -164,6 +170,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
         setIsGeneratingCa(false);
         setIsPreviewingCa(false);
         setSelectedMotorcycles([]);
+        setRemarks('');
     }
   };
 
@@ -458,8 +465,19 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                     Review the details below. The total amount will be requested for cash advance.
                 </DialogDescription>
             </DialogHeader>
-            <div className="mt-4 max-h-[70vh] overflow-y-auto p-2 border rounded-md">
-                <CashAdvancePreview motorcycles={selectedMotorcycles} />
+             <div className="grid gap-4">
+                <div className="mt-4 max-h-[60vh] overflow-y-auto p-2 border rounded-md">
+                    <CashAdvancePreview motorcycles={selectedMotorcycles} />
+                </div>
+                <div className="grid gap-2">
+                    <Label htmlFor="remarks">Remarks (Optional)</Label>
+                    <Textarea 
+                        id="remarks" 
+                        placeholder="Add any notes for the cashier..."
+                        value={remarks}
+                        onChange={(e) => setRemarks(e.target.value)}
+                    />
+                </div>
             </div>
             <DialogFooter>
                 <Button variant="outline" onClick={() => setIsPreviewingCa(false)}>Cancel</Button>
@@ -470,4 +488,5 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
     </>
   );
 }
+
 
