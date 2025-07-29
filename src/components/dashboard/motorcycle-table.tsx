@@ -46,6 +46,7 @@ import { ScrollArea } from '../ui/scroll-area';
 import { useAuth } from '@/context/AuthContext';
 import { CashAdvancePreview } from './cash-advance-preview';
 import { InsuranceControlForm } from './insurance-control-form';
+import { MotorcycleDetailsDialog } from './motorcycle-details-dialog';
 
 type MotorcycleTableProps = {
   motorcycles: Motorcycle[];
@@ -60,7 +61,6 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
   const [motorcycles, setMotorcycles] = React.useState(initialMotorcycles);
   const [selectedMotorcycles, setSelectedMotorcycles] = React.useState<Motorcycle[]>([]);
   const [editingMotorcycle, setEditingMotorcycle] = React.useState<Motorcycle | null>(null);
-  const [editedData, setEditedData] = React.useState<Partial<Motorcycle>>({});
   const [isPreviewingCa, setIsPreviewingCa] = React.useState(false);
   const [isGeneratingCa, setIsGeneratingCa] = React.useState(false);
   const [liaisons, setLiaisons] = React.useState<any[]>([]);
@@ -200,20 +200,14 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
 
   const handleEditClick = (motorcycle: Motorcycle) => {
     setEditingMotorcycle(motorcycle);
-    setEditedData(motorcycle);
   };
 
-  const handleCancelEdit = () => {
-    setEditingMotorcycle(null);
-    setEditedData({});
-  };
-
-  const handleSaveEdit = () => {
+  const handleSaveEdit = (updatedData: Partial<Motorcycle>) => {
     if (!editingMotorcycle) return;
 
     let updatedMotorcycle = {
       ...editingMotorcycle,
-      ...editedData,
+      ...updatedData,
     };
     
     // Check if all required fields are filled to auto-update status
@@ -247,11 +241,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
     if (onStateChange) onStateChange(updatedMotorcycles.find(m => m.id === updatedMotorcycle.id) || updatedMotorcycle);
 
     handleAction(`Motorcycle details updated.`);
-    handleCancelEdit();
-  };
-
-  const handleDataChange = (fieldName: keyof Motorcycle, value: any) => {
-    setEditedData(prev => ({ ...prev, [fieldName]: value }));
+    setEditingMotorcycle(null);
   };
   
   const handleSort = (column: SortableColumn) => {
@@ -450,77 +440,14 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
         </CardFooter>
       </Card>
       
-      {/* Edit Motorcycle Dialog */}
-      <Dialog open={!!editingMotorcycle} onOpenChange={(open) => !open && handleCancelEdit()}>
-          <DialogContent className="sm:max-w-2xl max-w-[90vw] max-h-[90vh]">
-              <DialogHeader>
-                  <DialogTitle>
-                    View / Edit Details - {editingMotorcycle?.customerName}
-                  </DialogTitle>
-                  <DialogDescription>
-                      Update details for this unit.
-                  </DialogDescription>
-              </DialogHeader>
-              <ScrollArea className="max-h-[70vh]">
-                <div className="grid gap-4 py-4 pr-6">
-                    <h3 className="font-semibold text-lg border-b pb-2 mb-2">Motorcycle Details</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                       <div className="grid gap-2">
-                          <Label htmlFor="edit-salesInvoiceNo">SI No.</Label>
-                          <Input id="edit-salesInvoiceNo" value={editedData.salesInvoiceNo || ''} disabled />
-                      </div>
-                       <div className="grid gap-2">
-                          <Label htmlFor="edit-customerName">Customer Name</Label>
-                          <Input id="edit-customerName" value={editedData.customerName || ''} disabled />
-                      </div>
-                       <div className="grid gap-2">
-                          <Label htmlFor="edit-accountCode">Account Code</Label>
-                          <Input id="edit-accountCode" value={editedData.accountCode || ''} disabled />
-                      </div>
-                       <div className="grid gap-2">
-                          <Label htmlFor="edit-chassisNumber">Chassis No.</Label>
-                          <Input id="edit-chassisNumber" value={editedData.chassisNumber || ''} disabled />
-                      </div>
-                       <div className="grid gap-2">
-                          <Label htmlFor="edit-engineNumber">Engine No.</Label>
-                          <Input id="edit-engineNumber" value={editedData.engineNumber || ''} disabled />
-                      </div>
-                       <div className="grid gap-2">
-                          <Label htmlFor="edit-status">Status</Label>
-                          <Input id="edit-status" value={editedData.status || ''} disabled />
-                      </div>
-                      <div className="grid gap-2">
-                          <Label htmlFor="edit-assignedLiaison">Assigned Liaison</Label>
-                          <Input id="edit-assignedLiaison" value={editedData.assignedLiaison || 'N/A'} disabled />
-                      </div>
-                       <div className="grid gap-2">
-                          <Label htmlFor="edit-csrNumber">CSR No. <span className="text-destructive">*</span></Label>
-                          <Input id="edit-csrNumber" name="csrNumber" value={editedData.csrNumber || ''} onChange={(e) => handleDataChange('csrNumber', e.target.value)} className={cn(!editedData.csrNumber && 'border-destructive')} disabled={isLiaison} />
-                      </div>
-                       <div className="grid gap-2">
-                          <Label htmlFor="edit-crNumber">CR No. <span className="text-destructive">*</span></Label>
-                          <Input id="edit-crNumber" name="crNumber" value={editedData.crNumber || ''} onChange={(e) => handleDataChange('crNumber', e.target.value)} className={cn(!editedData.crNumber && 'border-destructive')} disabled={isLiaison} />
-                      </div>
-                       <div className="grid gap-2">
-                          <Label htmlFor="edit-hpgControlNumber">HPG Control No. <span className="text-destructive">*</span></Label>
-                          <Input id="edit-hpgControlNumber" name="hpgControlNumber" value={editedData.hpgControlNumber || ''} onChange={(e) => handleDataChange('hpgControlNumber', e.target.value)} className={cn(!editedData.hpgControlNumber && 'border-destructive')} disabled={isLiaison} />
-                      </div>
-                    </div>
-                    
-                    <InsuranceControlForm 
-                        editedData={editedData}
-                        onDataChange={handleDataChange}
-                        canEdit={canEditInsuranceAndControl}
-                    />
-
-                </div>
-              </ScrollArea>
-              <DialogFooter>
-                  <Button variant="outline" onClick={handleCancelEdit}>Close</Button>
-                  {!isLiaison && <Button onClick={handleSaveEdit}>Save Changes</Button>}
-              </DialogFooter>
-          </DialogContent>
-      </Dialog>
+      {editingMotorcycle && (
+        <MotorcycleDetailsDialog
+            motorcycle={editingMotorcycle}
+            isOpen={!!editingMotorcycle}
+            onClose={() => setEditingMotorcycle(null)}
+            onSave={handleSaveEdit}
+        />
+      )}
       
        {/* CA Preview Dialog */}
       <Dialog open={isPreviewingCa} onOpenChange={setIsPreviewingCa}>
@@ -543,7 +470,3 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
     </>
   );
 }
-
-    
-
-    

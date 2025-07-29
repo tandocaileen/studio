@@ -185,6 +185,8 @@ const motorcycles: Motorcycle[] = [
     insuranceEffectiveDate: new Date('2024-01-01'),
     insuranceExpirationDate: new Date('2025-01-01'),
     assignedLiaison: 'BRYLE NIKKO HAMILI',
+    crNumber: 'CRPCX160',
+    csrNumber: 'CSRPXC160'
   },
    {
     id: '6',
@@ -579,16 +581,16 @@ const liaisonUsers: LiaisonUser[] = [
 ];
 
 const endorsements: Endorsement[] = [
-    { id: 'ENDO-20240720-001', transactionDate: addDays(today, -10), liaisonId: '8', liaisonName: 'BRYLE NIKKO HAMILI', motorcycleIds: ['4', '9'], remarks: 'Please prioritize processing for this unit.', createdBy: 'Supervisor A'},
-    { id: 'ENDO-20240722-001', transactionDate: addDays(today, -8), liaisonId: '8', liaisonName: 'BRYLE NIKKO HAMILI', motorcycleIds: ['1', '6', '7'], createdBy: 'Cashier B'},
+    { id: 'ENDO-20240720-001', transactionDate: addDays(today, -10), liaisonId: '8', liaisonName: 'BRYLE NIKKO HAMILI', motorcycleIds: ['4', '9', '6'], remarks: 'Please prioritize processing for this unit.', createdBy: 'Supervisor A'},
+    { id: 'ENDO-20240722-001', transactionDate: addDays(today, -8), liaisonId: '8', liaisonName: 'BRYLE NIKKO HAMILI', motorcycleIds: ['1', '7'], createdBy: 'Cashier B'},
     { id: 'ENDO-20240725-001', transactionDate: addDays(today, -5), liaisonId: '8', liaisonName: 'BRYLE NIKKO HAMILI', motorcycleIds: ['5', '16'], remarks: 'For registration.', createdBy: 'Supervisor A'},
     { id: 'ENDO-20240728-001', transactionDate: addDays(today, -2), liaisonId: '3', liaisonName: 'RODEL PASTRANO', motorcycleIds: ['2', '13'], remarks: 'For renewal.', createdBy: 'Cashier B'},
     { id: 'ENDO-20240728-002', transactionDate: addDays(today, -2), liaisonId: '10', liaisonName: 'RODERICK GUTIERREZ', motorcycleIds: ['10'], createdBy: 'Supervisor A'},
     { id: 'ENDO-20240729-001', transactionDate: addDays(today, -1), liaisonId: '1', liaisonName: 'JINKY JOY AGBALOG', motorcycleIds: ['11'], remarks: 'Urgent', createdBy: 'Supervisor A'},
     { id: 'ENDO-20240730-001', transactionDate: addDays(today, -1), liaisonId: '7', liaisonName: 'BENJO SEQUIERO', motorcycleIds: ['12', '3'], remarks: 'Please complete details', createdBy: 'Supervisor A'},
     { id: 'ENDO-20240730-002', transactionDate: addDays(today, -1), liaisonId: '12', liaisonName: 'ALI VIN SALEH COLINA', motorcycleIds: ['8'], remarks: 'Davao units.', createdBy: 'Supervisor A'},
-    { id: 'ENDO-20240801-001', transactionDate: new Date(), liaisonId: '15', liaisonName: 'Demo Liaison', motorcycleIds: ['14'], remarks: 'Demo endorsement for testing.', createdBy: 'Supervisor A'},
-    { id: 'ENDO-20240801-002', transactionDate: addDays(today, -1), liaisonId: '15', liaisonName: 'Demo Liaison', motorcycleIds: ['2', '5'], remarks: 'More demo units.', createdBy: 'Cashier B'},
+    { id: 'ENDO-20240801-001', transactionDate: new Date(), liaisonId: '15', liaisonName: 'Demo Liaison', motorcycleIds: ['14', '2'], remarks: 'Demo endorsement for testing.', createdBy: 'Supervisor A'},
+    { id: 'ENDO-20240801-002', transactionDate: addDays(today, -1), liaisonId: '15', liaisonName: 'Demo Liaison', motorcycleIds: ['5'], remarks: 'More demo units.', createdBy: 'Cashier B'},
     { id: 'ENDO-20240801-003', transactionDate: addDays(today, -3), liaisonId: '15', liaisonName: 'Demo Liaison', motorcycleIds: ['8', '10', '13'], remarks: 'Cross-branch units.', createdBy: 'Supervisor A'},
     { id: 'ENDO-20240801-004', transactionDate: addDays(today, -4), liaisonId: '15', liaisonName: 'Demo Liaison', motorcycleIds: ['4', '9', '12'], remarks: 'Incomplete units for follow up.', createdBy: 'Supervisor A'},
 ]
@@ -618,5 +620,6 @@ export async function getEndorsements() {
     await new Promise(resolve => setTimeout(resolve, 500));
     return JSON.parse(JSON.stringify(endorsements)).map((e: any) => ({...e, transactionDate: new Date(e.transactionDate)}));
 }
+
 
 

@@ -19,7 +19,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Motorcycle, Endorsement, MotorcycleStatus } from '@/types';
-import { ChevronDown, DollarSign } from 'lucide-react';
+import { ChevronDown, DollarSign, Eye } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Checkbox } from '../ui/checkbox';
 import { generateCashAdvance } from '@/ai/flows/cash-advance-flow';
@@ -30,6 +30,7 @@ import { format } from 'date-fns';
 import { useRouter } from 'next/navigation';
 import { ScrollArea } from '../ui/scroll-area';
 import { Label } from '../ui/label';
+import { MotorcycleDetailsDialog } from './motorcycle-details-dialog';
 
 type LiaisonEndorsementTableProps = {
   endorsements: Endorsement[];
@@ -51,6 +52,7 @@ export function LiaisonEndorsementTable({
   const [isPreviewingCa, setIsPreviewingCa] = React.useState(false);
   const [isGeneratingCa, setIsGeneratingCa] = React.useState(false);
   const [viewingEndorsement, setViewingEndorsement] = React.useState<EnrichedEndorsement | null>(null);
+  const [editingMotorcycle, setEditingMotorcycle] = React.useState<Motorcycle | null>(null);
   
   const { toast } = useToast();
   const { user } = useAuth();
@@ -141,6 +143,10 @@ export function LiaisonEndorsementTable({
     setViewingEndorsement({ endorsement, motorcycles: associatedMotorcycles });
   }
 
+  const handleViewMotorcycle = (motorcycle: Motorcycle) => {
+    setEditingMotorcycle(motorcycle);
+  };
+
 
   return (
     <>
@@ -208,6 +214,7 @@ export function LiaisonEndorsementTable({
                                         <TableHead>CR No.</TableHead>
                                         <TableHead>HPG Control</TableHead>
                                         <TableHead>Status</TableHead>
+                                        <TableHead>Action</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -228,9 +235,14 @@ export function LiaisonEndorsementTable({
                                             <TableCell>{mc.crNumber || 'N/A'}</TableCell>
                                             <TableCell>{mc.hpgControlNumber || 'N/A'}</TableCell>
                                             <TableCell>
-                                                <Badge variant={mc.status === 'Endorsed - Ready' ? 'default' : 'outline'}>
+                                                <Badge variant={mc.status === 'Endorsed - Incomplete' ? 'destructive' : mc.status === 'Endorsed - Ready' ? 'default' : 'outline'}>
                                                     {mc.status}
                                                 </Badge>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Button variant="ghost" size="icon" onClick={() => handleViewMotorcycle(mc)}>
+                                                    <Eye className="h-4 w-4" />
+                                                </Button>
                                             </TableCell>
                                         </TableRow>
                                     ))}
@@ -331,6 +343,15 @@ export function LiaisonEndorsementTable({
             </DialogFooter>
         </DialogContent>
     </Dialog>
+
+    {editingMotorcycle && (
+        <MotorcycleDetailsDialog
+            motorcycle={editingMotorcycle}
+            isOpen={!!editingMotorcycle}
+            onClose={() => setEditingMotorcycle(null)}
+            onSave={() => {}}
+        />
+    )}
   </>
   );
 }
