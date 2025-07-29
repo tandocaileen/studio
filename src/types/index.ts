@@ -9,6 +9,9 @@ export type Document = {
   expiresAt?: Date;
 };
 
+export type MotorcycleStatus = 'Incomplete' | 'Ready to Register' | 'Endorsed - Incomplete' | 'Endorsed - Ready' | 'Processing' | 'For Review';
+
+
 export type Motorcycle = {
   id: string;
   make: string;
@@ -22,7 +25,7 @@ export type Motorcycle = {
   purchaseDate: Date;
   supplier: string;
   documents: Document[];
-  status: 'Incomplete' | 'Ready to Register' | 'Endorsed - Incomplete' | 'Endorsed - Ready' | 'Processing' | 'For Review';
+  status: MotorcycleStatus;
   customerName?: string;
   cocNumber?: string;
   policyNumber?: string;

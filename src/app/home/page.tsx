@@ -9,24 +9,25 @@ import React, { useState, useEffect } from "react";
 import { AppLoader } from "@/components/layout/loader";
 import { ProtectedPage } from "@/components/auth/protected-page";
 import { useAuth } from "@/context/AuthContext";
-import { CashAdvance, Endorsement, Motorcycle } from "@/types";
+import { CashAdvance, Endorsement, Motorcycle, MotorcycleStatus } from "@/types";
 import { SummaryCards } from "@/components/dashboard/summary-cards";
 import { OverdueAdvances } from "@/components/dashboard/overdue-advances";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
+import { Filter, PlusCircle } from "lucide-react";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ReceiveLtoDocs } from "@/components/dashboard/receive-lto-docs";
 import { EndorsedIncompleteTable } from "@/components/dashboard/endorsed-incomplete-table";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
-type ViewFilter = 'unendorsed' | 'all';
+const ALL_STATUSES: MotorcycleStatus[] = ['Incomplete', 'Ready to Register', 'Endorsed - Incomplete', 'Endorsed - Ready', 'Processing', 'For Review'];
 
 function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
   const [motorcycles, setMotorcycles] = useState<Motorcycle[] | null>(null);
   const [endorsements, setEndorsements] = useState<Endorsement[] | null>(null);
-  const [viewFilter, setViewFilter] = useState<ViewFilter>('unendorsed');
+  const [statusFilters, setStatusFilters] = React.useState<string[]>(['Incomplete', 'Ready to Register']);
 
   useEffect(() => {
     getMotorcycles().then(setMotorcycles);
@@ -39,6 +40,16 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
   if (!user || !motorcycles || !endorsements) {
     return <AppLoader />;
   }
+  
+  const handleStatusFilterChange = (status: string, checked: boolean) => {
+    setStatusFilters(prev => {
+        if (checked) {
+            return [...prev, status];
+        } else {
+            return prev.filter(s => s !== status);
+        }
+    });
+  };
 
   const handleStateUpdate = (updatedOrNewMotorcycles: Motorcycle | Motorcycle[]) => {
       setMotorcycles(currentMotorcycles => {
@@ -56,12 +67,12 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
   };
   
   const filteredMotorcycles = motorcycles.filter(m => {
-    let matchesFilter = true;
-    if (viewFilter === 'unendorsed') {
-        matchesFilter = ['Incomplete', 'Ready to Register'].includes(m.status);
+    let matchesStatus = true;
+    if (statusFilters.length > 0) {
+        matchesStatus = statusFilters.includes(m.status);
     }
     
-    if (!matchesFilter) return false;
+    if (!matchesStatus) return false;
 
     if (!searchQuery) return true;
     
@@ -93,13 +104,28 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
        <div className="grid gap-4">
           <Card>
               <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                      <Tabs value={viewFilter} onValueChange={(value) => setViewFilter(value as ViewFilter)}>
-                          <TabsList>
-                              <TabsTrigger value="unendorsed">Unendorsed</TabsTrigger>
-                              <TabsTrigger value="all">View All</TabsTrigger>
-                          </TabsList>
-                      </Tabs>
+                  <div className="flex items-center justify-end mb-4">
+                     <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline">
+                                <Filter className="mr-2 h-4 w-4" />
+                                Filter by Status
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                            <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            {ALL_STATUSES.map(status => (
+                                 <DropdownMenuCheckboxItem
+                                    key={status}
+                                    checked={statusFilters.includes(status)}
+                                    onCheckedChange={(checked) => handleStatusFilterChange(status, !!checked)}
+                                >
+                                    {status}
+                                </DropdownMenuCheckboxItem>
+                            ))}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                   <MotorcycleTable motorcycles={filteredMotorcycles} onStateChange={handleStateUpdate} />
               </CardContent>
