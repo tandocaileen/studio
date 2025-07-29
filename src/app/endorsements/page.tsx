@@ -6,8 +6,8 @@ import { Header } from "@/components/layout/header";
 import { AppSidebar } from "@/components/layout/sidebar";
 import { ProtectedPage } from '@/components/auth/protected-page';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { getEndorsements } from '@/lib/data';
-import { Endorsement } from '@/types';
+import { getEndorsements, getMotorcycles } from '@/lib/data';
+import { Endorsement, Motorcycle } from '@/types';
 import { AppLoader } from '@/components/layout/loader';
 import { Button } from '@/components/ui/button';
 import { Eye, PlusCircle } from 'lucide-react';
@@ -15,26 +15,39 @@ import { useRouter } from 'next/navigation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { format } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
 
 type DateRange = '7d' | '30d' | 'all';
+type EnrichedEndorsement = {
+    endorsement: Endorsement;
+    motorcycles: Motorcycle[];
+};
 
 function EndorsementsContent() {
     const [endorsements, setEndorsements] = React.useState<Endorsement[] | null>(null);
+    const [motorcycles, setMotorcycles] = React.useState<Motorcycle[] | null>(null);
     const [liaisonFilter, setLiaisonFilter] = React.useState<string>('all');
     const [dateRange, setDateRange] = React.useState<DateRange>('7d');
-    const [loadingId, setLoadingId] = React.useState<string | null>(null);
+    const [viewingEndorsement, setViewingEndorsement] = React.useState<EnrichedEndorsement | null>(null);
     const router = useRouter();
 
     React.useEffect(() => {
         getEndorsements().then(setEndorsements);
+        getMotorcycles().then(setMotorcycles);
     }, []);
     
-    const handleViewDetails = (id: string) => {
-        setLoadingId(id);
-        router.push(`/endorsements/${id}`);
+    const handleViewDetails = (endorsement: Endorsement) => {
+        if (!motorcycles) return;
+        const associatedMotorcycles = endorsement.motorcycleIds
+            .map(mcId => motorcycles.find(m => m.id === mcId))
+            .filter(Boolean) as Motorcycle[];
+        setViewingEndorsement({ endorsement, motorcycles: associatedMotorcycles });
     }
 
-    if (!endorsements) {
+    if (!endorsements || !motorcycles) {
         return <AppLoader />;
     }
     
@@ -53,6 +66,7 @@ function EndorsementsContent() {
 
 
     return (
+        <>
         <Card>
             <CardHeader className="flex flex-row items-center justify-between">
                 <div>
@@ -108,7 +122,7 @@ function EndorsementsContent() {
                                 <TableCell>{format(new Date(e.transactionDate), 'MMMM dd, yyyy')}</TableCell>
                                 <TableCell>{e.motorcycleIds.length}</TableCell>
                                 <TableCell>
-                                    <Button variant="outline" size="sm" onClick={() => handleViewDetails(e.id)} loading={loadingId === e.id}>
+                                    <Button variant="outline" size="sm" onClick={() => handleViewDetails(e)}>
                                         <Eye className="mr-2 h-4 w-4" />
                                         View Details
                                     </Button>
@@ -124,6 +138,66 @@ function EndorsementsContent() {
                 )}
             </CardContent>
         </Card>
+        
+        <Dialog open={!!viewingEndorsement} onOpenChange={(open) => !open && setViewingEndorsement(null)}>
+            <DialogContent className="max-w-4xl">
+                <DialogHeader>
+                    <DialogTitle>Endorsement Details</DialogTitle>
+                    <DialogDescription>
+                        Details for endorsement code: <span className="font-bold text-primary">{viewingEndorsement?.endorsement.id}</span>
+                    </DialogDescription>
+                </DialogHeader>
+                {viewingEndorsement && (
+                    <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
+                            <div>
+                                <p className="font-medium text-muted-foreground">Transaction Date</p>
+                                <p className="font-semibold">{format(new Date(viewingEndorsement.endorsement.transactionDate), 'MMMM dd, yyyy')}</p>
+                            </div>
+                             <div>
+                                <p className="font-medium text-muted-foreground">Receiving Liaison</p>
+                                <p className="font-semibold">{viewingEndorsement.endorsement.liaisonName}</p>
+                            </div>
+                             <div>
+                                <p className="font-medium text-muted-foreground">Total Units</p>
+                                <p className="font-semibold">{viewingEndorsement.endorsement.motorcycleIds.length}</p>
+                            </div>
+                            <div className="lg:col-span-2">
+                                <p className="font-medium text-muted-foreground">Remarks</p>
+                                <p className="font-semibold">{viewingEndorsement.endorsement.remarks || 'N/A'}</p>
+                            </div>
+                        </div>
+                        <Label className="font-semibold mt-4">Endorsed Units</Label>
+                        <ScrollArea className="h-64 border rounded-md">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Customer Name</TableHead>
+                                        <TableHead>Plate No.</TableHead>
+                                        <TableHead>Make & Model</TableHead>
+                                        <TableHead>Status</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {viewingEndorsement.motorcycles.map(mc => (
+                                        <TableRow key={mc.id}>
+                                            <TableCell className="font-medium">{mc.customerName}</TableCell>
+                                            <TableCell>{mc.plateNumber}</TableCell>
+                                            <TableCell>{mc.make} {mc.model}</TableCell>
+                                            <TableCell><Badge variant="outline">{mc.status}</Badge></TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </ScrollArea>
+                    </div>
+                )}
+                <DialogFooter>
+                    <Button variant="outline" onClick={() => setViewingEndorsement(null)}>Close</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+        </>
     )
 }
 

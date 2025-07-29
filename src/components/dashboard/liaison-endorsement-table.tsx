@@ -28,11 +28,18 @@ import { CashAdvancePreview } from './cash-advance-preview';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog';
 import { format } from 'date-fns';
 import { useRouter } from 'next/navigation';
+import { ScrollArea } from '../ui/scroll-area';
+import { Label } from '../ui/label';
 
 type LiaisonEndorsementTableProps = {
   endorsements: Endorsement[];
   motorcycles: Motorcycle[];
   onStateChange?: (updatedMotorcycles: Motorcycle | Motorcycle[]) => void;
+};
+
+type EnrichedEndorsement = {
+    endorsement: Endorsement;
+    motorcycles: Motorcycle[];
 };
 
 export function LiaisonEndorsementTable({
@@ -43,10 +50,10 @@ export function LiaisonEndorsementTable({
   const [selectedMotorcycles, setSelectedMotorcycles] = React.useState<Motorcycle[]>([]);
   const [isPreviewingCa, setIsPreviewingCa] = React.useState(false);
   const [isGeneratingCa, setIsGeneratingCa] = React.useState(false);
+  const [viewingEndorsement, setViewingEndorsement] = React.useState<EnrichedEndorsement | null>(null);
   
   const { toast } = useToast();
   const { user } = useAuth();
-  const router = useRouter();
 
   const handleSelectMotorcycle = (motorcycle: Motorcycle, checked: boolean) => {
     setSelectedMotorcycles(prev =>
@@ -126,6 +133,13 @@ export function LiaisonEndorsementTable({
         setSelectedMotorcycles([]);
     }
   };
+  
+  const handleViewDetails = (endorsement: Endorsement) => {
+    const associatedMotorcycles = endorsement.motorcycleIds
+        .map(mcId => motorcycles.find(m => m.id === mcId))
+        .filter(Boolean) as Motorcycle[];
+    setViewingEndorsement({ endorsement, motorcycles: associatedMotorcycles });
+  }
 
 
   return (
@@ -160,7 +174,7 @@ export function LiaisonEndorsementTable({
               return (
                 <Collapsible asChild key={endorsement.id}>
                   <>
-                  <TableRow className="hover:bg-muted/50 cursor-pointer">
+                  <TableRow className="hover:bg-muted/50">
                     <TableCell>
                       <CollapsibleTrigger asChild>
                         <Button variant="ghost" size="sm">
@@ -169,8 +183,8 @@ export function LiaisonEndorsementTable({
                       </CollapsibleTrigger>
                     </TableCell>
                     <TableCell 
-                      className="font-medium text-primary hover:underline"
-                      onClick={() => router.push(`/endorsements/${endorsement.id}`)}
+                      className="font-medium text-primary hover:underline cursor-pointer"
+                      onClick={() => handleViewDetails(endorsement)}
                     >
                       {endorsement.id}
                     </TableCell>
@@ -249,7 +263,66 @@ export function LiaisonEndorsementTable({
               <Button onClick={handleGenerateCashAdvance} loading={isGeneratingCa}>Submit Request</Button>
           </DialogFooter>
       </DialogContent>
-  </Dialog>
+    </Dialog>
+    
+    <Dialog open={!!viewingEndorsement} onOpenChange={(open) => !open && setViewingEndorsement(null)}>
+        <DialogContent className="max-w-4xl">
+            <DialogHeader>
+                <DialogTitle>Endorsement Details</DialogTitle>
+                <DialogDescription>
+                    Details for endorsement code: <span className="font-bold text-primary">{viewingEndorsement?.endorsement.id}</span>
+                </DialogDescription>
+            </DialogHeader>
+            {viewingEndorsement && (
+                <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
+                        <div>
+                            <p className="font-medium text-muted-foreground">Transaction Date</p>
+                            <p className="font-semibold">{format(new Date(viewingEndorsement.endorsement.transactionDate), 'MMMM dd, yyyy')}</p>
+                        </div>
+                         <div>
+                            <p className="font-medium text-muted-foreground">Receiving Liaison</p>
+                            <p className="font-semibold">{viewingEndorsement.endorsement.liaisonName}</p>
+                        </div>
+                         <div>
+                            <p className="font-medium text-muted-foreground">Total Units</p>
+                            <p className="font-semibold">{viewingEndorsement.endorsement.motorcycleIds.length}</p>
+                        </div>
+                        <div className="lg:col-span-2">
+                            <p className="font-medium text-muted-foreground">Remarks</p>
+                            <p className="font-semibold">{viewingEndorsement.endorsement.remarks || 'N/A'}</p>
+                        </div>
+                    </div>
+                    <Label className="font-semibold mt-4">Endorsed Units</Label>
+                    <ScrollArea className="h-64 border rounded-md">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Customer Name</TableHead>
+                                    <TableHead>Plate No.</TableHead>
+                                    <TableHead>Make & Model</TableHead>
+                                    <TableHead>Status</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {viewingEndorsement.motorcycles.map(mc => (
+                                    <TableRow key={mc.id}>
+                                        <TableCell className="font-medium">{mc.customerName}</TableCell>
+                                        <TableCell>{mc.plateNumber}</TableCell>
+                                        <TableCell>{mc.make} {mc.model}</TableCell>
+                                        <TableCell><Badge variant="outline">{mc.status}</Badge></TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </ScrollArea>
+                </div>
+            )}
+            <DialogFooter>
+                <Button variant="outline" onClick={() => setViewingEndorsement(null)}>Close</Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
   </>
   );
 }
