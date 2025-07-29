@@ -29,15 +29,15 @@ const MotorcycleSchema = z.object({
     expiresAt: z.string().optional().describe('The expiration date of the document.'),
   })),
   status: z.enum(['Incomplete', 'Ready to Register', 'Registered', 'For Renewal', 'Endorsed - Ready', 'Endorsed - Incomplete', 'Processing', 'For Review']),
-  processingFee: z.number().optional(),
-  orFee: z.number().optional(),
+  processingFee: z.number().optional().describe("The processing fee for this specific motorcycle, provided in the input."),
+  orFee: z.number().optional().describe("The OR fee for this specific motorcycle, provided in the input."),
   customerName: z.string().optional(),
   assignedLiaison: z.string().optional(),
 });
 
 
 const GenerateCashAdvanceInputSchema = z.object({
-  motorcycles: z.array(MotorcycleSchema).describe("An array of motorcycle objects that need cash advances for renewal."),
+  motorcycles: z.array(MotorcycleSchema).describe("An array of motorcycle objects that need cash advances for renewal. Each object includes the specific processingFee and orFee to be used."),
   liaison: z.string().describe("The name of the liaison requesting the cash advance."),
   remarks: z.string().optional().describe("Optional remarks from the liaison."),
 });
@@ -47,7 +47,7 @@ const GenerateCashAdvanceOutputSchema = z.object({
     id: z.string().describe("A unique ID for the cash advance, e.g., 'ca-MMDDYY-001'"),
     personnel: z.string().describe("The personnel responsible for the cash advance."),
     purpose: z.string().describe('A summarized purpose for the cash advance, e.g., "Cash advance for registration of 3 units."'),
-    amount: z.number().describe('The total combined amount for all motorcycles (processingFee + orFee).'),
+    amount: z.number().describe('The total combined amount for all motorcycles. This MUST be the sum of every motorcycle\'s processingFee and orFee.'),
     date: z.string().describe("The date of the cash advance request in ISO format."),
     status: z.enum(['Processing for CV', 'CV Released', 'CV Received', 'Liquidated']),
     motorcycleIds: z.array(z.string()).describe("An array of IDs of the motorcycles included in this cash advance."),
@@ -77,15 +77,15 @@ const prompt = ai.definePrompt({
   prompt: `
     You are an AI assistant that creates a single, consolidated cash advance request for multiple vehicle registrations.
     
-    Instructions:
-    1.  Calculate the total amount by summing the 'processingFee' and 'orFee' for EVERY motorcycle in the list.
-    2.  Create a single cash advance object.
+    CRITICAL Instructions:
+    1.  You MUST calculate the total 'amount' by summing the 'processingFee' and 'orFee' for EVERY motorcycle in the input list. Do not use 0. Use the fees provided in the input objects.
+    2.  Create a single cash advance object with this calculated total amount.
     3.  The purpose should be a summary, like "Cash advance for registration of X units".
     4.  If remarks are provided, append them to the purpose. For example: "Cash advance for registration of X units. Remarks: [remarks]".
     5.  The personnel should be the requesting liaison.
     6.  Collect all motorcycle IDs into the 'motorcycleIds' array.
     7.  Set the status to 'Processing for CV' and the date to today's date in ISO format.
-    8.  Generate a unique ID for the cash advance following the format 'ca-MMDDYY-XXX'.
+    8.  Generate a unique ID for the cash advance following the format 'ca-MMDDYY-XXX', where XXX is a random 3-digit number.
 
     Motorcycles for processing:
     {{#each motorcycles}}
@@ -111,9 +111,11 @@ const generateCashAdvanceFlow = ai.defineFlow(
         throw new Error("AI failed to generate a cash advance response.");
     }
     
-    // The AI is responsible for calculating the amount. We just need to ensure the date is current.
+    const calculatedAmount = input.motorcycles.reduce((sum, mc) => sum + (mc.processingFee || 0) + (mc.orFee || 0), 0);
+
     const finalOutput = {
         ...output,
+        amount: calculatedAmount,
         date: new Date().toISOString()
     };
 
