@@ -44,7 +44,7 @@ const ITEMS_PER_PAGE = 10;
 export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTableProps) {
   const [advances, setAdvances] = React.useState(initialAdvances);
   const [previewingAdvance, setPreviewingAdvance] = React.useState<EnrichedCashAdvance | null>(null);
-  const [confirmingAdvance, setConfirmingAdvance] = React.useState<EnrichedCashAdvance | null>(null);
+  const [releasingCvAdvance, setReleasingCvAdvance] = React.useState<EnrichedCashAdvance | null>(null);
   const [cvNumber, setCvNumber] = React.useState('');
   
   const { toast } = useToast();
@@ -65,25 +65,33 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
     ));
   }
   
-  const handleConfirmCvReceipt = () => {
-    if (!confirmingAdvance || !cvNumber) {
+  const handleReleaseCv = () => {
+    if (!releasingCvAdvance || !cvNumber) {
        toast({ title: 'Error', description: 'Please enter a Check Voucher number.', variant: 'destructive' });
        return;
     }
     
-    updateAdvanceState(confirmingAdvance.cashAdvance.id, {
-        status: 'CV Received',
+    updateAdvanceState(releasingCvAdvance.cashAdvance.id, {
+        status: 'Check Voucher Released',
         checkVoucherNumber: cvNumber,
         checkVoucherReleaseDate: new Date(),
     });
 
     toast({
-      title: 'CV Receipt Confirmed!',
-      description: `CA# ${confirmingAdvance.cashAdvance.id} marked as received with CV# ${cvNumber}.`,
+      title: 'CV Released!',
+      description: `CA# ${releasingCvAdvance.cashAdvance.id} marked as released with CV# ${cvNumber}.`,
     });
 
-    setConfirmingAdvance(null);
+    setReleasingCvAdvance(null);
     setCvNumber('');
+  };
+
+  const handleConfirmCvReceipt = (caId: string) => {
+    updateAdvanceState(caId, { status: 'CV Received' });
+     toast({
+      title: 'CV Receipt Confirmed!',
+      description: `CA# ${caId} marked as received by the liaison.`,
+    });
   };
 
 
@@ -106,7 +114,9 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
     }
   }
 
-  const isCashierOrSupervisor = user?.role === 'Cashier' || user?.role === 'Store Supervisor';
+  const isCashier = user?.role === 'Cashier';
+  const isSupervisor = user?.role === 'Store Supervisor';
+  const isCashierOrSupervisor = isCashier || isSupervisor;
 
   const totalPages = Math.ceil(advances.length / ITEMS_PER_PAGE);
   const paginatedAdvances = advances.slice(
@@ -196,10 +206,17 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
                       
                       {(isCashierOrSupervisor) && <DropdownMenuSeparator />}
                       
-                      {isCashierOrSupervisor && (
-                          <DropdownMenuItem disabled={advance.cashAdvance.status !== 'Processing for CV'} onClick={() => setConfirmingAdvance(advance)}>
+                      {isCashier && (
+                          <DropdownMenuItem disabled={advance.cashAdvance.status !== 'Processing for CV'} onClick={() => setReleasingCvAdvance(advance)}>
                             <Banknote className="mr-2 h-4 w-4" />
-                            <span>Confirm CV Receipt</span>
+                            <span>Release CV</span>
+                          </DropdownMenuItem>
+                      )}
+                      
+                      {isCashierOrSupervisor && (
+                          <DropdownMenuItem disabled={advance.cashAdvance.status !== 'Check Voucher Released'} onClick={() => handleConfirmCvReceipt(advance.cashAdvance.id)}>
+                              <FileCheck className="mr-2 h-4 w-4" />
+                              <span>Confirm CV Receipt</span>
                           </DropdownMenuItem>
                       )}
 
@@ -277,12 +294,12 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
         </DialogContent>
     </Dialog>
 
-    <Dialog open={!!confirmingAdvance} onOpenChange={(open) => !open && setConfirmingAdvance(null)}>
+    <Dialog open={!!releasingCvAdvance} onOpenChange={(open) => !open && setReleasingCvAdvance(null)}>
         <DialogContent className="sm:max-w-md">
             <DialogHeader>
-                <DialogTitle>Confirm CV Receipt</DialogTitle>
+                <DialogTitle>Release Check Voucher</DialogTitle>
                 <DialogDescription>
-                    Enter the CV number for CA# {confirmingAdvance?.cashAdvance.id} to mark it as received by the liaison.
+                    Enter the CV number for CA# {releasingCvAdvance?.cashAdvance.id} to mark it as released.
                 </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
@@ -300,13 +317,11 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
                 </div>
             </div>
             <DialogFooter>
-                <Button variant="outline" onClick={() => setConfirmingAdvance(null)}>Cancel</Button>
-                <Button onClick={handleConfirmCvReceipt}>Confirm Receipt</Button>
+                <Button variant="outline" onClick={() => setReleasingCvAdvance(null)}>Cancel</Button>
+                <Button onClick={handleReleaseCv}>Release CV</Button>
             </DialogFooter>
         </DialogContent>
     </Dialog>
     </>
   );
 }
-
-    
