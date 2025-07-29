@@ -199,7 +199,7 @@ const generateInitialData = () => {
 const MC_KEY = 'lto_motorcycles';
 const CA_KEY = 'lto_cash_advances';
 const ENDO_KEY = 'lto_endorsements';
-const DATA_FLAG = 'data_generated_flag_v11'; // Increment version to force reset
+const DATA_FLAG = 'data_generated_flag_v12'; // Increment version to force reset
 
 const initializeData = () => {
     if (typeof window !== 'undefined') {
