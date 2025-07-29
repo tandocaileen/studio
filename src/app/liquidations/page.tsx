@@ -236,7 +236,7 @@ export default function LiquidationsPage() {
                                                             <TableCell className="text-right">₱{getMcAdvanceAmount(mc).toLocaleString()}</TableCell>
                                                             <TableCell>
                                                                 <Badge variant={isLiquidated ? 'default' : 'outline'}>
-                                                                    {isLiquidated ? "For Review" : "Pending"}
+                                                                    {isLiquidated ? "For Review" : mc.status}
                                                                 </Badge>
                                                             </TableCell>
                                                             <TableCell>
@@ -366,3 +366,5 @@ export default function LiquidationsPage() {
         </ProtectedPage>
     );
 }
+
+    
