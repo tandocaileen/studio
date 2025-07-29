@@ -111,13 +111,9 @@ const generateCashAdvanceFlow = ai.defineFlow(
         throw new Error("AI failed to generate a cash advance response.");
     }
     
-    const totalAmount = input.motorcycles.reduce((sum, mc) => {
-        return sum + (mc.processingFee || 0) + (mc.orFee || 0);
-    }, 0);
-
+    // The AI is responsible for calculating the amount. We just need to ensure the date is current.
     const finalOutput = {
         ...output,
-        amount: totalAmount,
         date: new Date().toISOString()
     };
 
