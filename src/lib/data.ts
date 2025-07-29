@@ -39,6 +39,8 @@ const motorcycles: Motorcycle[] = [
     policyNumber: 'POL-123',
     sarCode: 'SAR-123',
     insuranceType: 'TPL',
+    crNumber: 'CR12345',
+    csrNumber: 'CSR12345',
     liquidationDetails: {
       parentCaId: 'ca-070124-002',
       ltoOrNumber: 'LTO-OR-123',
@@ -80,6 +82,8 @@ const motorcycles: Motorcycle[] = [
     policyNumber: 'POL-456',
     sarCode: 'SAR-456',
     insuranceType: 'TPL',
+    crNumber: 'CR67890',
+    csrNumber: 'CSR67890',
   },
   {
     id: '3',
@@ -110,6 +114,8 @@ const motorcycles: Motorcycle[] = [
     policyNumber: 'POL-789',
     sarCode: 'SAR-789',
     insuranceType: 'TPL',
+    crNumber: 'CR11223',
+    csrNumber: 'CSR11223',
      liquidationDetails: {
       parentCaId: 'ca-070124-002',
       ltoOrNumber: 'LTO-OR-456',
@@ -201,6 +207,7 @@ const motorcycles: Motorcycle[] = [
     policyNumber: 'POL-AEROX',
     sarCode: 'SAR-AEROX',
     insuranceType: 'TPL',
+    csrNumber: 'CSRMIOAEROX',
   },
   {
     id: '7',
@@ -454,3 +461,5 @@ export async function getEndorsements() {
     await new Promise(resolve => setTimeout(resolve, 500));
     return JSON.parse(JSON.stringify(endorsements)).map((e: any) => ({...e, transactionDate: new Date(e.transactionDate)}));
 }
+
+    

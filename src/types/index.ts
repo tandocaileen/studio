@@ -35,6 +35,8 @@ export type Motorcycle = {
   salesInvoiceNo?: string;
   accountCode?: string;
   endorsementCode?: string;
+  csrNumber?: string;
+  crNumber?: string;
   liquidationDetails?: {
     ltoOrNumber: string;
     ltoOrAmount: number;
@@ -85,3 +87,5 @@ export type Endorsement = {
     remarks?: string;
     motorcycleIds: string[];
 }
+
+    
