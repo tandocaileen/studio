@@ -94,6 +94,8 @@ const generateData = () => {
     const endorsement1MCs = ['mc-0002', 'mc-0004']; // Both Ready
     const endorsement2MCs = ['mc-0006', 'mc-0001']; // One Ready, One Incomplete
     const endorsement3MCs = ['mc-0008', 'mc-0010', 'mc-0003', 'mc-0005']; // Two Ready, Two Incomplete
+    const endorsement4MCs = ['mc-0012', 'mc-0014']; // Both Ready
+    const endorsement5MCs = ['mc-0016', 'mc-0018']; // Both Ready
 
     const createEndorsement = (id: string, date: Date, mcIds: string[], createdBy: string) => {
         initialEndorsements.push({
@@ -112,6 +114,8 @@ const generateData = () => {
     createEndorsement('ENDO-20240801-001', addDays(today, -15), endorsement1MCs, 'Naruto Uzumaki');
     createEndorsement('ENDO-20240802-002', addDays(today, -14), endorsement2MCs, 'Sasuke Uchiha');
     createEndorsement('ENDO-20240803-003', addDays(today, -13), endorsement3MCs, 'Naruto Uzumaki');
+    createEndorsement('ENDO-20240804-004', addDays(today, -12), endorsement4MCs, 'Sasuke Uchiha');
+    createEndorsement('ENDO-20240805-005', addDays(today, -11), endorsement5MCs, 'Naruto Uzumaki');
 
     // 3. Create Cash Advances for Bryle
     const createCA = (id: string, date: Date, mcIds: string[], status: CashAdvance['status'], cvNumber?: string, cvDate?: Date) => {
@@ -156,6 +160,12 @@ const generateData = () => {
     // CA 3: Processing for CV
     const ca3_mcIds = ['mc-0008', 'mc-0010']; // From Endorsements 3
     createCA('ca-081724-003', addDays(today, -5), ca3_mcIds, 'Processing for CV');
+
+    // CA 4 & 5: CV Released
+    const ca4_mcIds = ['mc-0012', 'mc-0014']; // From Endorsement 4
+    createCA('ca-081824-004', addDays(today, -4), ca4_mcIds, 'CV Released');
+    const ca5_mcIds = ['mc-0016', 'mc-0018']; // From Endorsement 5
+    createCA('ca-081924-005', addDays(today, -3), ca5_mcIds, 'CV Released');
 };
 
 
@@ -180,7 +190,7 @@ const getInitialData = <T,>(key: string, initialData: T[], forceReset: boolean =
         // A simple check to see if the stored data structure matches the initial data.
         // This can be improved with a versioning system.
         const parsedData = JSON.parse(storedData);
-        if (Array.isArray(parsedData) && parsedData.length > 0 && typeof parsedData[0].id !== 'undefined') {
+        if (Array.isArray(parsedData)) { // Loosened check to allow for empty arrays
              return parsedData;
         }
         throw new Error("Invalid data structure");
@@ -267,5 +277,3 @@ export async function addEndorsement(newEndorsement: Endorsement) {
 export function getBranches() {
   return [...new Set(initialLiaisonUsers.map(l => l.assignedBranch))];
 }
-
-    
