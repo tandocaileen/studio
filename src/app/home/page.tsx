@@ -30,7 +30,8 @@ const ALL_STATUSES: MotorcycleStatus[] = ['Incomplete', 'Ready to Register', 'En
 function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
   const [motorcycles, setMotorcycles] = useState<Motorcycle[] | null>(null);
   const [endorsements, setEndorsements] = useState<Endorsement[] | null>(null);
-  const [statusFilters, setStatusFilters] = React.useState<string[]>(['Incomplete', 'Ready to Register']);
+  const [activeStatusFilters, setActiveStatusFilters] = React.useState<string[]>(['Incomplete', 'Ready to Register']);
+  const [tempStatusFilters, setTempStatusFilters] = React.useState<string[]>(['Incomplete', 'Ready to Register']);
 
   useEffect(() => {
     getMotorcycles().then(setMotorcycles);
@@ -44,14 +45,23 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
     return <AppLoader />;
   }
   
-  const handleStatusFilterChange = (status: string, checked: boolean) => {
-    setStatusFilters(prev => {
+  const handleCheckboxChange = (status: string, checked: boolean) => {
+    setTempStatusFilters(prev => {
         if (checked) {
             return [...prev, status];
         } else {
             return prev.filter(s => s !== status);
         }
     });
+  };
+  
+  const applyFilters = () => {
+      setActiveStatusFilters(tempStatusFilters);
+  };
+  
+  const clearFilters = () => {
+      setTempStatusFilters([]);
+      setActiveStatusFilters([]);
   };
 
   const handleStateUpdate = (updatedOrNewMotorcycles: Motorcycle | Motorcycle[]) => {
@@ -71,8 +81,8 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
   
   const filteredMotorcycles = motorcycles.filter(m => {
     let matchesStatus = true;
-    if (statusFilters.length > 0) {
-        matchesStatus = statusFilters.includes(m.status);
+    if (activeStatusFilters.length > 0) {
+        matchesStatus = activeStatusFilters.includes(m.status);
     }
     
     if (!matchesStatus) return false;
@@ -104,35 +114,52 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
           </div>
       </div>
 
-       <div className="grid gap-4">
-          <Card>
-              <CardContent className="p-6">
-                  <div className="flex items-center justify-end mb-4">
-                     <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline">
-                                <Filter className="mr-2 h-4 w-4" />
-                                Filter by Status
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                            <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            {ALL_STATUSES.map(status => (
-                                 <DropdownMenuCheckboxItem
-                                    key={status}
-                                    checked={statusFilters.includes(status)}
-                                    onCheckedChange={(checked) => handleStatusFilterChange(status, !!checked)}
-                                >
+       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
+        <div className="lg:col-span-3">
+             <Card>
+                <CardContent className="p-6">
+                    <MotorcycleTable motorcycles={filteredMotorcycles} onStateChange={handleStateUpdate} />
+                </CardContent>
+            </Card>
+        </div>
+        <div className="lg:col-span-1 lg:sticky top-20">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Filters</CardTitle>
+                    <CardDescription>Refine your view</CardDescription>
+                </CardHeader>
+                <CardContent className="grid gap-4">
+                    <div>
+                        <Label className="font-semibold text-sm">Status</Label>
+                         <Separator className="my-2" />
+                        <div className="grid gap-2">
+                           {ALL_STATUSES.map(status => (
+                            <div key={status} className="flex items-center gap-2">
+                                <Checkbox 
+                                    id={`filter-${status}`}
+                                    checked={tempStatusFilters.includes(status)}
+                                    onCheckedChange={(checked) => handleCheckboxChange(status, !!checked)}
+                                />
+                                <Label htmlFor={`filter-${status}`} className="font-normal text-sm">
                                     {status}
-                                </DropdownMenuCheckboxItem>
-                            ))}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                  <MotorcycleTable motorcycles={filteredMotorcycles} onStateChange={handleStateUpdate} />
-              </CardContent>
-          </Card>
+                                </Label>
+                            </div>
+                           ))}
+                        </div>
+                    </div>
+                </CardContent>
+                <CardFooter className="flex flex-col gap-2">
+                    <Button onClick={applyFilters} className="w-full">
+                        <Filter className="mr-2 h-4 w-4" />
+                        Apply Filters
+                    </Button>
+                    <Button onClick={clearFilters} variant="ghost" className="w-full">
+                        <RotateCcw className="mr-2 h-4 w-4" />
+                        Clear
+                    </Button>
+                </CardFooter>
+            </Card>
+        </div>
       </div>
     </>
   );
