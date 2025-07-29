@@ -35,13 +35,13 @@ export function InsuranceControlForm({ editedData, onDataChange, canEdit }: Insu
                     <Input id="edit-policyNumber" name="policyNumber" value={editedData.policyNumber || ''} onChange={(e) => onDataChange('policyNumber', e.target.value)} disabled={!canEdit} required className={cn(!editedData.policyNumber && 'border-destructive')} />
                 </div>
                 <div className="grid gap-2">
-                    <Label htmlFor="edit-insuranceType">Insurance Type</Label>
+                    <Label htmlFor="edit-insuranceType">Insurance Type <span className="text-destructive">*</span></Label>
                     <Select
                         value={editedData.insuranceType || ''}
                         onValueChange={(value) => onDataChange('insuranceType', value)}
                         disabled={!canEdit}
                     >
-                        <SelectTrigger id="edit-insuranceType">
+                        <SelectTrigger id="edit-insuranceType" className={cn(!editedData.insuranceType && 'border-destructive')}>
                             <SelectValue placeholder="Select insurance type" />
                         </SelectTrigger>
                         <SelectContent>

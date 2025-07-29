@@ -213,7 +213,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
     // Check if all required fields are filled to auto-update status
     const requiredFields: (keyof Motorcycle)[] = [
         'csrNumber', 'crNumber', 'hpgControlNumber', 
-        'cocNumber', 'policyNumber', 'insuranceEffectiveDate', 'insuranceExpirationDate', 'sarCode'
+        'cocNumber', 'policyNumber', 'insuranceType', 'insuranceEffectiveDate', 'insuranceExpirationDate', 'sarCode'
     ];
     const allFieldsFilled = requiredFields.every(field => !!updatedMotorcycle[field]);
 
