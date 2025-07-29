@@ -83,12 +83,6 @@ function CreateEndorsementContent() {
             setRemarks('');
             setIsSummaryOpen(false);
             setIsLoading(false);
-
-            const trigger = document.getElementById('receiving-liaison-trigger');
-            if (trigger) {
-                // @ts-ignore
-                trigger.childNodes[0].textContent = 'Select a liaison';
-            }
         }, 1000);
     }
 
