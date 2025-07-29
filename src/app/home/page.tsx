@@ -19,7 +19,7 @@ import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, Dialog
 import { ReceiveLtoDocs } from "@/components/dashboard/receive-lto-docs";
 import { EndorsedIncompleteTable } from "@/components/dashboard/endorsed-incomplete-table";
 import { cn } from "@/lib/utils";
-import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -229,8 +229,8 @@ function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
     const [activeEndorserFilters, setActiveEndorserFilters] = useState<string[]>([]);
     const [tempEndorserFilters, setTempEndorserFilters] = useState<string[]>([]);
 
-    const [activeDateRange, setActiveDateRange] = useState<DateRange>('7d');
-    const [tempDateRange, setTempDateRange] = useState<DateRange>('7d');
+    const [activeDateRange, setActiveDateRange] = useState<DateRange>('all');
+    const [tempDateRange, setTempDateRange] = useState<DateRange>('all');
     
     const [isFilterPanelVisible, setIsFilterPanelVisible] = useState(true);
 
@@ -477,3 +477,5 @@ export default function DashboardPage() {
     </ProtectedPage>
   );
 }
+
+    
