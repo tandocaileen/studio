@@ -63,8 +63,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }, []);
 
     const login = (userData: User) => {
-        const userString = JSON.stringify(userData);
-        setUser(userData);
+        let finalUserData = { ...userData };
+        if (userData.role === 'Store Supervisor') {
+            finalUserData.name = 'Naruto Uzumaki';
+        } else if (userData.role === 'Cashier') {
+            finalUserData.name = 'Sasuke Uchiha';
+        }
+
+        const userString = JSON.stringify(finalUserData);
+        setUser(finalUserData);
         localStorage.setItem('ltoportal-user', userString);
         // Set a session cookie for the middleware to read
         setCookie('ltoportal-user', userString, 1);
