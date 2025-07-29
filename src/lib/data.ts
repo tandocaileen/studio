@@ -119,7 +119,9 @@ const initialMotorcycles: Motorcycle[] = [
 const initialCashAdvances: CashAdvance[] = [];
 
 const initialLiaisonUsers: LiaisonUser[] = [
-    SINGLE_LIAISON_USER
+    { id: 'user-001', name: 'Bryle Nikko Hamili', assignedBranch: 'CEBU', processingFee: 1500, orFee: 1000 },
+    { id: 'user-002', name: 'Demo Cashier', assignedBranch: 'CEBU', processingFee: 0, orFee: 0 },
+    { id: 'user-003', name: 'Demo Store Supervisor', assignedBranch: 'CEBU', processingFee: 0, orFee: 0 },
 ];
 
 const initialEndorsements: Endorsement[] = [];

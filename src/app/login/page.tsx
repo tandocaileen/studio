@@ -35,7 +35,11 @@ export default function LoginPage() {
         setIsLoading(true);
         // Simulate API call
         setTimeout(() => {
-            login({ email, name: `Demo ${role}`, role });
+            let name = `Demo ${role}`;
+            if (role === 'Liaison') {
+                name = 'Bryle Nikko Hamili';
+            }
+            login({ email, name, role });
             // The useEffect will handle the redirect
             setIsLoading(false);
         }, 1000);
