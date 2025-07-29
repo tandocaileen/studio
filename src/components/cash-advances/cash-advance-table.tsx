@@ -44,6 +44,9 @@ const ITEMS_PER_PAGE = 10;
 export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTableProps) {
   const [advances, setAdvances] = React.useState(initialAdvances);
   const [previewingAdvance, setPreviewingAdvance] = React.useState<EnrichedCashAdvance | null>(null);
+  const [releasingAdvance, setReleasingAdvance] = React.useState<EnrichedCashAdvance | null>(null);
+  const [cvNumber, setCvNumber] = React.useState('');
+  
   const { toast } = useToast();
   const documentRef = React.useRef(null);
   const { user } = useAuth();
@@ -54,6 +57,13 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
     setCurrentPage(1);
   }, [initialAdvances]);
 
+  const updateAdvanceState = (caId: string, updates: Partial<CashAdvance>) => {
+    setAdvances(prev => prev.map(item => 
+      item.cashAdvance.id === caId 
+        ? { ...item, cashAdvance: { ...item.cashAdvance, ...updates } }
+        : item
+    ));
+  }
 
   const handleAction = (message: string) => {
     toast({
@@ -61,6 +71,28 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
       description: message,
     })
   }
+  
+  const handleReleaseCv = () => {
+    if (!releasingAdvance || !cvNumber) {
+       toast({ title: 'Error', description: 'Please enter a Check Voucher number.', variant: 'destructive' });
+       return;
+    }
+    
+    updateAdvanceState(releasingAdvance.cashAdvance.id, {
+        status: 'Check Voucher Released',
+        checkVoucherNumber: cvNumber,
+        checkVoucherReleaseDate: new Date(),
+    });
+
+    toast({
+      title: 'Check Voucher Released!',
+      description: `CV# ${cvNumber} has been released for CA# ${releasingAdvance.cashAdvance.id}.`,
+    });
+
+    setReleasingAdvance(null);
+    setCvNumber('');
+  };
+
 
   const handleDownload = async () => {
     if (!previewingAdvance || !documentRef.current) {
@@ -172,8 +204,8 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
                       
                       {(isCashierOrSupervisor) && <DropdownMenuSeparator />}
                       
-                      {isCashier && (
-                          <DropdownMenuItem disabled={advance.cashAdvance.status !== 'Processing for CV'} onClick={() => handleAction(`CV released for ${advance.cashAdvance.personnel}.`)}>
+                      {isCashierOrSupervisor && (
+                          <DropdownMenuItem disabled={advance.cashAdvance.status !== 'Processing for CV'} onClick={() => setReleasingAdvance(advance)}>
                             <FileCheck className="mr-2 h-4 w-4" />
                             <span>Release CV</span>
                           </DropdownMenuItem>
@@ -260,6 +292,34 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
         </DialogContent>
     </Dialog>
 
+    <Dialog open={!!releasingAdvance} onOpenChange={(open) => !open && setReleasingAdvance(null)}>
+        <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+                <DialogTitle>Release Check Voucher</DialogTitle>
+                <DialogDescription>
+                    Enter the CV number for CA# {releasingAdvance?.cashAdvance.id} to mark it as released.
+                </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="cv-number" className="text-right">
+                        CV Number
+                    </Label>
+                    <Input 
+                        id="cv-number" 
+                        value={cvNumber}
+                        onChange={(e) => setCvNumber(e.target.value)}
+                        className="col-span-3"
+                        placeholder="e.g., CV-2024-08-001"
+                    />
+                </div>
+            </div>
+            <DialogFooter>
+                <Button variant="outline" onClick={() => setReleasingAdvance(null)}>Cancel</Button>
+                <Button onClick={handleReleaseCv}>Release</Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
     </>
   );
 }
