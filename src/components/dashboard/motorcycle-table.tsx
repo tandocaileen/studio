@@ -22,7 +22,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Motorcycle, Document, DocumentType } from '@/types';
-import { MoreHorizontal, PlusCircle, FileText, Truck, Wrench, DollarSign, ExternalLink, Save, XCircle, Trash2, CalendarIcon } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, FileText, Truck, Wrench, DollarSign, ExternalLink, Save, XCircle, Trash2, CalendarIcon, ArrowUpDown } from 'lucide-react';
 import { getBranches, getLiaisons } from '@/lib/data';
 import {
   Dialog,
@@ -52,6 +52,8 @@ type MotorcycleTableProps = {
   onStateChange?: (updatedMotorcycles: Motorcycle | Motorcycle[]) => void;
 };
 
+type SortableColumn = keyof Motorcycle;
+
 const ITEMS_PER_PAGE = 10;
 
 export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange }: MotorcycleTableProps) {
@@ -63,6 +65,8 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
   const [isGeneratingCa, setIsGeneratingCa] = React.useState(false);
   const [liaisons, setLiaisons] = React.useState<any[]>([]);
   const [currentPage, setCurrentPage] = React.useState(1);
+  const [sortColumn, setSortColumn] = React.useState<SortableColumn>('id');
+  const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc'>('asc');
   
   React.useEffect(() => {
     setMotorcycles(initialMotorcycles);
@@ -220,7 +224,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
     setMotorcycles(updatedMotorcycles);
     if (onStateChange) onStateChange(updatedMotorcycles.find(m => m.id === updatedMotorcycle.id) || updatedMotorcycle);
 
-    handleAction(`Motorcycle ${updatedMotorcycle.plateNumber} details updated.`);
+    handleAction(`Motorcycle details updated.`);
     handleCancelEdit();
   };
 
@@ -228,10 +232,40 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
     setEditedData(prev => ({ ...prev, [fieldName]: value }));
   };
   
+  const handleSort = (column: SortableColumn) => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortColumn(column);
+      setSortDirection('asc');
+    }
+    setCurrentPage(1);
+  };
+  
   const isGenerateCaDisabled = selectedMotorcycles.length === 0 || selectedMotorcycles.some(m => m.status !== 'Endorsed - Ready');
 
-  const totalPages = Math.ceil(motorcycles.length / ITEMS_PER_PAGE);
-  const paginatedMotorcycles = motorcycles.slice(
+  const sortedMotorcycles = React.useMemo(() => {
+    return [...motorcycles].sort((a, b) => {
+      const aVal = a[sortColumn];
+      const bVal = b[sortColumn];
+      
+      if (aVal === undefined || aVal === null) return 1;
+      if (bVal === undefined || bVal === null) return -1;
+      
+      let comparison = 0;
+      if (typeof aVal === 'string' && typeof bVal === 'string') {
+        comparison = aVal.localeCompare(bVal);
+      } else if (typeof aVal === 'number' && typeof bVal === 'number') {
+        comparison = aVal - bVal;
+      }
+
+      return sortDirection === 'asc' ? comparison : -comparison;
+    });
+  }, [motorcycles, sortColumn, sortDirection]);
+  
+
+  const totalPages = Math.ceil(sortedMotorcycles.length / ITEMS_PER_PAGE);
+  const paginatedMotorcycles = sortedMotorcycles.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
@@ -242,6 +276,14 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
       .filter(pm => pm.status === 'Endorsed - Ready')
       .every(pm => selectedMotorcycles.some(sm => sm.id === pm.id));
 
+  const SortableHeader = ({ column, children }: { column: SortableColumn, children: React.ReactNode }) => (
+    <TableHead onClick={() => handleSort(column)} className="cursor-pointer">
+      <div className="flex items-center gap-2">
+        {children}
+        {sortColumn === column && <ArrowUpDown className="h-4 w-4" />}
+      </div>
+    </TableHead>
+  );
 
   return (
     <>
@@ -280,12 +322,12 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                   </TableHead>
                 )}
                  {!isLiaison && (isSupervisor || isCashier) && <TableHead className="w-[40px]"></TableHead>}
-                <TableHead>Sale ID</TableHead>
-                <TableHead>SI No.</TableHead>
-                <TableHead>Customer Name</TableHead>
-                <TableHead>CSR No.</TableHead>
-                <TableHead>CR No.</TableHead>
-                <TableHead>Status</TableHead>
+                <SortableHeader column="id">Sale ID</SortableHeader>
+                <SortableHeader column="salesInvoiceNo">SI No.</SortableHeader>
+                <SortableHeader column="customerName">Customer Name</SortableHeader>
+                <SortableHeader column="csrNumber">CSR No.</SortableHeader>
+                <SortableHeader column="crNumber">CR No.</SortableHeader>
+                <SortableHeader column="status">Status</SortableHeader>
                 <TableHead className="w-[100px]">
                   <span className="sr-only">Actions</span>
                 </TableHead>
@@ -447,3 +489,5 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
     </>
   );
 }
+
+    
