@@ -28,9 +28,9 @@ const initialLiaisonUsers: LiaisonUser[] = [
 
 
 const generateInitialData = () => {
-    const motorcycles: Motorcycle[] = [];
-    const endorsements: Endorsement[] = [];
-    const cashAdvances: CashAdvance[] = [];
+    let motorcycles: Motorcycle[] = [];
+    let endorsements: Endorsement[] = [];
+    let cashAdvances: CashAdvance[] = [];
 
     const DEMO_LIAISON = initialLiaisonUsers.find(l => l.name === 'BRYLE NIKKO HAMILI')!;
     const SUPERVISOR_NAME = 'Naruto Uzumaki';
@@ -63,7 +63,7 @@ const generateInitialData = () => {
             purchaseDate: purchaseDate,
             supplier: 'Prestige Honda',
             documents: [],
-            status: 'Incomplete', // Start all as incomplete, will be updated by logic
+            status: 'Incomplete', 
             customerName: customers[i - 1],
             salesInvoiceNo: `SI-${Math.floor(Math.random() * 90000) + 10000}`,
             accountCode: `AC-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
@@ -87,7 +87,7 @@ const generateInitialData = () => {
     const createEndorsement = (id: string, date: Date, mcIds: string[], createdBy: string) => {
         endorsements.push({
             id, transactionDate: date, liaisonId: DEMO_LIAISON.id,
-            liaisonName: DEMO_LIAISON.name, motorcycleIds: mcIds, createdBy, remarks: "Please process"
+            liaisonName: DEMO_LIAISON.name, motorcycleIds: mcIds, createdBy, remarks: "Please process ASAP"
         });
         mcIds.forEach(mcId => {
             const mc = motorcycles.find(m => m.id === mcId);
@@ -97,20 +97,20 @@ const generateInitialData = () => {
             }
         });
     };
-
+    
+    // --- Endorsements ---
     createEndorsement('ENDO-20240801-001', addDays(today, -15), ['mc-0002', 'mc-0004'], SUPERVISOR_NAME);
     createEndorsement('ENDO-20240802-002', addDays(today, -14), ['mc-0006', 'mc-0001'], CASHIER_NAME);
     createEndorsement('ENDO-20240803-003', addDays(today, -13), ['mc-0008', 'mc-0010', 'mc-0003', 'mc-0005'], SUPERVISOR_NAME);
+    createEndorsement('ENDO-20240804-004', addDays(today, -12), ['mc-0012', 'mc-0014'], CASHIER_NAME);
+    createEndorsement('ENDO-20240805-005', addDays(today, -11), ['mc-0016', 'mc-0018'], SUPERVISOR_NAME);
+
 
     const createCA = (id: string, date: Date, mcIds: string[], status: CashAdvance['status'], cvNumber?: string, cvDate?: Date) => {
         const liaison = initialLiaisonUsers.find(l => l.name === DEMO_LIAISON.name);
         if (!liaison) return;
         const amount = mcIds.reduce((sum, mcId) => {
-            const mc = motorcycles.find(m => m.id === mcId);
-            if (mc) {
-                return sum + (liaison.processingFee || 0) + (liaison.orFee || 0);
-            }
-            return sum;
+             return sum + (liaison.processingFee || 0) + (liaison.orFee || 0);
         }, 0);
         
         const ca: CashAdvance = {
@@ -123,12 +123,12 @@ const generateInitialData = () => {
         cashAdvances.push(ca);
         mcIds.forEach(mcId => {
             const mc = motorcycles.find(m => m.id === mcId);
-            if (mc) {
-                mc.status = 'Processing';
-            }
+            if (mc) mc.status = 'Processing';
         });
     };
     
+    // --- Cash Advances with Various Statuses ---
+
     // CA 1: Liquidated
     const ca1_mcIds = ['mc-0002', 'mc-0004'];
     createCA('ca-081524-001', addDays(today, -10), ca1_mcIds, 'Liquidated', 'CV-2024-08-001', addDays(today, -9));
@@ -154,8 +154,6 @@ const generateInitialData = () => {
     createCA('ca-081724-003', addDays(today, -5), ['mc-0008', 'mc-0010'], 'Processing for CV');
 
     // CA 4 & 5 for "CV Released" Status
-    createEndorsement('ENDO-20240804-004', addDays(today, -12), ['mc-0012', 'mc-0014'], CASHIER_NAME);
-    createEndorsement('ENDO-20240805-005', addDays(today, -11), ['mc-0016', 'mc-0018'], SUPERVISOR_NAME);
     createCA('ca-081824-004', addDays(today, -4), ['mc-0012', 'mc-0014'], 'CV Released');
     createCA('ca-081924-005', addDays(today, -3), ['mc-0016', 'mc-0018'], 'CV Released');
 
@@ -166,26 +164,46 @@ const generateInitialData = () => {
 const MC_KEY = 'lto_motorcycles';
 const CA_KEY = 'lto_cash_advances';
 const ENDO_KEY = 'lto_endorsements';
+const DATA_FLAG = 'data_generated_flag_v2'; // Increment version to force reset
 
-const getInitialData = <T,>(key: string, initialData: T[]): T[] => {
+const initializeData = () => {
+    if (typeof window !== 'undefined') {
+        const needsReset = localStorage.getItem(DATA_FLAG) !== 'true' || window.location.search.includes('reset_data=true');
+        
+        if (needsReset) {
+            console.log("Generating fresh, consistent data set...");
+            const { motorcycles, endorsements, cashAdvances } = generateInitialData();
+            
+            localStorage.setItem(MC_KEY, JSON.stringify(motorcycles));
+            localStorage.setItem(ENDO_KEY, JSON.stringify(endorsements));
+            localStorage.setItem(CA_KEY, JSON.stringify(cashAdvances));
+            localStorage.setItem(DATA_FLAG, 'true');
+
+            if (window.location.search.includes('reset_data=true')) {
+                const url = new URL(window.location.href);
+                url.searchParams.delete('reset_data');
+                window.history.replaceState({}, '', url.toString());
+                // Force a reload to ensure all components re-fetch the new data
+                window.location.reload();
+            }
+        }
+    }
+};
+
+// Run initialization logic when the module is loaded
+initializeData();
+
+const getData = <T,>(key: string): T[] => {
     if (typeof window === 'undefined') {
-        return initialData;
+        // Return empty array for server-side rendering
+        return [];
     }
     const storedData = localStorage.getItem(key);
-    if (!storedData) {
-        localStorage.setItem(key, JSON.stringify(initialData));
-        return initialData;
-    }
     try {
-        const parsedData = JSON.parse(storedData);
-        if (Array.isArray(parsedData)) {
-             return parsedData;
-        }
-        throw new Error("Invalid data structure");
-    } catch (error) {
-        console.warn(`Could not parse ${key} from localStorage, falling back to initial data.`, error);
-        localStorage.setItem(key, JSON.stringify(initialData));
-        return initialData;
+        return storedData ? JSON.parse(storedData) : [];
+    } catch (e) {
+        console.error(`Failed to parse data for key ${key}, returning empty array.`, e);
+        return [];
     }
 };
 
@@ -198,46 +216,12 @@ const setData = <T,>(key: string, data: T[]) => {
     }
 }
 
-const ensureDataGenerated = () => {
-    if (typeof window !== 'undefined' && !localStorage.getItem('data_generated_flag')) {
-        console.log("Generating fresh data set...");
-        const { motorcycles, endorsements, cashAdvances } = generateInitialData();
-        setData(MC_KEY, motorcycles);
-        setData(ENDO_KEY, endorsements);
-        setData(CA_KEY, cashAdvances);
-        localStorage.setItem('data_generated_flag', 'true');
-        // A small delay to allow localStorage to settle before potential reload.
-        if (window.location.search.includes('reset_data=true')) {
-            setTimeout(() => {
-                // Remove the query param to prevent re-triggering on next refresh
-                const url = new URL(window.location.href);
-                url.searchParams.delete('reset_data');
-                window.history.replaceState({}, '', url.toString());
-                window.location.reload();
-            }, 100);
-        }
-    }
-};
-
-// On first load of this module, check if data needs to be generated.
-if (typeof window !== 'undefined') {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('reset_data')) {
-        localStorage.removeItem('data_generated_flag');
-    }
-    ensureDataGenerated();
-}
-
-
 // --- Motorcycles ---
 export async function getMotorcycles(): Promise<Motorcycle[]> {
-    await new Promise(resolve => setTimeout(resolve, 50));
-    return getInitialData(MC_KEY, []);
+    return Promise.resolve(getData<Motorcycle>(MC_KEY));
 }
 
 export async function updateMotorcycles(updatedMotorcycles: Motorcycle | Motorcycle[]) {
-    await new Promise(resolve => setTimeout(resolve, 50));
-    
     const allMotorcycles = await getMotorcycles();
     const motorcyclesMap = new Map(allMotorcycles.map((m: Motorcycle) => [m.id, m]));
     
@@ -247,21 +231,17 @@ export async function updateMotorcycles(updatedMotorcycles: Motorcycle | Motorcy
     setData(MC_KEY, Array.from(motorcyclesMap.values()));
 }
 
-
 // --- Cash Advances ---
 export async function getCashAdvances(): Promise<CashAdvance[]> {
-    await new Promise(resolve => setTimeout(resolve, 50));
-    return getInitialData(CA_KEY, []);
+    return Promise.resolve(getData<CashAdvance>(CA_KEY));
 }
 
 export async function addCashAdvance(newAdvance: CashAdvance) {
-    await new Promise(resolve => setTimeout(resolve, 50));
     const allCAs = await getCashAdvances();
     setData(CA_KEY, [...allCAs, newAdvance]);
 }
 
 export async function updateCashAdvances(updatedCAs: CashAdvance | CashAdvance[]) {
-    await new Promise(resolve => setTimeout(resolve, 50));
     const allCAs = await getCashAdvances();
     const caMap = new Map(allCAs.map((ca: CashAdvance) => [ca.id, ca]));
 
@@ -271,22 +251,18 @@ export async function updateCashAdvances(updatedCAs: CashAdvance | CashAdvance[]
     setData(CA_KEY, Array.from(caMap.values()));
 }
 
-
 // --- Liaisons ---
 export async function getLiaisons(): Promise<LiaisonUser[]> {
-    await new Promise(resolve => setTimeout(resolve, 50));
-    return initialLiaisonUsers;
+    // This data is static and doesn't need to be in local storage
+    return Promise.resolve(initialLiaisonUsers);
 }
-
 
 // --- Endorsements ---
 export async function getEndorsements(): Promise<Endorsement[]> {
-    await new Promise(resolve => setTimeout(resolve, 50));
-    return getInitialData(ENDO_KEY, []);
+    return Promise.resolve(getData<Endorsement>(ENDO_KEY));
 }
 
 export async function addEndorsement(newEndorsement: Endorsement) {
-    await new Promise(resolve => setTimeout(resolve, 50));
     const allEndorsements = await getEndorsements();
     setData(ENDO_KEY, [...allEndorsements, newEndorsement]);
 }
