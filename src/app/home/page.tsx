@@ -178,7 +178,7 @@ function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
             getMotorcycles(),
             getEndorsements()
         ]).then(([motorcycleData, endorsementData]) => {
-            const userEndorsements = endorsementData.filter(e => e.liaisonId === user.name); // NOTE: Using name for now
+            const userEndorsements = endorsementData.filter(e => e.liaisonName === user.name);
             const userMotorcycleIds = new Set(userEndorsements.flatMap(e => e.motorcycleIds));
             const userMotorcycles = motorcycleData.filter(m => userMotorcycleIds.has(m.id));
 
