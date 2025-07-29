@@ -26,7 +26,7 @@ export function LiaisonTable() {
   const [currentPage, setCurrentPage] = React.useState(1);
 
   React.useEffect(() => {
-      getLiaisons().then(liaisons => setLiaisons(liaisons.filter(l => l.name !== 'Demo Liaison')));
+      getLiaisons().then(liaisons => setLiaisons(liaisons));
       getLiaisons().then(liaisons => {
         const uniqueBranches = [...new Set(liaisons.map(l => l.assignedBranch))];
         setBranches(uniqueBranches);
@@ -115,4 +115,3 @@ export function LiaisonTable() {
     </>
   );
 }
-

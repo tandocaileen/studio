@@ -244,7 +244,8 @@ export function LiaisonEndorsementTable({
 
 
               return (
-                <React.Fragment key={endorsement.id}>
+                <Collapsible asChild key={endorsement.id}>
+                  <>
                   <TableRow className="hover:bg-muted/50">
                     <TableCell>
                       <CollapsibleTrigger asChild>
@@ -319,7 +320,8 @@ export function LiaisonEndorsementTable({
                       </TableCell>
                     </tr>
                   </CollapsibleContent>
-                </React.Fragment>
+                  </>
+                </Collapsible>
               );
             })}
           </TableBody>
@@ -429,5 +431,3 @@ export function LiaisonEndorsementTable({
   </>
   );
 }
-
-    
