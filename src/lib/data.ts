@@ -48,8 +48,8 @@ const generateInitialData = () => {
     ];
     const branches = [...new Set(initialLiaisonUsers.map(l => l.assignedBranch))];
 
-    // Create a pool of 30 motorcycles
-    for (let i = 1; i <= 30; i++) {
+    // Create a pool of 50 motorcycles to support more CAs
+    for (let i = 1; i <= 50; i++) {
         const purchaseDate = addDays(today, -(i * 5 + 10)); // Push dates further back
         const mc: Motorcycle = {
             id: `mc-${i.toString().padStart(4, '0')}`,
@@ -65,7 +65,7 @@ const generateInitialData = () => {
             supplier: 'Prestige Honda',
             documents: [],
             status: 'Incomplete', // Default status
-            customerName: customers[i - 1],
+            customerName: customers[i % customers.length],
             salesInvoiceNo: `SI-${Math.floor(Math.random() * 90000) + 10000}`,
             accountCode: `AC-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
         };
@@ -127,7 +127,8 @@ const generateInitialData = () => {
         mc2.assignedLiaison = DEMO_LIAISON.name;
         mc2.endorsementCode = endorsement.id;
     }
-
+    
+    // -- Existing CAs --
     // Create a CA for one of the recent endorsements
     const endorsementForCA1 = endorsements.find(e => e.id === 'ENDO-2407-001')!;
     const mcsForCA1 = endorsementForCA1.motorcycleIds.map(id => motorcycles.find(m => m.id === id)!).filter(mc => mc.status === 'Endorsed - Ready');
@@ -162,7 +163,6 @@ const generateInitialData = () => {
             personnelBranch: DEMO_LIAISON.assignedBranch,
             purpose: `Cash advance for registration of ${mcsForLiquidation.length} units.`,
             amount: mcsForLiquidation.reduce((sum, mc) => {
-                // Ensure details are filled to avoid NaN
                 const filledMc = mc.cocNumber ? mc : fillOutDetails(mc);
                 return sum + (DEMO_LIAISON.processingFee + DEMO_LIAISON.orFee);
             }, 0),
@@ -191,6 +191,167 @@ const generateInitialData = () => {
         });
     }
 
+    // --- ADD 10 MORE CASH ADVANCES ---
+    const extraMotorcycles = motorcycles.slice(30); // Use remaining motorcycles
+    const otherLiaisons = initialLiaisonUsers.filter(l => l.id !== DEMO_LIAISON.id);
+
+    // CA #3: For Bryle, status 'Processing for CV'
+    cashAdvances.push({
+        id: 'ca-072524-003',
+        personnel: DEMO_LIAISON.name,
+        personnelBranch: DEMO_LIAISON.assignedBranch,
+        purpose: 'CA for Honda Click',
+        amount: DEMO_LIAISON.processingFee + DEMO_LIAISON.orFee,
+        date: addDays(today, -2),
+        status: 'Processing for CV',
+        motorcycleIds: [extraMotorcycles[0].id],
+    });
+    extraMotorcycles[0].status = 'Processing';
+
+    // CA #4: For Bryle, status 'CV Released'
+    cashAdvances.push({
+        id: 'ca-072524-004',
+        personnel: DEMO_LIAISON.name,
+        personnelBranch: DEMO_LIAISON.assignedBranch,
+        purpose: 'CA for Yamaha NMAX',
+        amount: DEMO_LIAISON.processingFee + DEMO_LIAISON.orFee,
+        date: addDays(today, -4),
+        status: 'CV Released',
+        motorcycleIds: [extraMotorcycles[1].id],
+    });
+    extraMotorcycles[1].status = 'Processing';
+
+    // CA #5: For Jinky, status 'Processing for CV'
+    const liaisonJinky = otherLiaisons[0];
+    cashAdvances.push({
+        id: 'ca-072524-005',
+        personnel: liaisonJinky.name,
+        personnelBranch: liaisonJinky.assignedBranch,
+        purpose: 'Registration for 2 units',
+        amount: (liaisonJinky.processingFee + liaisonJinky.orFee) * 2,
+        date: addDays(today, -3),
+        status: 'Processing for CV',
+        motorcycleIds: [extraMotorcycles[2].id, extraMotorcycles[3].id],
+    });
+    extraMotorcycles[2].status = 'Processing';
+    extraMotorcycles[3].status = 'Processing';
+
+    // CA #6: For Rodel, status 'CV Released'
+    const liaisonRodel = otherLiaisons[2];
+    cashAdvances.push({
+        id: 'ca-072424-006',
+        personnel: liaisonRodel.name,
+        personnelBranch: liaisonRodel.assignedBranch,
+        purpose: 'CA for Suzuki Raider',
+        amount: liaisonRodel.processingFee + liaisonRodel.orFee,
+        date: addDays(today, -5),
+        status: 'CV Released',
+        motorcycleIds: [extraMotorcycles[4].id],
+    });
+    extraMotorcycles[4].status = 'Processing';
+
+    // CA #7: For Benjo, status 'CV Received'
+    const liaisonBenjo = otherLiaisons[6];
+    cashAdvances.push({
+        id: 'ca-072324-007',
+        personnel: liaisonBenjo.name,
+        personnelBranch: liaisonBenjo.assignedBranch,
+        purpose: 'Urgent Registration',
+        amount: liaisonBenjo.processingFee + liaisonBenjo.orFee,
+        date: addDays(today, -8),
+        status: 'CV Received',
+        checkVoucherNumber: 'CV-2024-07-021',
+        checkVoucherReleaseDate: addDays(today, -7),
+        motorcycleIds: [extraMotorcycles[5].id],
+    });
+    extraMotorcycles[5].status = 'Processing';
+    
+    // CA #8: For Allan, status 'Liquidated'
+    const liaisonAllan = otherLiaisons[8];
+    const liquidatedMC = extraMotorcycles[6];
+    cashAdvances.push({
+        id: 'ca-071024-008',
+        personnel: liaisonAllan.name,
+        personnelBranch: liaisonAllan.assignedBranch,
+        purpose: 'CA from last week',
+        amount: liaisonAllan.processingFee + liaisonAllan.orFee,
+        date: addDays(today, -20),
+        status: 'Liquidated',
+        checkVoucherNumber: 'CV-2024-07-001',
+        checkVoucherReleaseDate: addDays(today, -19),
+        motorcycleIds: [liquidatedMC.id],
+    });
+    liquidatedMC.status = 'For Review';
+    liquidatedMC.liquidationDetails = {
+        parentCaId: 'ca-071024-008',
+        ltoOrNumber: `LTO-OR-${Math.floor(Math.random() * 90000)}`,
+        ltoOrAmount: liaisonAllan.orFee,
+        ltoProcessFee: liaisonAllan.processingFee,
+        totalLiquidation: liaisonAllan.orFee + liaisonAllan.processingFee,
+        shortageOverage: 0,
+        remarks: 'Sample liquidation',
+        liquidatedBy: liaisonAllan.name,
+        liquidationDate: addDays(today, -15)
+    };
+
+    // CA #9: For Bryle, another 'Processing for CV'
+    cashAdvances.push({
+        id: 'ca-072624-009',
+        personnel: DEMO_LIAISON.name,
+        personnelBranch: DEMO_LIAISON.assignedBranch,
+        purpose: 'CA for new batch',
+        amount: (DEMO_LIAISON.processingFee + DEMO_LIAISON.orFee) * 2,
+        date: addDays(today, -1),
+        status: 'Processing for CV',
+        motorcycleIds: [extraMotorcycles[7].id, extraMotorcycles[8].id],
+    });
+    extraMotorcycles[7].status = 'Processing';
+    extraMotorcycles[8].status = 'Processing';
+
+    // CA #10: For Lynlyn, status 'CV Released'
+    const liaisonLynlyn = otherLiaisons[4];
+    cashAdvances.push({
+        id: 'ca-072224-010',
+        personnel: liaisonLynlyn.name,
+        personnelBranch: liaisonLynlyn.assignedBranch,
+        purpose: 'Registration CA',
+        amount: liaisonLynlyn.processingFee + liaisonLynlyn.orFee,
+        date: addDays(today, -10),
+        status: 'CV Released',
+        motorcycleIds: [extraMotorcycles[9].id],
+    });
+    extraMotorcycles[9].status = 'Processing';
+
+    // CA #11: For Rushel, status 'CV Received' but overdue
+    const liaisonRushel = otherLiaisons[5];
+    cashAdvances.push({
+        id: 'ca-071824-011',
+        personnel: liaisonRushel.name,
+        personnelBranch: liaisonRushel.assignedBranch,
+        purpose: 'CA for Legazpi unit',
+        amount: liaisonRushel.processingFee + liaisonRushel.orFee,
+        date: addDays(today, -14),
+        status: 'CV Received',
+        checkVoucherNumber: 'CV-2024-07-015',
+        checkVoucherReleaseDate: addDays(today, -8), // To make it overdue
+        motorcycleIds: [extraMotorcycles[10].id],
+    });
+    extraMotorcycles[10].status = 'Processing';
+
+    // CA #12: For Jassray, another 'Processing for CV'
+    const liaisonJassray = otherLiaisons[10];
+    cashAdvances.push({
+        id: 'ca-072624-012',
+        personnel: liaisonJassray.name,
+        personnelBranch: liaisonJassray.assignedBranch,
+        purpose: 'CDO Unit Registration',
+        amount: liaisonJassray.processingFee + liaisonJassray.orFee,
+        date: addDays(today, -1),
+        status: 'Processing for CV',
+        motorcycleIds: [extraMotorcycles[11].id],
+    });
+    extraMotorcycles[11].status = 'Processing';
+
 
     return { motorcycles, endorsements, cashAdvances };
 };
@@ -199,7 +360,7 @@ const generateInitialData = () => {
 const MC_KEY = 'lto_motorcycles';
 const CA_KEY = 'lto_cash_advances';
 const ENDO_KEY = 'lto_endorsements';
-const DATA_FLAG = 'data_generated_flag_v12'; // Increment version to force reset
+const DATA_FLAG = 'data_generated_flag_v13'; // Increment version to force reset
 
 const initializeData = () => {
     if (typeof window !== 'undefined') {
