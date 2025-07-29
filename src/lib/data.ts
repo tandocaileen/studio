@@ -105,7 +105,14 @@ const generateInitialData = () => {
     const createCA = (id: string, date: Date, mcIds: string[], status: CashAdvance['status'], cvNumber?: string, cvDate?: Date) => {
         const liaison = initialLiaisonUsers.find(l => l.name === DEMO_LIAISON.name);
         if (!liaison) return;
-        const amount = mcIds.length * (liaison.processingFee + liaison.orFee);
+        const amount = mcIds.reduce((sum, mcId) => {
+            const mc = motorcycles.find(m => m.id === mcId);
+            if (mc) {
+                return sum + (liaison.processingFee || 0) + (liaison.orFee || 0);
+            }
+            return sum;
+        }, 0);
+        
         const ca: CashAdvance = {
             id, personnel: liaison.name, personnelBranch: liaison.assignedBranch, 
             purpose: `Cash advance for registration of ${mcIds.length} units.`,
@@ -193,13 +200,20 @@ const setData = <T,>(key: string, data: T[]) => {
 
 const ensureDataGenerated = () => {
     if (typeof window !== 'undefined' && !localStorage.getItem('data_generated_flag')) {
+        console.log("Generating fresh data set...");
         const { motorcycles, endorsements, cashAdvances } = generateInitialData();
         setData(MC_KEY, motorcycles);
         setData(ENDO_KEY, endorsements);
         setData(CA_KEY, cashAdvances);
         localStorage.setItem('data_generated_flag', 'true');
         // A small delay to allow localStorage to settle before potential reload.
-        setTimeout(() => window.location.reload(), 100);
+        setTimeout(() => {
+            // Remove the query param to prevent re-triggering on next refresh
+            const url = new URL(window.location.href);
+            url.searchParams.delete('reset_data');
+            window.history.replaceState({}, '', url.toString());
+            window.location.reload();
+        }, 100);
     }
 };
 
@@ -278,3 +292,5 @@ export async function addEndorsement(newEndorsement: Endorsement) {
 export function getBranches() {
   return [...new Set(initialLiaisonUsers.map(l => l.assignedBranch))];
 }
+
+    
