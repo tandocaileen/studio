@@ -337,10 +337,10 @@ function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
                 </div>
                 {isFilterPanelVisible && (
                     <div className="lg:col-span-1 lg:sticky top-20">
-                        <Alert variant="destructive" className="mb-4">
+                        <Alert className="mb-4 bg-yellow-100 border-yellow-300 text-yellow-800 dark:bg-yellow-900/30 dark:border-yellow-700 dark:text-yellow-300 [&>svg]:text-yellow-600 dark:[&>svg]:text-yellow-400">
                             <AlertCircle className="h-4 w-4" />
-                            <AlertTitle>Suggestion</AlertTitle>
-                            <AlertDescription className="text-xs">
+                            <AlertTitle className="text-yellow-900 dark:text-yellow-200">Suggestion</AlertTitle>
+                            <AlertDescription className="text-xs text-yellow-700 dark:text-yellow-400">
                                 Gemini is faulty, during development, Pre-filter: Show only endorsements with at least 1 MC in Endorsed - Ready or Endorsed - Incomplete. Hide other MCs. Date = All time.
                             </AlertDescription>
                         </Alert>
