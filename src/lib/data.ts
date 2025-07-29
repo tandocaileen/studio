@@ -85,6 +85,8 @@ const generateInitialData = () => {
         return mc;
     }
     
+    // Status: Incomplete (5 units) - N/A, they start this way
+    
     // Status: Ready to Register (5 units)
     motorcycles.slice(5, 10).forEach(mc => {
         fillOutDetails(mc);
@@ -98,9 +100,11 @@ const generateInitialData = () => {
         const mc2 = mcsForEndorsement[i * 2 + 1];
         
         let daysAgo = 15 + (i * 2);
-        // Make 3 endorsements recent
-        if (i < 3) daysAgo = (i * 2) + 1;
-
+        // CRITICAL: Make 3 endorsements recent for the liaison view
+        if (i < 3) {
+            const recentDays = [1, 3, 5];
+            daysAgo = recentDays[i];
+        }
 
         fillOutDetails(mc1); // Make the first one ready
         
@@ -195,7 +199,7 @@ const generateInitialData = () => {
 const MC_KEY = 'lto_motorcycles';
 const CA_KEY = 'lto_cash_advances';
 const ENDO_KEY = 'lto_endorsements';
-const DATA_FLAG = 'data_generated_flag_v10'; // Increment version to force reset
+const DATA_FLAG = 'data_generated_flag_v11'; // Increment version to force reset
 
 const initializeData = () => {
     if (typeof window !== 'undefined') {
