@@ -22,7 +22,7 @@ export type Motorcycle = {
   purchaseDate: Date;
   supplier: string;
   documents: Document[];
-  status: 'Incomplete' | 'Ready to Register' | 'Endorsed' | 'Processing' | 'For Review';
+  status: 'Incomplete' | 'Ready to Register' | 'Endorsed - Incomplete' | 'Endorsed - Ready' | 'Processing' | 'For Review';
   customerName?: string;
   cocNumber?: string;
   policyNumber?: string;

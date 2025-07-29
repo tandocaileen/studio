@@ -69,7 +69,8 @@ function CreateEndorsementContent() {
         setTimeout(() => {
             const updatedMotorcycles = motorcycles?.map(mc => {
                 if (selectedMotorcycles.some(sm => sm.id === mc.id)) {
-                    return { ...mc, status: 'Endorsed', assignedLiaison: selectedLiaison?.name };
+                    const newStatus = mc.status === 'Ready to Register' ? 'Endorsed - Ready' : 'Endorsed - Incomplete';
+                    return { ...mc, status: newStatus, assignedLiaison: selectedLiaison?.name };
                 }
                 return mc;
             });
@@ -96,7 +97,7 @@ function CreateEndorsementContent() {
     }
 
     const availableMotorcycles = motorcycles.filter(
-        m => m.status === 'Ready to Register' &&
+        m => ['Ready to Register', 'Incomplete'].includes(m.status) &&
         (m.plateNumber.toLowerCase().includes(searchQuery.toLowerCase()) || 
          (m.customerName && m.customerName.toLowerCase().includes(searchQuery.toLowerCase())) ||
          m.make.toLowerCase().includes(searchQuery.toLowerCase()) ||

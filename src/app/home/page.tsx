@@ -60,7 +60,7 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
   const filteredMotorcycles = motorcycles.filter(m => {
     let matchesFilter = true;
     if (viewFilter === 'unregistered') {
-        matchesFilter = ['Incomplete', 'Ready to Register'].includes(m.status);
+        matchesFilter = !['For Review'].includes(m.status);
     }
     
     if (!matchesFilter) return false;
@@ -79,7 +79,7 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
   });
 
   const endorsedIncompleteMotorcycles = motorcycles.filter(
-    m => m.status === 'Incomplete' && endorsements.some(e => e.motorcycleIds.includes(m.id))
+    m => m.status === 'Endorsed - Incomplete'
   );
 
   const motorcyclesPendingDocs = motorcycles.filter(
@@ -196,7 +196,7 @@ function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
     if (!isUserAssigned) return false;
 
     if (viewFilter === 'pending') {
-        const isPending = ['Endorsed', 'Processing'].includes(m.status);
+        const isPending = ['Endorsed - Ready', 'Endorsed - Incomplete', 'Processing'].includes(m.status);
         if(!isPending) return false;
     }
     

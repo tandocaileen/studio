@@ -112,10 +112,10 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
       return;
     }
 
-    if (selectedMotorcycles.some(m => m.status !== 'Endorsed')) {
+    if (selectedMotorcycles.some(m => m.status !== 'Endorsed - Ready')) {
         toast({
             title: 'Cannot Generate Cash Advance',
-            description: 'Please only select motorcycles with an "Endorsed" status.',
+            description: 'Please only select motorcycles with an "Endorsed - Ready" status.',
             variant: 'destructive',
         });
         return;
@@ -195,7 +195,8 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
   const statusVariant = (status: Motorcycle['status']): 'default' | 'secondary' | 'destructive' | 'outline' => {
     switch (status) {
       case 'Ready to Register': return 'default';
-      case 'Endorsed': return 'secondary';
+      case 'Endorsed - Ready': return 'secondary';
+      case 'Endorsed - Incomplete': return 'destructive';
       case 'Processing': return 'default';
       case 'For Review': return 'secondary';
       case 'Incomplete': return 'outline';
@@ -293,7 +294,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
     }
   };
 
-  const isGenerateCaDisabled = selectedMotorcycles.length === 0 || selectedMotorcycles.some(m => m.status !== 'Endorsed');
+  const isGenerateCaDisabled = selectedMotorcycles.length === 0 || selectedMotorcycles.some(m => m.status !== 'Endorsed - Ready');
 
   const totalPages = Math.ceil(motorcycles.length / ITEMS_PER_PAGE);
   const paginatedMotorcycles = motorcycles.slice(
@@ -363,6 +364,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                           checked={selectedMotorcycles.some(m => m.id === motorcycle.id)}
                           onCheckedChange={(checked) => handleSelectMotorcycle(motorcycle, checked)}
                           aria-label={`Select motorcycle ${motorcycle.plateNumber}`}
+                          disabled={motorcycle.status !== 'Endorsed - Ready'}
                         />
                       </TableCell>
                     )}
@@ -520,7 +522,8 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                           <SelectContent>
                             <SelectItem value="Incomplete">Incomplete</SelectItem>
                             <SelectItem value="Ready to Register">Ready to Register</SelectItem>
-                            <SelectItem value="Endorsed">Endorsed</SelectItem>
+                            <SelectItem value="Endorsed - Incomplete">Endorsed - Incomplete</SelectItem>
+                            <SelectItem value="Endorsed - Ready">Endorsed - Ready</SelectItem>
                             <SelectItem value="Processing">Processing</SelectItem>
                             <SelectItem value="For Review">For Review</SelectItem>
                           </SelectContent>
