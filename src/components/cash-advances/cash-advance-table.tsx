@@ -407,3 +407,5 @@ export function CashAdvanceTable({ advances: initialAdvances, onBulkUpdate }: Ca
     </>
   );
 }
+
+    
