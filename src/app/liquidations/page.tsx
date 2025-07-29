@@ -225,6 +225,7 @@ export default function LiquidationsPage() {
                                                     if (!ca) return null;
                                                     
                                                     const isLiquidated = mc.status === 'For Review';
+                                                    const canLiquidate = ['Approved', 'CV Received'].includes(ca.status) && !isLiquidated;
 
                                                     return (
                                                         <TableRow key={mc.id}>
@@ -239,7 +240,7 @@ export default function LiquidationsPage() {
                                                                 </Badge>
                                                             </TableCell>
                                                             <TableCell>
-                                                                {isLiaison && !isLiquidated && mc.status === 'Processing' ? (
+                                                                {isLiaison && canLiquidate ? (
                                                                     <Button size="sm" onClick={() => handleLiquidateClick(mc, ca)}>
                                                                         <FileUp className="mr-2 h-4 w-4" />
                                                                         Liquidate
