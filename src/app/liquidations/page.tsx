@@ -191,7 +191,7 @@ export default function LiquidationsPage() {
                                 </TabsList>
                                 {user.role !== 'Liaison' && (
                                      <Button className="ml-auto" variant="outline">
-                                        <FileDown className="mr-2" />
+                                        <FileDown className="mr-2 h-4 w-4" />
                                         Generate Master Report
                                     </Button>
                                 )}
@@ -294,7 +294,7 @@ export default function LiquidationsPage() {
                                                             <CardDescription>{group.cashAdvance.purpose}</CardDescription>
                                                             <CardDescription>Liaison: {group.cashAdvance.personnel} | Date: {new Date(group.cashAdvance.date).toLocaleDateString()}</CardDescription>
                                                         </div>
-                                                        <div className="text-right">
+                                                        <div className="flex flex-col items-end gap-2">
                                                             <Badge variant={'outline'}>
                                                                 {statusIcon} {statusLabel}
                                                             </Badge>
