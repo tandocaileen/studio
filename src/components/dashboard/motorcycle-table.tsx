@@ -45,6 +45,7 @@ import { cn } from '@/lib/utils';
 import { ScrollArea } from '../ui/scroll-area';
 import { useAuth } from '@/context/AuthContext';
 import { CashAdvancePreview } from './cash-advance-preview';
+import { InsuranceControlForm } from './insurance-control-form';
 
 type MotorcycleTableProps = {
   motorcycles: Motorcycle[];
@@ -58,7 +59,6 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
   const [selectedMotorcycles, setSelectedMotorcycles] = React.useState<Motorcycle[]>([]);
   const [editingMotorcycle, setEditingMotorcycle] = React.useState<Motorcycle | null>(null);
   const [editedData, setEditedData] = React.useState<Partial<Motorcycle>>({});
-  const [viewingDocumentsMotorcycle, setViewingDocumentsMotorcycle] = React.useState<Motorcycle | null>(null);
   const [isPreviewingCa, setIsPreviewingCa] = React.useState(false);
   const [isGeneratingCa, setIsGeneratingCa] = React.useState(false);
   const [liaisons, setLiaisons] = React.useState<any[]>([]);
@@ -218,15 +218,14 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
     );
 
     setMotorcycles(updatedMotorcycles);
-    if (onStateChange) onStateChange(updatedMotorcycles);
+    if (onStateChange) onStateChange(updatedMotorcycles.find(m => m.id === updatedMotorcycle.id) || updatedMotorcycle);
 
     handleAction(`Motorcycle ${updatedMotorcycle.plateNumber} details updated.`);
     handleCancelEdit();
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type } = e.target;
-    setEditedData(prev => ({ ...prev, [name]: type === 'number' ? parseFloat(value) : value }));
+  const handleDataChange = (fieldName: keyof Motorcycle, value: any) => {
+    setEditedData(prev => ({ ...prev, [fieldName]: value }));
   };
   
   const isGenerateCaDisabled = selectedMotorcycles.length === 0 || selectedMotorcycles.some(m => m.status !== 'Endorsed - Ready');
@@ -243,7 +242,6 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
       .filter(pm => pm.status === 'Endorsed - Ready')
       .every(pm => selectedMotorcycles.some(sm => sm.id === pm.id));
 
-  const insuranceTypes = ['TPL', 'Comprehensive', 'TPL + OD', 'TPL + Theft'];
 
   return (
     <>
@@ -284,21 +282,9 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                  {!isLiaison && (isSupervisor || isCashier) && <TableHead className="w-[40px]"></TableHead>}
                 <TableHead>Sale ID</TableHead>
                 <TableHead>SI No.</TableHead>
-                <TableHead>Account Code</TableHead>
                 <TableHead>Customer Name</TableHead>
-                {isLiaison ? (
-                  <>
-                    <TableHead>Plate No.</TableHead>
-                    <TableHead>Make &amp; Model</TableHead>
-                  </>
-                ) : (
-                  <>
-                    <TableHead>CSR No.</TableHead>
-                    <TableHead>CR No.</TableHead>
-                  </>
-                )}
-                <TableHead>Engine No.</TableHead>
-                <TableHead>Chassis No.</TableHead>
+                <TableHead>CSR No.</TableHead>
+                <TableHead>CR No.</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="w-[100px]">
                   <span className="sr-only">Actions</span>
@@ -321,24 +307,9 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                     {!isLiaison && (isSupervisor || isCashier) && <TableCell></TableCell>}
                     <TableCell>{motorcycle.id}</TableCell>
                     <TableCell>{motorcycle.salesInvoiceNo}</TableCell>
-                    <TableCell>{motorcycle.accountCode}</TableCell>
                     <TableCell className="font-medium">{motorcycle.customerName}</TableCell>
-                    {isLiaison ? (
-                       <>
-                        <TableCell>{motorcycle.plateNumber}</TableCell>
-                        <TableCell>
-                            <div>{motorcycle.make}</div>
-                            <div className="text-xs text-muted-foreground">{motorcycle.model}</div>
-                        </TableCell>
-                       </>
-                    ) : (
-                        <>
-                            <TableCell>{motorcycle.csrNumber || 'N/A'}</TableCell>
-                            <TableCell>{motorcycle.crNumber || 'N/A'}</TableCell>
-                        </>
-                    )}
-                    <TableCell className="font-mono text-xs">{motorcycle.engineNumber}</TableCell>
-                    <TableCell className="font-mono text-xs">{motorcycle.chassisNumber}</TableCell>
+                    <TableCell>{motorcycle.csrNumber || 'N/A'}</TableCell>
+                    <TableCell>{motorcycle.crNumber || 'N/A'}</TableCell>
                     <TableCell>
                       <Badge variant={statusVariant(motorcycle.status)}>{motorcycle.status}</Badge>
                     </TableCell>
@@ -427,25 +398,6 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                           <Label htmlFor="edit-customerName">Customer Name</Label>
                           <Input id="edit-customerName" name="customerName" value={editedData.customerName || ''} disabled />
                       </div>
-                      <div className="grid gap-2">
-                          <Label htmlFor="edit-make">Make</Label>
-                          <Input id="edit-make" name="make" value={editedData.make || ''} disabled />
-                      </div>
-                      <div className="grid gap-2">
-                          <Label htmlFor="edit-model">Model</Label>
-                          <Input id="edit-model" name="model" value={editedData.model || ''} disabled />
-                      </div>
-                      <div className="grid gap-2">
-                          <Label htmlFor="edit-branch">Branch</Label>
-                           <Select value={editedData.assignedBranch} disabled>
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {branches.map(branch => <SelectItem key={branch} value={branch}>{branch}</SelectItem>)}
-                            </SelectContent>
-                          </Select>
-                      </div>
                        <div className="grid gap-2">
                           <Label htmlFor="edit-accountCode">Account Code</Label>
                           <Input id="edit-accountCode" name="accountCode" value={editedData.accountCode || ''} disabled />
@@ -459,95 +411,12 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                           <Input id="edit-chassisNumber" name="chassisNumber" value={editedData.chassisNumber || ''} disabled />
                       </div>
                     </div>
-
-                    <h3 className="font-semibold text-lg border-b pb-2 mt-4 mb-2">Insurance &amp; Control</h3>
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="grid gap-2">
-                            <Label htmlFor="edit-cocNumber">COC No.</Label>
-                            <Input id="edit-cocNumber" name="cocNumber" value={editedData.cocNumber || ''} onChange={handleInputChange} disabled={!canEditInsuranceAndControl} required />
-                        </div>
-                         <div className="grid gap-2">
-                            <Label htmlFor="edit-policyNumber">Policy No.</Label>
-                            <Input id="edit-policyNumber" name="policyNumber" value={editedData.policyNumber || ''} onChange={handleInputChange} disabled={!canEditInsuranceAndControl} required />
-                        </div>
-                        <div className="grid gap-2">
-                            <Label htmlFor="edit-insuranceType">Insurance Type</Label>
-                             <Select
-                                value={editedData.insuranceType || ''}
-                                onValueChange={(value) => setEditedData(prev => ({ ...prev, insuranceType: value }))}
-                                disabled={!canEditInsuranceAndControl}
-                            >
-                                <SelectTrigger id="edit-insuranceType">
-                                    <SelectValue placeholder="Select insurance type" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {insuranceTypes.map(type => (
-                                        <SelectItem key={type} value={type}>{type}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="grid gap-2">
-                            <Label htmlFor="edit-hpgControlNumber">HPG Control No.</Label>
-                            <Input id="edit-hpgControlNumber" name="hpgControlNumber" value={editedData.hpgControlNumber || ''} onChange={handleInputChange} disabled={!canEditInsuranceAndControl} required />
-                        </div>
-                        <div className="grid gap-2">
-                            <Label>Effective Date</Label>
-                            <Popover>
-                                <PopoverTrigger asChild>
-                                <Button
-                                    variant={"outline"}
-                                    className={cn(
-                                    "w-full justify-start text-left font-normal",
-                                    !editedData.insuranceEffectiveDate && "text-muted-foreground"
-                                    )}
-                                    disabled={!canEditInsuranceAndControl}
-                                >
-                                    <CalendarIcon className="mr-2 h-4 w-4" />
-                                    {editedData.insuranceEffectiveDate ? format(new Date(editedData.insuranceEffectiveDate), "PPP") : <span>Pick a date</span>}
-                                </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0">
-                                <Calendar
-                                    mode="single"
-                                    selected={editedData.insuranceEffectiveDate ? new Date(editedData.insuranceEffectiveDate) : undefined}
-                                    onSelect={(date) => setEditedData(prev => ({ ...prev, insuranceEffectiveDate: date }))}
-                                    initialFocus
-                                />
-                                </PopoverContent>
-                            </Popover>
-                        </div>
-                        <div className="grid gap-2">
-                            <Label>Expiration Date</Label>
-                             <Popover>
-                                <PopoverTrigger asChild>
-                                <Button
-                                    variant={"outline"}
-                                    className={cn(
-                                    "w-full justify-start text-left font-normal",
-                                    !editedData.insuranceExpirationDate && "text-muted-foreground"
-                                    )}
-                                    disabled={!canEditInsuranceAndControl}
-                                >
-                                    <CalendarIcon className="mr-2 h-4 w-4" />
-                                    {editedData.insuranceExpirationDate ? format(new Date(editedData.insuranceExpirationDate), "PPP") : <span>Pick a date</span>}
-                                </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0">
-                                <Calendar
-                                    mode="single"
-                                    selected={editedData.insuranceExpirationDate ? new Date(editedData.insuranceExpirationDate) : undefined}
-                                    onSelect={(date) => setEditedData(prev => ({ ...prev, insuranceExpirationDate: date }))}
-                                    initialFocus
-                                />
-                                </PopoverContent>
-                            </Popover>
-                        </div>
-                        <div className="grid gap-2">
-                            <Label htmlFor="edit-sarCode">SAR Code</Label>
-                            <Input id="edit-sarCode" name="sarCode" value={editedData.sarCode || ''} onChange={handleInputChange} disabled={!canEditInsuranceAndControl} required />
-                        </div>
-                     </div>
+                    
+                    <InsuranceControlForm 
+                        editedData={editedData}
+                        onDataChange={handleDataChange}
+                        canEdit={canEditInsuranceAndControl}
+                    />
                 </div>
               </ScrollArea>
               <DialogFooter>
@@ -555,21 +424,6 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                   {canEditInsuranceAndControl && <Button onClick={handleSaveEdit}>Save Changes</Button>}
               </DialogFooter>
           </DialogContent>
-      </Dialog>
-      
-      {/* View Documents Dialog - This is intentionally left empty now */}
-      <Dialog open={!!viewingDocumentsMotorcycle} onOpenChange={(open) => !open && setViewingDocumentsMotorcycle(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Documents for {viewingDocumentsMotorcycle?.plateNumber}</DialogTitle>
-             <DialogDescription>
-                View all uploaded documents for this motorcycle.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="mt-4">
-            <p className="text-sm text-muted-foreground">Document attachments have been removed from this view.</p>
-          </div>
-        </DialogContent>
       </Dialog>
       
        {/* CA Preview Dialog */}
