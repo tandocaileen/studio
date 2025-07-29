@@ -394,7 +394,8 @@ export function CashAdvanceTable({ advances: initialAdvances, onBulkUpdate }: Ca
             <AlertDialogHeader>
             <AlertDialogTitle>Confirm CV Receipt?</AlertDialogTitle>
             <AlertDialogDescription>
-                This will mark {selectedAdvances.length} cash advance(s) as "CV Received". This action cannot be undone. Are you sure?
+                This will mark {selectedAdvances.length} cash advance(s) as "CV Received". <br/>
+                <span className="font-semibold text-destructive">Warning:</span> Please ensure all selected cash advances are covered by the same check voucher. This action cannot be undone.
             </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -406,5 +407,3 @@ export function CashAdvanceTable({ advances: initialAdvances, onBulkUpdate }: Ca
     </>
   );
 }
-
-    
