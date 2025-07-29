@@ -181,11 +181,11 @@ function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
   const handleStateUpdate = (updatedMotorcycles: Motorcycle[]) => {
      if (Array.isArray(updatedMotorcycles)) {
         setMotorcycles(currentMotorcycles => {
+            if (!currentMotorcycles) return [];
             const updatedIds = new Set(updatedMotorcycles.map(um => um.id));
-            return currentMotorcycles!.map(cm => {
-                const updatedVersion = updatedMotorcycles.find(um => um.id === cm.id);
-                return updatedVersion || cm;
-            });
+            const currentMotorcyclesMap = new Map(currentMotorcycles.map(m => [m.id, m]));
+            updatedMotorcycles.forEach(um => currentMotorcyclesMap.set(um.id, um));
+            return Array.from(currentMotorcyclesMap.values());
         });
       }
   };
@@ -196,7 +196,7 @@ function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
     if (!isUserAssigned) return false;
 
     if (viewFilter === 'pending') {
-        const isPending = ['Endorsed - Ready', 'Endorsed - Incomplete', 'Processing'].includes(m.status);
+        const isPending = ['Endorsed - Ready', 'Endorsed - Incomplete'].includes(m.status);
         if(!isPending) return false;
     }
     
