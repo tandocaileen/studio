@@ -187,59 +187,35 @@ function CashAdvancesContent({ searchQuery }: { searchQuery: string }) {
     };
 
     return (
-        <div className={cn("grid grid-cols-1 lg:grid-cols-4 gap-6 items-start", !isFilterPanelVisible && "lg:grid-cols-1")}>
-            <div className={cn("lg:col-span-3", !isFilterPanelVisible && "lg:col-span-4")}>
-                <CashAdvanceTable advances={filteredBySearch} onBulkUpdate={handleUpdateAdvances} />
+        <div className="grid gap-4">
+             <div className="flex items-center justify-end">
+                <Button variant="outline" onClick={() => setIsFilterPanelVisible(!isFilterPanelVisible)}>
+                    <Filter className="mr-2 h-4 w-4" />
+                    Filters
+                </Button>
             </div>
-            {isFilterPanelVisible && (
-                 <div className="lg:col-span-1 lg:sticky top-20">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Filters</CardTitle>
-                            <CardDescription>Refine cash advances</CardDescription>
-                        </CardHeader>
-                        <CardContent className="grid gap-4">
-                             <Collapsible defaultOpen>
-                                <CollapsibleTrigger asChild>
-                                    <div className="flex justify-between items-center w-full cursor-pointer">
-                                        <div className="flex items-center gap-2">
-                                            <Checkbox
-                                                id="filter-status-all"
-                                                checked={tempStatusFilters.length === ALL_CA_STATUSES.length ? true : tempStatusFilters.length > 0 ? "indeterminate" : false}
-                                                onCheckedChange={handleSelectAllStatuses}
-                                            />
-                                            <Label htmlFor="filter-status-all" className="font-semibold text-sm">Status</Label>
-                                        </div>
-                                        <ChevronDown className="h-4 w-4 transition-transform data-[state=open]:rotate-180" />
-                                    </div>
-                                </CollapsibleTrigger>
-                                <CollapsibleContent>
-                                    <Separator className="my-2" />
-                                    <div className="grid gap-2 pl-6">
-                                        {ALL_CA_STATUSES.map(status => (
-                                            <div key={status} className="flex items-center gap-2">
-                                                <Checkbox 
-                                                    id={`filter-status-${status}`}
-                                                    checked={tempStatusFilters.includes(status)}
-                                                    onCheckedChange={(checked) => handleStatusCheckboxChange(status, !!checked)}
-                                                />
-                                                <Label htmlFor={`filter-status-${status}`} className="font-normal text-sm">{status}</Label>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </CollapsibleContent>
-                            </Collapsible>
-                            {user.role !== 'Liaison' && (
-                                <Collapsible defaultOpen>
+            <div className={cn("grid grid-cols-1 lg:grid-cols-4 gap-6 items-start", !isFilterPanelVisible && "lg:grid-cols-1")}>
+                <div className={cn("lg:col-span-3", !isFilterPanelVisible && "lg:col-span-4")}>
+                    <CashAdvanceTable advances={filteredBySearch} onBulkUpdate={handleUpdateAdvances} />
+                </div>
+                {isFilterPanelVisible && (
+                     <div className="lg:col-span-1 lg:sticky top-20">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Filters</CardTitle>
+                                <CardDescription>Refine cash advances</CardDescription>
+                            </CardHeader>
+                            <CardContent className="grid gap-4">
+                                 <Collapsible defaultOpen>
                                     <CollapsibleTrigger asChild>
-                                         <div className="flex justify-between items-center w-full cursor-pointer">
+                                        <div className="flex justify-between items-center w-full cursor-pointer">
                                             <div className="flex items-center gap-2">
                                                 <Checkbox
-                                                    id="filter-liaison-all"
-                                                    checked={tempLiaisonFilters.length === uniqueLiaisonsInCAs.length ? true : tempLiaisonFilters.length > 0 ? 'indeterminate' : false}
-                                                    onCheckedChange={handleSelectAllLiaisons}
+                                                    id="filter-status-all"
+                                                    checked={tempStatusFilters.length === ALL_CA_STATUSES.length ? true : tempStatusFilters.length > 0 ? "indeterminate" : false}
+                                                    onCheckedChange={handleSelectAllStatuses}
                                                 />
-                                                <Label htmlFor="filter-liaison-all" className="font-semibold text-sm">Liaison</Label>
+                                                <Label htmlFor="filter-status-all" className="font-semibold text-sm">Status</Label>
                                             </div>
                                             <ChevronDown className="h-4 w-4 transition-transform data-[state=open]:rotate-180" />
                                         </div>
@@ -247,57 +223,89 @@ function CashAdvancesContent({ searchQuery }: { searchQuery: string }) {
                                     <CollapsibleContent>
                                         <Separator className="my-2" />
                                         <div className="grid gap-2 pl-6">
-                                            {uniqueLiaisonsInCAs.map(liaison => (
-                                                <div key={liaison} className="flex items-center gap-2">
+                                            {ALL_CA_STATUSES.map(status => (
+                                                <div key={status} className="flex items-center gap-2">
                                                     <Checkbox 
-                                                        id={`filter-liaison-${liaison}`}
-                                                        checked={tempLiaisonFilters.includes(liaison)}
-                                                        onCheckedChange={(checked) => handleLiaisonCheckboxChange(liaison, !!checked)}
+                                                        id={`filter-status-${status}`}
+                                                        checked={tempStatusFilters.includes(status)}
+                                                        onCheckedChange={(checked) => handleStatusCheckboxChange(status, !!checked)}
                                                     />
-                                                    <Label htmlFor={`filter-liaison-${liaison}`} className="font-normal text-sm">{liaison}</Label>
+                                                    <Label htmlFor={`filter-status-${status}`} className="font-normal text-sm">{status}</Label>
                                                 </div>
                                             ))}
                                         </div>
                                     </CollapsibleContent>
                                 </Collapsible>
-                            )}
-                            <Collapsible defaultOpen>
-                                <CollapsibleTrigger className="flex justify-between items-center w-full [&[data-state=open]>svg]:rotate-180">
-                                    <Label className="font-semibold text-sm">Date Range</Label>
-                                    <ChevronDown className="h-4 w-4 transition-transform" />
-                                </CollapsibleTrigger>
-                                <CollapsibleContent>
-                                    <Separator className="my-2" />
-                                    <RadioGroup value={tempDateRange} onValueChange={(v) => setTempDateRange(v as DateRange)}>
-                                        <div className="flex items-center space-x-2">
-                                            <RadioGroupItem value="7d" id="r-d-7d" />
-                                            <Label htmlFor="r-d-7d" className="font-normal text-sm">Last 7 days</Label>
-                                        </div>
-                                        <div className="flex items-center space-x-2">
-                                            <RadioGroupItem value="30d" id="r-d-30d" />
-                                            <Label htmlFor="r-d-30d" className="font-normal text-sm">Last 30 days</Label>
-                                        </div>
-                                        <div className="flex items-center space-x-2">
-                                            <RadioGroupItem value="all" id="r-d-all" />
-                                            <Label htmlFor="r-d-all" className="font-normal text-sm">All time</Label>
-                                        </div>
-                                    </RadioGroup>
-                                </CollapsibleContent>
-                            </Collapsible>
-                        </CardContent>
-                        <CardFooter className="flex flex-col gap-2">
-                            <Button onClick={applyFilters} className="w-full">
-                                <Filter className="mr-2 h-4 w-4" />
-                                Apply Filters
-                            </Button>
-                            <Button onClick={clearFilters} variant="ghost" className="w-full">
-                                <RotateCcw className="mr-2 h-4 w-4" />
-                                Clear
-                            </Button>
-                        </CardFooter>
-                    </Card>
-                </div>
-            )}
+                                {user.role !== 'Liaison' && (
+                                    <Collapsible defaultOpen>
+                                        <CollapsibleTrigger asChild>
+                                             <div className="flex justify-between items-center w-full cursor-pointer">
+                                                <div className="flex items-center gap-2">
+                                                    <Checkbox
+                                                        id="filter-liaison-all"
+                                                        checked={tempLiaisonFilters.length === uniqueLiaisonsInCAs.length ? true : tempLiaisonFilters.length > 0 ? 'indeterminate' : false}
+                                                        onCheckedChange={handleSelectAllLiaisons}
+                                                    />
+                                                    <Label htmlFor="filter-liaison-all" className="font-semibold text-sm">Liaison</Label>
+                                                </div>
+                                                <ChevronDown className="h-4 w-4 transition-transform data-[state=open]:rotate-180" />
+                                            </div>
+                                        </CollapsibleTrigger>
+                                        <CollapsibleContent>
+                                            <Separator className="my-2" />
+                                            <div className="grid gap-2 pl-6">
+                                                {uniqueLiaisonsInCAs.map(liaison => (
+                                                    <div key={liaison} className="flex items-center gap-2">
+                                                        <Checkbox 
+                                                            id={`filter-liaison-${liaison}`}
+                                                            checked={tempLiaisonFilters.includes(liaison)}
+                                                            onCheckedChange={(checked) => handleLiaisonCheckboxChange(liaison, !!checked)}
+                                                        />
+                                                        <Label htmlFor={`filter-liaison-${liaison}`} className="font-normal text-sm">{liaison}</Label>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </CollapsibleContent>
+                                    </Collapsible>
+                                )}
+                                <Collapsible defaultOpen>
+                                    <CollapsibleTrigger className="flex justify-between items-center w-full [&[data-state=open]>svg]:rotate-180">
+                                        <Label className="font-semibold text-sm">Date Range</Label>
+                                        <ChevronDown className="h-4 w-4 transition-transform" />
+                                    </CollapsibleTrigger>
+                                    <CollapsibleContent>
+                                        <Separator className="my-2" />
+                                        <RadioGroup value={tempDateRange} onValueChange={(v) => setTempDateRange(v as DateRange)}>
+                                            <div className="flex items-center space-x-2">
+                                                <RadioGroupItem value="7d" id="r-d-7d" />
+                                                <Label htmlFor="r-d-7d" className="font-normal text-sm">Last 7 days</Label>
+                                            </div>
+                                            <div className="flex items-center space-x-2">
+                                                <RadioGroupItem value="30d" id="r-d-30d" />
+                                                <Label htmlFor="r-d-30d" className="font-normal text-sm">Last 30 days</Label>
+                                            </div>
+                                            <div className="flex items-center space-x-2">
+                                                <RadioGroupItem value="all" id="r-d-all" />
+                                                <Label htmlFor="r-d-all" className="font-normal text-sm">All time</Label>
+                                            </div>
+                                        </RadioGroup>
+                                    </CollapsibleContent>
+                                </Collapsible>
+                            </CardContent>
+                            <CardFooter className="flex flex-col gap-2">
+                                <Button onClick={applyFilters} className="w-full">
+                                    <Filter className="mr-2 h-4 w-4" />
+                                    Apply Filters
+                                </Button>
+                                <Button onClick={clearFilters} variant="ghost" className="w-full">
+                                    <RotateCcw className="mr-2 h-4 w-4" />
+                                    Clear
+                                </Button>
+                            </CardFooter>
+                        </Card>
+                    </div>
+                )}
+            </div>
         </div>
     );
 }
@@ -319,7 +327,3 @@ export default function CashAdvancesPage() {
         </ProtectedPage>
     );
 }
-
-    
-
-    
