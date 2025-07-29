@@ -72,6 +72,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
   const [viewingDocumentsMotorcycle, setViewingDocumentsMotorcycle] = React.useState<Motorcycle | null>(null);
   const [newDocuments, setNewDocuments] = React.useState<NewDocument[]>([]);
   const [isPreviewingCa, setIsPreviewingCa] = React.useState(false);
+  const [isGeneratingCa, setIsGeneratingCa] = React.useState(false);
   const [liaisons, setLiaisons] = React.useState<any[]>([]);
   const [currentPage, setCurrentPage] = React.useState(1);
   
@@ -123,7 +124,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
   }
 
   const handleGenerateCashAdvance = async () => {
-    
+    setIsGeneratingCa(true);
     toast({
         title: 'AI is working...',
         description: 'Generating cash advance request for selected motorcycles.'
@@ -138,7 +139,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
         documents: m.documents.map(d => ({
             ...d,
             uploadedAt: d.uploadedAt.toISOString(),
-            expiresAt: d.expiresAt ? d.expiresAt.toISOString() : undefined,
+            expiresAt: d.expiresAt ? new Date(d.expiresAt).toISOString() : undefined,
             type: d.type
         }))
       }));
@@ -167,10 +168,11 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
             description: (e as Error).message,
             variant: 'destructive',
           });
+    } finally {
+        setIsGeneratingCa(false);
+        setIsPreviewingCa(false);
+        setSelectedMotorcycles([]);
     }
-    
-    setIsPreviewingCa(false);
-    setSelectedMotorcycles([]);
   };
 
   const handleSelectMotorcycle = (motorcycle: Motorcycle, checked: boolean | 'indeterminate') => {
@@ -768,7 +770,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
             </div>
             <DialogFooter>
                 <Button variant="outline" onClick={() => setIsPreviewingCa(false)}>Cancel</Button>
-                <Button onClick={handleGenerateCashAdvance}>Submit Request</Button>
+                <Button onClick={handleGenerateCashAdvance} loading={isGeneratingCa}>Submit Request</Button>
             </DialogFooter>
         </DialogContent>
     </Dialog>

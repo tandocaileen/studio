@@ -22,10 +22,9 @@ export default function LoginPage() {
     const { user, login } = useAuth();
     const router = useRouter();
     const { setTheme } = useTheme();
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
-        // After a successful login, the user object will be updated.
-        // This effect will then trigger the redirect to the homepage.
         if (user) {
           router.push('/home');
         }
@@ -33,9 +32,13 @@ export default function LoginPage() {
 
 
     const handleLogin = () => {
-        // In a real app, you'd validate credentials against a backend.
-        // For this demo, we'll just log the user in with the selected role.
-        login({ email, name: `Demo ${role}`, role });
+        setIsLoading(true);
+        // Simulate API call
+        setTimeout(() => {
+            login({ email, name: `Demo ${role}`, role });
+            // The useEffect will handle the redirect
+            setIsLoading(false);
+        }, 1000);
     };
 
     return (
@@ -92,7 +95,7 @@ export default function LoginPage() {
                                 </SelectContent>
                             </Select>
                         </div>
-                        <Button onClick={handleLogin} className="w-full mt-2">
+                        <Button onClick={handleLogin} className="w-full mt-2" loading={isLoading}>
                             Login as {role}
                         </Button>
                     </div>

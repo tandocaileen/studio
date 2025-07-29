@@ -33,6 +33,7 @@ function CreateEndorsementContent() {
     const [remarks, setRemarks] = React.useState('');
     const [searchQuery, setSearchQuery] = React.useState('');
     const [isSummaryOpen, setIsSummaryOpen] = React.useState(false);
+    const [isLoading, setIsLoading] = React.useState(false);
     const { toast } = useToast();
     const [currentPage, setCurrentPage] = React.useState(1);
 
@@ -62,28 +63,32 @@ function CreateEndorsementContent() {
     }
 
     const handleConfirmEndorsement = () => {
-        // In a real app, you would update the backend here.
-        // For the demo, we'll update the statuses locally.
-        const updatedMotorcycles = motorcycles?.map(mc => {
-            if (selectedMotorcycles.some(sm => sm.id === mc.id)) {
-                return { ...mc, status: 'Endorsed', assignedLiaison: selectedLiaison?.name };
-            }
-            return mc;
-        });
-        setMotorcycles(updatedMotorcycles || []);
+        setIsLoading(true);
         
-        toast({ title: 'Endorsement Created!', description: `${selectedMotorcycles.length} unit(s) have been endorsed to ${selectedLiaison?.name}.` });
-        
-        setSelectedMotorcycles([]);
-        setSelectedLiaison(null);
-        setRemarks('');
-        setIsSummaryOpen(false);
+        // Simulate API call
+        setTimeout(() => {
+            const updatedMotorcycles = motorcycles?.map(mc => {
+                if (selectedMotorcycles.some(sm => sm.id === mc.id)) {
+                    return { ...mc, status: 'Endorsed', assignedLiaison: selectedLiaison?.name };
+                }
+                return mc;
+            });
+            setMotorcycles(updatedMotorcycles || []);
+            
+            toast({ title: 'Endorsement Created!', description: `${selectedMotorcycles.length} unit(s) have been endorsed to ${selectedLiaison?.name}.` });
+            
+            setSelectedMotorcycles([]);
+            setSelectedLiaison(null);
+            setRemarks('');
+            setIsSummaryOpen(false);
+            setIsLoading(false);
 
-        const trigger = document.getElementById('receiving-liaison-trigger');
-        if (trigger) {
-            // @ts-ignore
-            trigger.childNodes[0].textContent = 'Select a liaison';
-        }
+            const trigger = document.getElementById('receiving-liaison-trigger');
+            if (trigger) {
+                // @ts-ignore
+                trigger.childNodes[0].textContent = 'Select a liaison';
+            }
+        }, 1000);
     }
 
     if (!motorcycles || !liaisons) {
@@ -287,7 +292,7 @@ function CreateEndorsementContent() {
                     </div>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setIsSummaryOpen(false)}>Cancel</Button>
-                        <Button onClick={handleConfirmEndorsement}>Confirm Endorsement</Button>
+                        <Button onClick={handleConfirmEndorsement} loading={isLoading}>Confirm Endorsement</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

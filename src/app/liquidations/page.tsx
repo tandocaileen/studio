@@ -53,6 +53,7 @@ export default function LiquidationsPage() {
     const [motorcycleViewFilter, setMotorcycleViewFilter] = React.useState<MotorcycleViewFilter>('pending');
     const [selectedCA, setSelectedCA] = React.useState<GroupedLiquidation | null>(null);
     const [formData, setFormData] = React.useState<LiquidationFormData>({});
+    const [isLoading, setIsLoading] = React.useState(false);
 
     const { toast } = useToast();
     const router = useRouter();
@@ -87,38 +88,43 @@ export default function LiquidationsPage() {
 
     const handleFinalSubmit = () => {
         if (!selectedCA || !motorcycles) return;
-        
-        const mcToUpdateId = selectedCA.motorcycles[0].id;
-        const formDetails = formData[mcToUpdateId];
+        setIsLoading(true);
 
-        const updatedMotorcycles = motorcycles.map(mc => {
-            if (mc.id === mcToUpdateId) {
-                return {
-                    ...mc,
-                    status: 'For Review',
-                    liquidationDetails: {
-                        parentCaId: selectedCA.cashAdvance.id,
-                        ltoOrNumber: formDetails.ltoOrNumber,
-                        ltoOrAmount: formDetails.ltoOrAmount,
-                        ltoProcessFee: formDetails.ltoProcessFee,
-                        totalLiquidation: formDetails.ltoOrAmount + formDetails.ltoProcessFee,
-                        shortageOverage: getMcAdvanceAmount(mc) - (formDetails.ltoOrAmount + formDetails.ltoProcessFee),
-                        remarks: formDetails.remarks,
-                        liquidatedBy: user?.name || '',
-                        liquidationDate: new Date()
-                    }
-                };
-            }
-            return mc;
-        });
+        // Simulate API delay
+        setTimeout(() => {
+            const mcToUpdateId = selectedCA.motorcycles[0].id;
+            const formDetails = formData[mcToUpdateId];
 
-        setMotorcycles(updatedMotorcycles);
+            const updatedMotorcycles = motorcycles.map(mc => {
+                if (mc.id === mcToUpdateId) {
+                    return {
+                        ...mc,
+                        status: 'For Review',
+                        liquidationDetails: {
+                            parentCaId: selectedCA.cashAdvance.id,
+                            ltoOrNumber: formDetails.ltoOrNumber,
+                            ltoOrAmount: formDetails.ltoOrAmount,
+                            ltoProcessFee: formDetails.ltoProcessFee,
+                            totalLiquidation: formDetails.ltoOrAmount + formDetails.ltoProcessFee,
+                            shortageOverage: getMcAdvanceAmount(mc) - (formDetails.ltoOrAmount + formDetails.ltoProcessFee),
+                            remarks: formDetails.remarks,
+                            liquidatedBy: user?.name || '',
+                            liquidationDate: new Date()
+                        }
+                    };
+                }
+                return mc;
+            });
 
-        toast({
-            title: 'Liquidation Submitted',
-            description: `Liquidation for selected motorcycle has been submitted for review.`
-        });
-        setSelectedCA(null);
+            setMotorcycles(updatedMotorcycles);
+
+            toast({
+                title: 'Liquidation Submitted',
+                description: `Liquidation for selected motorcycle has been submitted for review.`
+            });
+            setSelectedCA(null);
+            setIsLoading(false);
+        }, 1000);
     }
     
     if (!user || !motorcycles || !cashAdvances) {
@@ -349,7 +355,7 @@ export default function LiquidationsPage() {
                                 </div>
                                 <DialogFooter>
                                     <Button variant="outline" onClick={() => setSelectedCA(null)}>Cancel</Button>
-                                    <Button onClick={handleFinalSubmit}>Submit Liquidation</Button>
+                                    <Button onClick={handleFinalSubmit} loading={isLoading}>Submit Liquidation</Button>
                                 </DialogFooter>
                             </DialogContent>
                         </Dialog>
