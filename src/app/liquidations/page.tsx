@@ -146,9 +146,19 @@ export default function LiquidationsPage() {
     const singleMcAdvance = selectedCA ? getMcAdvanceAmount(selectedCA.motorcycles[0]) : 0;
     const shortageOverage = singleMcAdvance - totalLiquidation;
 
+    // --- Performance Optimization: Create a map for quick CA lookups ---
+    const caMapByMcId = new Map<string, CashAdvance>();
+    cashAdvances.forEach(ca => {
+        if (ca.motorcycleIds) {
+            ca.motorcycleIds.forEach(mcId => {
+                caMapByMcId.set(mcId, ca);
+            });
+        }
+    });
+
     // Data for Motorcycle View
     const allMotorcyclesForLiaison = motorcycles.filter(mc => {
-        const ca = cashAdvances.find(c => c.motorcycleIds?.includes(mc.id));
+        const ca = caMapByMcId.get(mc.id);
         if (!ca) return false;
         
         const isRelevantCA = ['CV Received', 'Liquidated', 'Processing', 'For Review'].includes(ca.status);
@@ -160,7 +170,7 @@ export default function LiquidationsPage() {
     });
 
     const pendingLiquidationMotorcycles = allMotorcyclesForLiaison.filter(mc => {
-        const ca = cashAdvances.find(c => c.motorcycleIds?.includes(mc.id));
+        const ca = caMapByMcId.get(mc.id);
         if (!ca) return false;
         
         const isReadyForLiq = ['CV Received', 'Processing'].includes(ca.status);
@@ -228,7 +238,7 @@ export default function LiquidationsPage() {
                                            </TableHeader>
                                            <TableBody>
                                                 {motorcyclesToShow.map(mc => {
-                                                    const ca = cashAdvances.find(c => c.motorcycleIds?.includes(mc.id));
+                                                    const ca = caMapByMcId.get(mc.id);
                                                     if (!ca) return null;
                                                     
                                                     const isLiquidated = mc.status === 'For Review';
@@ -373,5 +383,3 @@ export default function LiquidationsPage() {
         </ProtectedPage>
     );
 }
-
-    
