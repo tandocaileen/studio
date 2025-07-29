@@ -37,8 +37,6 @@ type DateRange = '7d' | '30d' | 'all';
 function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
   const [motorcycles, setMotorcycles] = useState<Motorcycle[] | null>(null);
   const [endorsements, setEndorsements] = useState<Endorsement[] | null>(null);
-  const [activeStatusFilters, setActiveStatusFilters] = React.useState<string[]>(['Incomplete', 'Ready to Register']);
-  const [tempStatusFilters, setTempStatusFilters] = React.useState<string[]>(['Incomplete', 'Ready to Register']);
 
   useEffect(() => {
     getMotorcycles().then(setMotorcycles);
@@ -52,25 +50,6 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
     return <AppLoader />;
   }
   
-  const handleCheckboxChange = (status: string, checked: boolean) => {
-    setTempStatusFilters(prev => {
-        if (checked) {
-            return [...prev, status];
-        } else {
-            return prev.filter(s => s !== status);
-        }
-    });
-  };
-  
-  const applyFilters = () => {
-      setActiveStatusFilters(tempStatusFilters);
-  };
-  
-  const clearFilters = () => {
-      setTempStatusFilters([]);
-      setActiveStatusFilters([]);
-  };
-
   const handleStateUpdate = (updatedOrNewMotorcycles: Motorcycle | Motorcycle[]) => {
       setMotorcycles(currentMotorcycles => {
           if (!currentMotorcycles) return [];
@@ -87,13 +66,6 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
   };
   
   const filteredMotorcycles = motorcycles.filter(m => {
-    let matchesStatus = true;
-    if (activeStatusFilters.length > 0) {
-        matchesStatus = activeStatusFilters.includes(m.status);
-    }
-    
-    if (!matchesStatus) return false;
-
     if (!searchQuery) return true;
     
     const searchFilter =
@@ -121,52 +93,12 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
           </div>
       </div>
 
-       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
-        <div className="lg:col-span-3">
-             <Card>
-                <CardContent className="p-6">
-                    <MotorcycleTable motorcycles={filteredMotorcycles} onStateChange={handleStateUpdate} />
-                </CardContent>
-            </Card>
-        </div>
-        <div className="lg:col-span-1 lg:sticky top-20">
+       <div className="grid grid-cols-1 gap-6 items-start">
             <Card>
-                <CardHeader>
-                    <CardTitle>Filters</CardTitle>
-                    <CardDescription>Refine your view</CardDescription>
-                </CardHeader>
-                <CardContent className="grid gap-4">
-                    <div>
-                        <Label className="font-semibold text-sm">Status</Label>
-                         <Separator className="my-2" />
-                        <div className="grid gap-2">
-                           {ALL_SUPERVISOR_STATUSES.map(status => (
-                            <div key={status} className="flex items-center gap-2">
-                                <Checkbox 
-                                    id={`filter-${status}`}
-                                    checked={tempStatusFilters.includes(status)}
-                                    onCheckedChange={(checked) => handleCheckboxChange(status, !!checked)}
-                                />
-                                <Label htmlFor={`filter-${status}`} className="font-normal text-sm">
-                                    {status}
-                                </Label>
-                            </div>
-                           ))}
-                        </div>
-                    </div>
-                </CardContent>
-                <CardFooter className="flex flex-col gap-2">
-                    <Button onClick={applyFilters} className="w-full">
-                        <Filter className="mr-2 h-4 w-4" />
-                        Apply Filters
-                    </Button>
-                    <Button onClick={clearFilters} variant="ghost" className="w-full">
-                        <RotateCcw className="mr-2 h-4 w-4" />
-                        Clear
-                    </Button>
-                </CardFooter>
+            <CardContent className="p-6">
+                <MotorcycleTable motorcycles={filteredMotorcycles} onStateChange={handleStateUpdate} />
+            </CardContent>
             </Card>
-        </div>
       </div>
     </>
   );
@@ -175,10 +107,6 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
 function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
     const [motorcycles, setMotorcycles] = useState<Motorcycle[] | null>(null);
     const [endorsements, setEndorsements] = useState<Endorsement[] | null>(null);
-
-    const defaultStatuses = ['Endorsed - Ready', 'Endorsed - Incomplete'];
-    const [activeStatusFilters, setActiveStatusFilters] = useState<string[]>(defaultStatuses);
-    const [tempStatusFilters, setTempStatusFilters] = useState<string[]>(defaultStatuses);
     
     const [activeEndorserFilters, setActiveEndorserFilters] = useState<string[]>([]);
     const [tempEndorserFilters, setTempEndorserFilters] = useState<string[]>([]);
@@ -225,22 +153,15 @@ function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
     const uniqueEndorsers = [...new Set(endorsements.map(e => e.createdBy))];
 
     const applyFilters = () => {
-        setActiveStatusFilters(tempStatusFilters);
         setActiveEndorserFilters(tempEndorserFilters);
         setActiveDateRange(tempDateRange);
     };
 
     const clearFilters = () => {
-        setTempStatusFilters([]);
-        setActiveStatusFilters([]);
         setTempEndorserFilters([]);
         setActiveEndorserFilters([]);
         setTempDateRange('all');
         setActiveDateRange('all');
-    };
-
-    const handleStatusCheckboxChange = (status: string, checked: boolean) => {
-        setTempStatusFilters(prev => checked ? [...prev, status] : prev.filter(s => s !== status));
     };
 
     const handleEndorserCheckboxChange = (endorser: string, checked: boolean) => {
@@ -257,14 +178,6 @@ function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
 
         if (activeEndorserFilters.length > 0 && !activeEndorserFilters.includes(e.createdBy)) {
             return false;
-        }
-
-        if (activeStatusFilters.length > 0) {
-            const hasMatchingMotorcycle = e.motorcycleIds.some(mcId => {
-                const motorcycle = motorcycles.find(m => m.id === mcId);
-                return motorcycle && activeStatusFilters.includes(motorcycle.status);
-            });
-            if (!hasMatchingMotorcycle) return false;
         }
         
         return true;
@@ -303,22 +216,6 @@ function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
                             <CardDescription>Refine endorsements</CardDescription>
                         </CardHeader>
                         <CardContent className="grid gap-6">
-                            <div>
-                                <Label className="font-semibold text-sm">Status</Label>
-                                <Separator className="my-2" />
-                                <div className="grid gap-2">
-                                    {ALL_LIAISON_STATUSES.map(status => (
-                                        <div key={status} className="flex items-center gap-2">
-                                            <Checkbox 
-                                                id={`filter-status-${status}`}
-                                                checked={tempStatusFilters.includes(status)}
-                                                onCheckedChange={(checked) => handleStatusCheckboxChange(status, !!checked)}
-                                            />
-                                            <Label htmlFor={`filter-status-${status}`} className="font-normal text-sm">{status}</Label>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
                             <div>
                                 <Label className="font-semibold text-sm">Endorsed By</Label>
                                 <Separator className="my-2" />
