@@ -62,6 +62,26 @@ export function LiaisonEndorsementTable({
       checked ? [...prev, motorcycle] : prev.filter(m => m.id !== motorcycle.id)
     );
   };
+
+  const handleSelectAllInGroup = (groupMotorcycles: Motorcycle[], checked: boolean | 'indeterminate') => {
+    const eligibleMotorcycles = groupMotorcycles.filter(m => m.status === 'Endorsed - Ready');
+    if (checked === true) {
+      // Add all eligible motorcycles from this group to selection, avoiding duplicates
+      setSelectedMotorcycles(prev => {
+        const newSelection = [...prev];
+        eligibleMotorcycles.forEach(mc => {
+          if (!newSelection.some(smc => smc.id === mc.id)) {
+            newSelection.push(mc);
+          }
+        });
+        return newSelection;
+      });
+    } else {
+      // Remove all motorcycles from this group from selection
+      const groupMcIds = new Set(groupMotorcycles.map(m => m.id));
+      setSelectedMotorcycles(prev => prev.filter(m => !groupMcIds.has(m.id)));
+    }
+  };
   
   const handleOpenCaPreview = () => {
     if (selectedMotorcycles.length === 0) {
@@ -177,6 +197,13 @@ export function LiaisonEndorsementTable({
           <TableBody>
             {endorsements.map(endorsement => {
               const associatedMotorcycles = motorcycles.filter(m => endorsement.motorcycleIds.includes(m.id));
+              const eligibleMotorcyclesInGroup = associatedMotorcycles.filter(m => m.status === 'Endorsed - Ready');
+              const selectedEligibleInGroupCount = selectedMotorcycles.filter(m => eligibleMotorcyclesInGroup.some(em => em.id === m.id)).length;
+
+              const isAllInGroupSelected = eligibleMotorcyclesInGroup.length > 0 && selectedEligibleInGroupCount === eligibleMotorcyclesInGroup.length;
+              const isPartiallySelectedInGroup = eligibleMotorcyclesInGroup.length > 0 && selectedEligibleInGroupCount > 0 && !isAllInGroupSelected;
+
+
               return (
                 <Collapsible asChild key={endorsement.id}>
                   <>
@@ -205,7 +232,15 @@ export function LiaisonEndorsementTable({
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead className="w-[40px]"></TableHead>
+                                        <TableHead className="w-[40px]">
+                                           <Checkbox
+                                                checked={isAllInGroupSelected || isPartiallySelectedInGroup}
+                                                onCheckedChange={(checked) => handleSelectAllInGroup(associatedMotorcycles, checked)}
+                                                aria-label="Select all in this group"
+                                                disabled={eligibleMotorcyclesInGroup.length === 0}
+                                                data-state={isPartiallySelectedInGroup ? "indeterminate" : isAllInGroupSelected ? "checked" : "unchecked"}
+                                            />
+                                        </TableHead>
                                         <TableHead>SI No.</TableHead>
                                         <TableHead>Customer Name</TableHead>
                                         <TableHead>Account Code</TableHead>
