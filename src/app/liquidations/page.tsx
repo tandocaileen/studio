@@ -67,6 +67,59 @@ function LiquidationsContent() {
         fetchData();
     }, []);
 
+    const precomputedData = React.useMemo(() => {
+        if (!motorcycles || !cashAdvances) {
+            return {
+                caMapByMcId: new Map(),
+                getMcAdvanceAmount: () => 0,
+                allMotorcyclesForView: [],
+                pendingLiquidationMotorcycles: [],
+            };
+        }
+
+        const caMapByMcId = new Map<string, CashAdvance>();
+        cashAdvances.forEach(ca => {
+            if (ca.motorcycleIds) {
+                ca.motorcycleIds.forEach(mcId => {
+                    caMapByMcId.set(mcId, ca);
+                });
+            }
+        });
+
+        const getMcAdvanceAmount = (mc: Motorcycle): number => {
+            const ca = caMapByMcId.get(mc.id);
+            if (!ca || !ca.motorcycleIds) return (mc.processingFee || 0) + (mc.orFee || 0);
+            return ca.amount / ca.motorcycleIds.length;
+        };
+
+        const isLiaison = user?.role === 'Liaison';
+
+        const allMotorcyclesForView = motorcycles.filter(mc => {
+            const ca = caMapByMcId.get(mc.id);
+            if (!ca) return false;
+            
+            const isRelevantCAStatus = ['CV Received', 'Liquidated', 'Processing', 'For Review'].includes(ca.status);
+            if (!isRelevantCAStatus) return false;
+            
+            if (isLiaison && ca.personnel !== user.name) return false;
+            
+            return true;
+        });
+
+        const pendingLiquidationMotorcycles = allMotorcyclesForView.filter(mc => {
+            const ca = caMapByMcId.get(mc.id);
+            if (!ca) return false;
+            const isReadyForLiq = ['CV Received'].includes(ca.status);
+            return isReadyForLiq && mc.status !== 'For Review' && mc.status !== 'Liquidated';
+        });
+
+        return { caMapByMcId, getMcAdvanceAmount, allMotorcyclesForView, pendingLiquidationMotorcycles };
+
+    }, [motorcycles, cashAdvances, user]);
+
+
+    const { caMapByMcId, getMcAdvanceAmount, allMotorcyclesForView, pendingLiquidationMotorcycles } = precomputedData;
+
     const handleLiquidateClick = (mc: Motorcycle, ca: CashAdvance) => {
         const grouped: GroupedLiquidation = {
             cashAdvance: ca,
@@ -101,12 +154,6 @@ function LiquidationsContent() {
             return;
         }
 
-        const getMcAdvanceAmount = (mc: Motorcycle): number => {
-            const ca = cashAdvances?.find(c => c.motorcycleIds?.includes(mc.id));
-            if (!ca || !ca.motorcycleIds) return (mc.processingFee || 0) + (mc.orFee || 0);
-            return ca.amount / ca.motorcycleIds.length;
-        };
-
         const updatedMotorcycle: Motorcycle = {
             ...mcToUpdate,
             status: 'For Review',
@@ -140,40 +187,6 @@ function LiquidationsContent() {
     }
 
     const isLiaison = user.role === 'Liaison';
-
-    const caMapByMcId = new Map<string, CashAdvance>();
-    cashAdvances.forEach(ca => {
-        if (ca.motorcycleIds) {
-            ca.motorcycleIds.forEach(mcId => {
-                caMapByMcId.set(mcId, ca);
-            });
-        }
-    });
-
-    const getMcAdvanceAmount = (mc: Motorcycle): number => {
-        const ca = caMapByMcId.get(mc.id);
-        if (!ca || !ca.motorcycleIds) return (mc.processingFee || 0) + (mc.orFee || 0);
-        return ca.amount / ca.motorcycleIds.length;
-    };
-
-    const allMotorcyclesForView = motorcycles.filter(mc => {
-        const ca = caMapByMcId.get(mc.id);
-        if (!ca) return false;
-        
-        const isRelevantCAStatus = ['CV Received', 'Liquidated', 'Processing', 'For Review'].includes(ca.status);
-        if (!isRelevantCAStatus) return false;
-        
-        if (isLiaison && ca.personnel !== user.name) return false;
-        
-        return true;
-    });
-
-    const pendingLiquidationMotorcycles = allMotorcyclesForView.filter(mc => {
-        const ca = caMapByMcId.get(mc.id);
-        if (!ca) return false;
-        const isReadyForLiq = ['CV Received', 'Processing'].includes(ca.status);
-        return isReadyForLiq && mc.status !== 'For Review' && mc.status !== 'Liquidated';
-    });
 
     const motorcyclesToShow = motorcycleViewFilter === 'pending' ? pendingLiquidationMotorcycles : allMotorcyclesForView;
     
@@ -239,7 +252,7 @@ function LiquidationsContent() {
                                         if (!ca) return null;
                                         
                                         const isLiquidated = mc.status === 'For Review';
-                                        const canLiquidate = ['CV Received', 'Processing'].includes(ca.status) && !isLiquidated;
+                                        const canLiquidate = ca.status === 'CV Received' && !isLiquidated;
 
                                         return (
                                             <TableRow key={mc.id}>
@@ -390,3 +403,5 @@ export default function LiquidationsPage() {
         </ProtectedPage>
     );
 }
+
+    
