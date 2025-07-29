@@ -21,13 +21,13 @@ import { EndorsedIncompleteTable } from "@/components/dashboard/endorsed-incompl
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
-type ViewFilter = 'unregistered' | 'all';
+type ViewFilter = 'unendorsed' | 'all';
 type DashboardTab = 'all-motorcycles' | 'pending-endorsements';
 
 function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
   const [motorcycles, setMotorcycles] = useState<Motorcycle[] | null>(null);
   const [endorsements, setEndorsements] = useState<Endorsement[] | null>(null);
-  const [viewFilter, setViewFilter] = useState<ViewFilter>('unregistered');
+  const [viewFilter, setViewFilter] = useState<ViewFilter>('unendorsed');
   const [activeTab, setActiveTab] = useState<DashboardTab>('all-motorcycles');
 
   useEffect(() => {
@@ -59,8 +59,8 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
   
   const filteredMotorcycles = motorcycles.filter(m => {
     let matchesFilter = true;
-    if (viewFilter === 'unregistered') {
-        matchesFilter = !['For Review'].includes(m.status);
+    if (viewFilter === 'unendorsed') {
+        matchesFilter = ['Incomplete', 'Ready to Register'].includes(m.status);
     }
     
     if (!matchesFilter) return false;
@@ -135,7 +135,7 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
                              <div className="flex items-center justify-between mb-4">
                                 <Tabs value={viewFilter} onValueChange={(value) => setViewFilter(value as ViewFilter)}>
                                     <TabsList>
-                                        <TabsTrigger value="unregistered">Unregistered</TabsTrigger>
+                                        <TabsTrigger value="unendorsed">Unendorsed</TabsTrigger>
                                         <TabsTrigger value="all">View All</TabsTrigger>
                                     </TabsList>
                                 </Tabs>
