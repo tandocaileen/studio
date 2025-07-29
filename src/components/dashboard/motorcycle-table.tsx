@@ -10,26 +10,14 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Motorcycle, MotorcycleStatus } from '@/types';
-import { MoreHorizontal, Wrench, ArrowUpDown } from 'lucide-react';
-import {
-  Dialog,
-} from '@/components/ui/dialog';
+import { Wrench, ArrowUpDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import { MotorcycleDetailsDialog } from './motorcycle-details-dialog';
-import { addCashAdvance, updateMotorcycles as saveMotorcycles } from '@/lib/data';
 
 type MotorcycleTableProps = {
   motorcycles: Motorcycle[];
@@ -58,7 +46,6 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
   const isLiaison = user?.role === 'Liaison';
   const isSupervisor = user?.role === 'Store Supervisor';
   const isCashier = user?.role === 'Cashier';
-  const canEditInsuranceAndControl = isSupervisor || isCashier;
 
 
   const handleAction = (message: string) => {
@@ -193,9 +180,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                 <SortableHeader column="crNumber">CR No.</SortableHeader>
                 <SortableHeader column="hpgControlNumber">HPG Control</SortableHeader>
                 <SortableHeader column="status">Status</SortableHeader>
-                <TableHead className="w-[100px]">
-                  <span className="sr-only">Actions</span>
-                </TableHead>
+                <TableHead className="w-[100px] text-center">Action</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -212,22 +197,11 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                     <TableCell>
                       <Badge variant={statusVariant(motorcycle.status)}>{motorcycle.status}</Badge>
                     </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button aria-haspopup="true" size="icon" variant="ghost">
-                            <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">Toggle menu</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem onClick={() => handleEditClick(motorcycle)}>
-                            <Wrench className="mr-2 h-4 w-4" />
-                            <span>View / Edit Details</span>
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                    <TableCell className="text-center">
+                      <Button variant="outline" size="sm" onClick={() => handleEditClick(motorcycle)}>
+                          <Wrench className="mr-2 h-4 w-4" />
+                          Edit
+                      </Button>
                     </TableCell>
                   </TableRow>
               ))}
