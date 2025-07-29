@@ -494,7 +494,7 @@ const cashAdvances: CashAdvance[] = [
     purpose: 'Renewal for 1 unit',
     amount: 2185.18,
     date: addDays(today, -40),
-    status: 'Pending',
+    status: 'Processing for CV',
     motorcycleIds: ['2']
   },
   {
@@ -515,7 +515,7 @@ const cashAdvances: CashAdvance[] = [
     purpose: 'New registration for 1 unit',
     amount: 2600,
     date: addDays(today, -20),
-    status: 'Approved',
+    status: 'Processing for CV',
     motorcycleIds: ['5']
   },
   {
@@ -557,7 +557,7 @@ const cashAdvances: CashAdvance[] = [
     purpose: 'Registration for XR150L',
     amount: 2100.00,
     date: new Date(),
-    status: 'Pending',
+    status: 'Processing for CV',
     motorcycleIds: ['13']
   },
   // Demo Liaison Data
@@ -567,7 +567,7 @@ const cashAdvances: CashAdvance[] = [
     purpose: 'Demo registration for 1 unit',
     amount: 1500,
     date: addDays(today, -1),
-    status: 'Pending',
+    status: 'Processing for CV',
     motorcycleIds: [],
   },
   {
@@ -576,7 +576,7 @@ const cashAdvances: CashAdvance[] = [
     purpose: 'Demo registration for 2 units',
     amount: 3200,
     date: addDays(today, -3),
-    status: 'Pending',
+    status: 'Processing for CV',
     motorcycleIds: [],
   },
   {
@@ -585,7 +585,7 @@ const cashAdvances: CashAdvance[] = [
     purpose: 'Demo renewal for 1 unit',
     amount: 1850,
     date: addDays(today, -5),
-    status: 'Approved',
+    status: 'Processing for CV',
     motorcycleIds: [],
   },
   {
@@ -635,21 +635,12 @@ const cashAdvances: CashAdvance[] = [
     motorcycleIds: [],
   },
   {
-    id: 'ca-demo-008',
-    personnel: 'Demo Liaison',
-    purpose: 'Demo marketing event',
-    amount: 10000,
-    date: addDays(today, -15),
-    status: 'Rejected',
-    motorcycleIds: [],
-  },
-  {
     id: 'ca-demo-009',
     personnel: 'Demo Liaison',
     purpose: 'Demo unit maintenance',
     amount: 750,
     date: addDays(today, -20),
-    status: 'Approved',
+    status: 'Processing for CV',
     motorcycleIds: [],
   },
   {
@@ -692,7 +683,7 @@ const endorsements: Endorsement[] = [
     { id: 'ENDO-20240729-001', transactionDate: addDays(today, -1), liaisonId: '1', liaisonName: 'JINKY JOY AGBALOG', motorcycleIds: ['11'], remarks: 'Urgent', createdBy: 'Supervisor A'},
     { id: 'ENDO-20240730-001', transactionDate: addDays(today, -1), liaisonId: '7', liaisonName: 'BENJO SEQUIERO', motorcycleIds: ['12', '3'], remarks: 'Please complete details', createdBy: 'Supervisor A'},
     { id: 'ENDO-20240730-002', transactionDate: addDays(today, -1), liaisonId: '12', liaisonName: 'ALI VIN SALEH COLINA', motorcycleIds: ['8'], remarks: 'Davao units.', createdBy: 'Supervisor A'},
-    { id: 'ENDO-20240801-001', transactionDate: new Date(), liaisonId: '15', liaisonName: 'Demo Liaison', motorcycleIds: ['2'], remarks: 'Demo endorsement for testing.', createdBy: 'Supervisor A'},
+    { id: 'ENDO-20240801-001', transactionDate: addDays(today, -2), liaisonId: '3', liaisonName: 'RODEL PASTRANO', motorcycleIds: ['2', '13'], remarks: 'For renewal.', createdBy: 'Cashier B'},
     { id: 'ENDO-20240801-002', transactionDate: addDays(today, -1), liaisonId: '15', liaisonName: 'Demo Liaison', motorcycleIds: ['5'], remarks: 'More demo units.', createdBy: 'Cashier B'},
     { id: 'ENDO-20240801-003', transactionDate: addDays(today, -3), liaisonId: '15', liaisonName: 'Demo Liaison', motorcycleIds: ['8', '10', '13'], remarks: 'Cross-branch units.', createdBy: 'Supervisor A'},
     { id: 'ENDO-20240801-004', transactionDate: addDays(today, -4), liaisonId: '15', liaisonName: 'Demo Liaison', motorcycleIds: ['4', '9', '12'], remarks: 'Incomplete units for follow up.', createdBy: 'Supervisor A'},
@@ -723,6 +714,7 @@ export async function getEndorsements() {
     await new Promise(resolve => setTimeout(resolve, 500));
     return JSON.parse(JSON.stringify(endorsements)).map((e: any) => ({...e, transactionDate: new Date(e.transactionDate)}));
 }
+
 
 
 

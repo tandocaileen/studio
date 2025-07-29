@@ -49,7 +49,7 @@ const GenerateCashAdvanceOutputSchema = z.object({
     purpose: z.string().describe('A summarized purpose for the cash advance, e.g., "Cash advance for registration of 3 units."'),
     amount: z.number().describe('The total combined amount for all motorcycles (processingFee + orFee).'),
     date: z.string().describe("The date of the cash advance request in ISO format."),
-    status: z.enum(['Pending', 'Approved', 'Liquidated', 'Rejected', 'Check Voucher Released', 'CV Received']),
+    status: z.enum(['Processing for CV', 'Check Voucher Released', 'CV Received', 'Liquidated']),
     motorcycleIds: z.array(z.string()).describe("An array of IDs of the motorcycles included in this cash advance."),
 });
 export type GenerateCashAdvanceOutput = z.infer<typeof GenerateCashAdvanceOutputSchema>;
@@ -84,7 +84,7 @@ const prompt = ai.definePrompt({
     4.  If remarks are provided, append them to the purpose. For example: "Cash advance for registration of X units. Remarks: [remarks]".
     5.  The personnel should be the requesting liaison.
     6.  Collect all motorcycle IDs into the 'motorcycleIds' array.
-    7.  Set the status to 'Pending' and the date to today's date in ISO format.
+    7.  Set the status to 'Processing for CV' and the date to today's date in ISO format.
     8.  Generate a unique ID for the cash advance following the format 'ca-MMDDYY-XXX'.
 
     Motorcycles for processing:

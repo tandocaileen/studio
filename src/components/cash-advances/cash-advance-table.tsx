@@ -73,12 +73,10 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
 
   const getStatusColor = (status: CashAdvance['status']): string => {
     switch (status) {
-      case 'Pending': return 'bg-amber-500';
-      case 'Approved': return 'bg-blue-500';
+      case 'Processing for CV': return 'bg-amber-500';
       case 'Check Voucher Released': return 'bg-purple-500';
       case 'CV Received': return 'bg-teal-500';
       case 'Liquidated': return 'bg-green-500';
-      case 'Rejected': return 'bg-red-500';
       default: return 'bg-gray-500';
     }
   }
@@ -173,11 +171,7 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
                       {isCashierOrSupervisor && (
                         <>
                            <DropdownMenuSeparator />
-                          <DropdownMenuItem disabled={advance.cashAdvance.status !== 'Pending'} onClick={() => handleAction(`Approved advance for ${advance.cashAdvance.personnel}.`)}>
-                            <Check className="mr-2 h-4 w-4" />
-                            <span>Approve</span>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem disabled={advance.cashAdvance.status !== 'Approved'} onClick={() => handleAction(`CV released for ${advance.cashAdvance.personnel}.`)}>
+                          <DropdownMenuItem disabled={advance.cashAdvance.status !== 'Processing for CV'} onClick={() => handleAction(`CV released for ${advance.cashAdvance.personnel}.`)}>
                             <FileCheck className="mr-2 h-4 w-4" />
                             <span>Release CV</span>
                           </DropdownMenuItem>
@@ -185,14 +179,10 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
                             <Banknote className="mr-2 h-4 w-4" />
                             <span>Mark as CV Received</span>
                           </DropdownMenuItem>
-                           <DropdownMenuItem className="text-destructive" disabled={advance.cashAdvance.status !== 'Pending'} onClick={() => handleAction(`Rejected advance for ${advance.cashAdvance.personnel}.`)}>
-                            <X className="mr-2 h-4 w-4" />
-                            <span>Reject</span>
-                          </DropdownMenuItem>
                         </>
                       )}
                       {user?.role === 'Liaison' && (
-                         <DropdownMenuItem disabled={!['Approved', 'CV Received'].includes(advance.cashAdvance.status)} onClick={() => handleAction(`Liquidated advance for ${advance.cashAdvance.personnel}.`)}>
+                         <DropdownMenuItem disabled={!['CV Received'].includes(advance.cashAdvance.status)} onClick={() => handleAction(`Liquidated advance for ${advance.cashAdvance.personnel}.`)}>
                             <FileUp className="mr-2 h-4 w-4" />
                             <span>Liquidate</span>
                         </DropdownMenuItem>

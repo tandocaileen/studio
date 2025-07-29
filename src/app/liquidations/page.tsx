@@ -149,7 +149,7 @@ export default function LiquidationsPage() {
         const ca = cashAdvances.find(c => c.motorcycleIds?.includes(mc.id));
         if (!ca) return false;
         
-        const isRelevantCA = ['Approved', 'CV Received', 'Liquidated', 'Processing'].includes(ca.status);
+        const isRelevantCA = ['Processing for CV', 'CV Received', 'Liquidated', 'Processing'].includes(ca.status);
         if (!isRelevantCA) return false;
         
         if (isLiaison && ca.personnel !== user.name) return false;
@@ -161,7 +161,7 @@ export default function LiquidationsPage() {
         const ca = cashAdvances.find(c => c.motorcycleIds?.includes(mc.id));
         if (!ca) return false;
         
-        const isReadyForLiq = ['Approved', 'CV Received', 'Processing'].includes(ca.status);
+        const isReadyForLiq = ['Processing for CV', 'CV Received', 'Processing'].includes(ca.status);
         const isNotLiquidated = mc.status !== 'For Review' && mc.status !== 'Liquidated';
 
         return isReadyForLiq && isNotLiquidated;
@@ -179,7 +179,7 @@ export default function LiquidationsPage() {
 
     const filteredGroupedItems = groupedItems.filter(item => {
         if(isLiaison && item.cashAdvance.personnel !== user.name) return false;
-        return ['Approved', 'CV Received', 'Liquidated', 'Processing'].includes(item.cashAdvance.status) || item.motorcycles.some(m => m.status === 'For Review');
+        return ['Processing for CV', 'CV Received', 'Liquidated', 'Processing'].includes(item.cashAdvance.status) || item.motorcycles.some(m => m.status === 'For Review');
     });
 
     return (
@@ -231,7 +231,7 @@ export default function LiquidationsPage() {
                                                     if (!ca) return null;
                                                     
                                                     const isLiquidated = mc.status === 'For Review';
-                                                    const canLiquidate = ['Approved', 'CV Received', 'Processing'].includes(ca.status) && !isLiquidated;
+                                                    const canLiquidate = ['Processing for CV', 'CV Received', 'Processing'].includes(ca.status) && !isLiquidated;
 
                                                     return (
                                                         <TableRow key={mc.id}>
@@ -374,3 +374,4 @@ export default function LiquidationsPage() {
 }
 
     
+
