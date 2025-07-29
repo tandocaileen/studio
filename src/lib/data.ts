@@ -207,13 +207,15 @@ const ensureDataGenerated = () => {
         setData(CA_KEY, cashAdvances);
         localStorage.setItem('data_generated_flag', 'true');
         // A small delay to allow localStorage to settle before potential reload.
-        setTimeout(() => {
-            // Remove the query param to prevent re-triggering on next refresh
-            const url = new URL(window.location.href);
-            url.searchParams.delete('reset_data');
-            window.history.replaceState({}, '', url.toString());
-            window.location.reload();
-        }, 100);
+        if (window.location.search.includes('reset_data=true')) {
+            setTimeout(() => {
+                // Remove the query param to prevent re-triggering on next refresh
+                const url = new URL(window.location.href);
+                url.searchParams.delete('reset_data');
+                window.history.replaceState({}, '', url.toString());
+                window.location.reload();
+            }, 100);
+        }
     }
 };
 
@@ -292,5 +294,3 @@ export async function addEndorsement(newEndorsement: Endorsement) {
 export function getBranches() {
   return [...new Set(initialLiaisonUsers.map(l => l.assignedBranch))];
 }
-
-    
