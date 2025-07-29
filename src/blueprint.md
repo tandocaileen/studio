@@ -36,8 +36,6 @@ This role is responsible for the initial data entry, financial oversight, and ap
 - **Dashboard**:
   - View a high-level financial overview with key metrics.
   - **Motorcycle Fleet Tab**: A comprehensive table of all motorcycles in the system. The view defaults to "Unendorsed" units (`Incomplete` or `Ready to Register`) to help prioritize units for the next step. A filter panel allows for viewing units of any status.
-- **Receive MC Docs**:
-  - From the dashboard, they can access a dialog to confirm the bulk reception of motorcycle documents.
 - **Motorcycle Management**:
   - View and edit the "Insurance & Control" section for any motorcycle. Saving these details is the key step to change a unit's status from `Incomplete` to `Ready to Register` (or `Endorsed - Incomplete` to `Endorsed - Ready`).
 - **Endorsements**:
@@ -74,7 +72,6 @@ This role is the "on-the-ground" agent responsible for processing vehicle regist
   - On the "Liquidations" page, they see a list of their individual motorcycles tied to a received cash advance, ready for liquidation.
   - They can liquidate each motorcycle one by one, submitting details like the LTO OR number, amounts, and uploading a copy of the receipt.
   - Submitting the liquidation changes the motorcycle's status to `For Review`.
-  - Can view all liquidation reports.
 - **Reporting**:
   - View and print their own Cash Advance requests and Liquidation Reports.
 
@@ -83,40 +80,37 @@ This role is the "on-the-ground" agent responsible for processing vehicle regist
 
 Here is a step-by-step flow of a motorcycle through the system:
 
-1.  **Receive MC Docs (Store Supervisor/Cashier)**
-    - A Supervisor navigates to the **Dashboard** and uses the **Receive MC Docs** action to add new motorcycles to the system.
-    - These motorcycles are now in the system with a status of `Incomplete`.
-
-2.  **Complete Motorcycle Details (Store Supervisor/Cashier)**
-    - The Supervisor sees the newly received motorcycles in the main **Motorcycle List** table.
+1.  **Complete Motorcycle Details (Store Supervisor/Cashier)**
+    - The system automatically receives motorcycle data from the company's POS and D365 systems.
+    - The Supervisor sees these new units on their dashboard, which defaults to showing `Incomplete` motorcycles.
     - They click the **"Edit"** action for one of the `Incomplete` motorcycles.
     - They fill in the required "Insurance & Control" details.
     - Upon clicking **"Save Changes"**, the motorcycle's status automatically changes to **`Ready to Register`**.
 
-3.  **Create Endorsement (Store Supervisor/Cashier)**
+2.  **Create Endorsement (Store Supervisor/Cashier)**
     - The Supervisor goes to the **Endorsements** page and clicks **"Create New Endorsement"**.
     - They see a list of all `Ready to Register` and `Incomplete` motorcycles.
     - They select one or more units and choose a **Receiving Liaison**.
     - If a `Ready to Register` unit is selected, its status becomes **`Endorsed - Ready`**. If an `Incomplete` unit is selected, its status becomes **`Endorsed - Incomplete`**.
 
-4.  **Generate Cash Advance (Liaison)**
+3.  **Generate Cash Advance (Liaison)**
     - The **Liaison** logs in and sees the newly assigned motorcycles on their **Home** page, grouped by endorsement.
     - They can only select units that are `Endorsed - Ready`.
     - They click the **"Generate CA"** button. An AI-powered flow generates a single cash advance request.
     - The motorcycles' status automatically updates to **`Processing`**.
 
-5.  **Process Check Voucher (Cashier & Supervisor)**
+4.  **Process Check Voucher (Cashier & Supervisor)**
     - The **Cashier** sees the new request on the **Cash Advances** page (pre-filtered to 'Processing for CV').
     - They select one or more requests, click **"Bulk Actions"**, and enter a single Check Voucher number to release the funds. The status for all selected requests changes to **`CV Released`**.
     - The **Supervisor** or **Cashier** sees these on the Cash Advances page (pre-filtered to 'CV Released'). They select the requests and use the **"Bulk Actions"** menu to confirm the liaison has received the funds. The status changes to **`CV Received`**. The Liaison can also see these status changes on their Cash Advances page.
 
-6.  **Liquidate Expenses (Liaison)**
+5.  **Liquidate Expenses (Liaison)**
     - After completing the registration, the Liaison navigates to the **Liquidations** page.
     - They see a list of their motorcycles that are linked to a received cash advance (`CV Received` status).
     - They click **"Liquidate"** for a specific unit, fill in the LTO OR details, amounts, and upload the receipt.
     - Upon submission, the motorcycle's status automatically changes to **`For Review`**.
 
-7.  **View Liquidation Report (All Roles)**
+6.  **View Liquidation Report (All Roles)**
     - Any user can navigate to the **Liquidations** page, switch to the "By Cash Advance" view, and find the relevant Cash Advance.
     - They can click **"View Full Report"**.
     - A detailed, printable PDF document is displayed, showing the breakdown of the cash advance and liquidated expenses.
