@@ -38,6 +38,14 @@ type DateRange = '7d' | '30d' | 'all';
 function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
   const [motorcycles, setMotorcycles] = useState<Motorcycle[] | null>(null);
   const [endorsements, setEndorsements] = useState<Endorsement[] | null>(null);
+  
+  const [activeStatusFilters, setActiveStatusFilters] = useState<MotorcycleStatus[]>(ALL_SUPERVISOR_STATUSES);
+  const [tempStatusFilters, setTempStatusFilters] = useState<MotorcycleStatus[]>(ALL_SUPERVISOR_STATUSES);
+  
+  const [activeDateRange, setActiveDateRange] = useState<DateRange>('all');
+  const [tempDateRange, setTempDateRange] = useState<DateRange>('all');
+
+  const [isFilterPanelVisible, setIsFilterPanelVisible] = useState(true);
 
   useEffect(() => {
     getMotorcycles().then(setMotorcycles);
@@ -66,18 +74,46 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
       });
   };
   
+  const applyFilters = () => {
+    setActiveStatusFilters(tempStatusFilters);
+    setActiveDateRange(tempDateRange);
+  };
+
+  const clearFilters = () => {
+      setTempStatusFilters(ALL_SUPERVISOR_STATUSES);
+      setActiveStatusFilters(ALL_SUPERVISOR_STATUSES);
+      setTempDateRange('all');
+      setActiveDateRange('all');
+  };
+  
+  const handleStatusCheckboxChange = (status: MotorcycleStatus, checked: boolean) => {
+    setTempStatusFilters(prev => checked ? [...prev, status] : prev.filter(s => s !== status));
+  };
+
+
   const filteredMotorcycles = motorcycles.filter(m => {
-    if (!searchQuery) return true;
+    if (activeStatusFilters.length > 0 && !activeStatusFilters.includes(m.status)) {
+        return false;
+    }
     
-    const searchFilter =
-      m.plateNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      m.make.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      m.model.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      m.engineNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      m.chassisNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (m.customerName && m.customerName.toLowerCase().includes(searchQuery.toLowerCase()));
-      
-    return searchFilter;
+    if (activeDateRange !== 'all') {
+        const days = activeDateRange === '7d' ? 7 : 30;
+        const cutoff = new Date();
+        cutoff.setDate(cutoff.getDate() - days);
+        if (new Date(m.purchaseDate) < cutoff) return false;
+    }
+
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
+    
+    return (
+      m.plateNumber.toLowerCase().includes(query) ||
+      m.make.toLowerCase().includes(query) ||
+      m.model.toLowerCase().includes(query) ||
+      m.engineNumber.toLowerCase().includes(query) ||
+      m.chassisNumber.toLowerCase().includes(query) ||
+      (m.customerName && m.customerName.toLowerCase().includes(query))
+    );
   });
 
   return (
@@ -92,14 +128,86 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
                   {userBranch} - {user?.role}
               </p>
           </div>
+          <Button variant="outline" onClick={() => setIsFilterPanelVisible(!isFilterPanelVisible)}>
+              <Filter className="mr-2 h-4 w-4" />
+              Filters
+          </Button>
       </div>
 
-       <div className="grid grid-cols-1 gap-6 items-start">
-            <Card>
-            <CardContent className="p-6">
-                <MotorcycleTable motorcycles={filteredMotorcycles} onStateChange={handleStateUpdate} />
-            </CardContent>
-            </Card>
+       <div className={cn("grid grid-cols-1 lg:grid-cols-4 gap-6 items-start", !isFilterPanelVisible && "lg:grid-cols-1")}>
+            <div className={cn("lg:col-span-3", !isFilterPanelVisible && "lg:col-span-4")}>
+                <Card>
+                    <CardContent className="p-6">
+                        <MotorcycleTable motorcycles={filteredMotorcycles} onStateChange={handleStateUpdate} />
+                    </CardContent>
+                </Card>
+            </div>
+            {isFilterPanelVisible && (
+                <div className="lg:col-span-1 lg:sticky top-20">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Filters</CardTitle>
+                            <CardDescription>Refine motorcycles</CardDescription>
+                        </CardHeader>
+                        <CardContent className="grid gap-4">
+                            <Collapsible defaultOpen>
+                                <CollapsibleTrigger className="flex justify-between items-center w-full [&[data-state=open]>svg]:rotate-180">
+                                    <Label className="font-semibold text-sm">Status</Label>
+                                    <ChevronDown className="h-4 w-4 transition-transform" />
+                                </CollapsibleTrigger>
+                                <CollapsibleContent>
+                                    <Separator className="my-2" />
+                                    <div className="grid gap-2">
+                                        {ALL_SUPERVISOR_STATUSES.map(status => (
+                                            <div key={status} className="flex items-center gap-2">
+                                                <Checkbox 
+                                                    id={`filter-status-${status}`}
+                                                    checked={tempStatusFilters.includes(status)}
+                                                    onCheckedChange={(checked) => handleStatusCheckboxChange(status, !!checked)}
+                                                />
+                                                <Label htmlFor={`filter-status-${status}`} className="font-normal text-sm">{status}</Label>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </CollapsibleContent>
+                            </Collapsible>
+                            <Collapsible defaultOpen>
+                                <CollapsibleTrigger className="flex justify-between items-center w-full [&[data-state=open]>svg]:rotate-180">
+                                    <Label className="font-semibold text-sm">Purchase Date</Label>
+                                    <ChevronDown className="h-4 w-4 transition-transform" />
+                                </CollapsibleTrigger>
+                                <CollapsibleContent>
+                                    <Separator className="my-2" />
+                                    <RadioGroup value={tempDateRange} onValueChange={(v) => setTempDateRange(v as DateRange)}>
+                                        <div className="flex items-center space-x-2">
+                                            <RadioGroupItem value="7d" id="r-p-7d" />
+                                            <Label htmlFor="r-p-7d" className="font-normal text-sm">Last 7 days</Label>
+                                        </div>
+                                        <div className="flex items-center space-x-2">
+                                            <RadioGroupItem value="30d" id="r-p-30d" />
+                                            <Label htmlFor="r-p-30d" className="font-normal text-sm">Last 30 days</Label>
+                                        </div>
+                                        <div className="flex items-center space-x-2">
+                                            <RadioGroupItem value="all" id="r-p-all" />
+                                            <Label htmlFor="r-p-all" className="font-normal text-sm">All time</Label>
+                                        </div>
+                                    </RadioGroup>
+                                </CollapsibleContent>
+                            </Collapsible>
+                        </CardContent>
+                        <CardFooter className="flex flex-col gap-2">
+                            <Button onClick={applyFilters} className="w-full">
+                                <Filter className="mr-2 h-4 w-4" />
+                                Apply Filters
+                            </Button>
+                            <Button onClick={clearFilters} variant="ghost" className="w-full">
+                                <RotateCcw className="mr-2 h-4 w-4" />
+                                Clear
+                            </Button>
+                        </CardFooter>
+                    </Card>
+                </div>
+            )}
       </div>
     </>
   );
@@ -351,6 +459,3 @@ export default function DashboardPage() {
     </ProtectedPage>
   );
 }
-
-
-
