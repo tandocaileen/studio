@@ -91,6 +91,14 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
     setTempStatusFilters(prev => checked ? [...prev, status] : prev.filter(s => s !== status));
   };
 
+  const handleSelectAllStatuses = (checked: boolean | 'indeterminate') => {
+    if(checked) {
+        setTempStatusFilters(ALL_SUPERVISOR_STATUSES);
+    } else {
+        setTempStatusFilters([]);
+    }
+  };
+
 
   const filteredMotorcycles = motorcycles.filter(m => {
     if (activeStatusFilters.length > 0 && !activeStatusFilters.includes(m.status)) {
@@ -159,6 +167,15 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
                                 <CollapsibleContent>
                                     <Separator className="my-2" />
                                     <div className="grid gap-2">
+                                        <div className="flex items-center gap-2">
+                                            <Checkbox 
+                                                id="filter-status-all"
+                                                checked={tempStatusFilters.length === ALL_SUPERVISOR_STATUSES.length}
+                                                onCheckedChange={handleSelectAllStatuses}
+                                            />
+                                            <Label htmlFor="filter-status-all" className="font-semibold text-sm">Select All</Label>
+                                        </div>
+                                        <Separator className="my-1" />
                                         {ALL_SUPERVISOR_STATUSES.map(status => (
                                             <div key={status} className="flex items-center gap-2">
                                                 <Checkbox 
@@ -279,6 +296,14 @@ function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
     const handleEndorserCheckboxChange = (endorser: string, checked: boolean) => {
         setTempEndorserFilters(prev => checked ? [...prev, endorser] : prev.filter(e => e !== endorser));
     };
+    
+    const handleSelectAllEndorsers = (checked: boolean | 'indeterminate') => {
+        if(checked) {
+            setTempEndorserFilters(uniqueEndorsers);
+        } else {
+            setTempEndorserFilters([]);
+        }
+    };
 
     const filteredEndorsements = endorsements.filter(e => {
         if (activeDateRange !== 'all') {
@@ -341,6 +366,15 @@ function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
                                     <CollapsibleContent>
                                         <Separator className="my-2" />
                                         <div className="grid gap-2">
+                                            <div className="flex items-center gap-2">
+                                                <Checkbox 
+                                                    id="filter-endorser-all"
+                                                    checked={tempEndorserFilters.length === uniqueEndorsers.length}
+                                                    onCheckedChange={handleSelectAllEndorsers}
+                                                />
+                                                <Label htmlFor="filter-endorser-all" className="font-semibold text-sm">Select All</Label>
+                                            </div>
+                                            <Separator className="my-1" />
                                             {uniqueEndorsers.map(endorser => (
                                                 <div key={endorser} className="flex items-center gap-2">
                                                     <Checkbox 

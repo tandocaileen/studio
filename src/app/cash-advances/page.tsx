@@ -93,9 +93,25 @@ function CashAdvancesContent({ searchQuery }: { searchQuery: string }) {
     const handleLiaisonCheckboxChange = (liaisonName: string, checked: boolean) => {
         setTempLiaisonFilters(prev => checked ? [...prev, liaisonName] : prev.filter(l => l !== liaisonName));
     };
-
+    
     const uniqueLiaisonsInCAs = [...new Set(advances.map(a => a.cashAdvance.personnel))];
     
+    const handleSelectAllStatuses = (checked: boolean | 'indeterminate') => {
+        if(checked) {
+            setTempStatusFilters(ALL_CA_STATUSES);
+        } else {
+            setTempStatusFilters([]);
+        }
+    };
+    
+    const handleSelectAllLiaisons = (checked: boolean | 'indeterminate') => {
+        if(checked) {
+            setTempLiaisonFilters(uniqueLiaisonsInCAs);
+        } else {
+            setTempLiaisonFilters([]);
+        }
+    };
+
     const filteredByFilters = advances.filter(item => {
         const { cashAdvance } = item;
         
@@ -162,6 +178,15 @@ function CashAdvancesContent({ searchQuery }: { searchQuery: string }) {
                                 <CollapsibleContent>
                                     <Separator className="my-2" />
                                     <div className="grid gap-2">
+                                        <div className="flex items-center gap-2">
+                                            <Checkbox 
+                                                id="filter-status-all"
+                                                checked={tempStatusFilters.length === ALL_CA_STATUSES.length}
+                                                onCheckedChange={handleSelectAllStatuses}
+                                            />
+                                            <Label htmlFor="filter-status-all" className="font-semibold text-sm">Select All</Label>
+                                        </div>
+                                        <Separator className="my-1" />
                                         {ALL_CA_STATUSES.map(status => (
                                             <div key={status} className="flex items-center gap-2">
                                                 <Checkbox 
@@ -183,6 +208,15 @@ function CashAdvancesContent({ searchQuery }: { searchQuery: string }) {
                                 <CollapsibleContent>
                                     <Separator className="my-2" />
                                     <div className="grid gap-2">
+                                        <div className="flex items-center gap-2">
+                                            <Checkbox 
+                                                id="filter-liaison-all"
+                                                checked={tempLiaisonFilters.length === uniqueLiaisonsInCAs.length}
+                                                onCheckedChange={handleSelectAllLiaisons}
+                                            />
+                                            <Label htmlFor="filter-liaison-all" className="font-semibold text-sm">Select All</Label>
+                                        </div>
+                                        <Separator className="my-1" />
                                         {uniqueLiaisonsInCAs.map(liaison => (
                                             <div key={liaison} className="flex items-center gap-2">
                                                 <Checkbox 
