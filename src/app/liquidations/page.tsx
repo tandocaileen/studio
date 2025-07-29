@@ -6,7 +6,7 @@ import { Header } from "@/components/layout/header";
 import { AppSidebar } from "@/components/layout/sidebar";
 import { ProtectedPage } from "@/components/auth/protected-page";
 import { useToast } from '@/hooks/use-toast';
-import { getCashAdvances, getMotorcycles } from '@/lib/data';
+import { getCashAdvances, getMotorcycles, updateMotorcycles } from '@/lib/data';
 import { CashAdvance, Motorcycle } from '@/types';
 import { useAuth } from '@/context/AuthContext';
 import { AppLoader } from '@/components/layout/loader';
@@ -59,10 +59,12 @@ export default function LiquidationsPage() {
     const router = useRouter();
     
     React.useEffect(() => {
-        Promise.all([getMotorcycles(), getCashAdvances()]).then(([mcs, cas]) => {
+        const fetchData = async () => {
+            const [mcs, cas] = await Promise.all([getMotorcycles(), getCashAdvances()]);
             setMotorcycles(mcs);
             setCashAdvances(cas);
-        });
+        };
+        fetchData();
     }, []);
 
     const handleLiquidateClick = (mc: Motorcycle, ca: CashAdvance) => {
@@ -86,45 +88,45 @@ export default function LiquidationsPage() {
         setFormData(prev => ({ ...prev, [mcId]: { ...prev[mcId], [field]: value } }));
     }
 
-    const handleFinalSubmit = () => {
+    const handleFinalSubmit = async () => {
         if (!selectedCA || !motorcycles) return;
         setIsLoading(true);
 
-        // Simulate API delay
-        setTimeout(() => {
-            const mcToUpdateId = selectedCA.motorcycles[0].id;
-            const formDetails = formData[mcToUpdateId];
+        const mcToUpdateId = selectedCA.motorcycles[0].id;
+        const formDetails = formData[mcToUpdateId];
 
-            const updatedMotorcycles = motorcycles.map(mc => {
-                if (mc.id === mcToUpdateId) {
-                    return {
-                        ...mc,
-                        status: 'For Review',
-                        liquidationDetails: {
-                            parentCaId: selectedCA.cashAdvance.id,
-                            ltoOrNumber: formDetails.ltoOrNumber,
-                            ltoOrAmount: formDetails.ltoOrAmount,
-                            ltoProcessFee: formDetails.ltoProcessFee,
-                            totalLiquidation: formDetails.ltoOrAmount + formDetails.ltoProcessFee,
-                            shortageOverage: getMcAdvanceAmount(mc) - (formDetails.ltoOrAmount + formDetails.ltoProcessFee),
-                            remarks: formDetails.remarks,
-                            liquidatedBy: user?.name || '',
-                            liquidationDate: new Date()
-                        }
-                    };
-                }
-                return mc;
-            });
-
-            setMotorcycles(updatedMotorcycles);
-
-            toast({
-                title: 'Liquidation Submitted',
-                description: `Liquidation for selected motorcycle has been submitted for review.`
-            });
-            setSelectedCA(null);
+        const mcToUpdate = motorcycles.find(m => m.id === mcToUpdateId);
+        if (!mcToUpdate) {
             setIsLoading(false);
-        }, 1000);
+            return;
+        }
+
+        const updatedMotorcycle = {
+            ...mcToUpdate,
+            status: 'For Review',
+            liquidationDetails: {
+                parentCaId: selectedCA.cashAdvance.id,
+                ltoOrNumber: formDetails.ltoOrNumber,
+                ltoOrAmount: formDetails.ltoOrAmount,
+                ltoProcessFee: formDetails.ltoProcessFee,
+                totalLiquidation: formDetails.ltoOrAmount + formDetails.ltoProcessFee,
+                shortageOverage: getMcAdvanceAmount(mcToUpdate) - (formDetails.ltoOrAmount + formDetails.ltoProcessFee),
+                remarks: formDetails.remarks,
+                liquidatedBy: user?.name || '',
+                liquidationDate: new Date()
+            }
+        };
+        
+        await updateMotorcycles(updatedMotorcycle);
+        const updatedMotorcyclesData = await getMotorcycles();
+        setMotorcycles(updatedMotorcyclesData);
+
+        toast({
+            title: 'Liquidation Submitted',
+            description: `Liquidation for selected motorcycle has been submitted for review.`
+        });
+        setSelectedCA(null);
+        setIsLoading(false);
     }
     
     if (!user || !motorcycles || !cashAdvances) {
@@ -149,7 +151,7 @@ export default function LiquidationsPage() {
         const ca = cashAdvances.find(c => c.motorcycleIds?.includes(mc.id));
         if (!ca) return false;
         
-        const isRelevantCA = ['Processing for CV', 'CV Received', 'Liquidated', 'Processing'].includes(ca.status);
+        const isRelevantCA = ['CV Received', 'Liquidated', 'Processing', 'For Review'].includes(ca.status);
         if (!isRelevantCA) return false;
         
         if (isLiaison && ca.personnel !== user.name) return false;
@@ -161,7 +163,7 @@ export default function LiquidationsPage() {
         const ca = cashAdvances.find(c => c.motorcycleIds?.includes(mc.id));
         if (!ca) return false;
         
-        const isReadyForLiq = ['Processing for CV', 'CV Received', 'Processing'].includes(ca.status);
+        const isReadyForLiq = ['CV Received', 'Processing'].includes(ca.status);
         const isNotLiquidated = mc.status !== 'For Review' && mc.status !== 'Liquidated';
 
         return isReadyForLiq && isNotLiquidated;
@@ -179,7 +181,7 @@ export default function LiquidationsPage() {
 
     const filteredGroupedItems = groupedItems.filter(item => {
         if(isLiaison && item.cashAdvance.personnel !== user.name) return false;
-        return ['Processing for CV', 'CV Received', 'Liquidated', 'Processing'].includes(item.cashAdvance.status) || item.motorcycles.some(m => m.status === 'For Review');
+        return ['CV Received', 'Liquidated', 'Processing'].includes(item.cashAdvance.status) || item.motorcycles.some(m => m.status === 'For Review');
     });
 
     return (
@@ -231,7 +233,7 @@ export default function LiquidationsPage() {
                                                     if (!ca) return null;
                                                     
                                                     const isLiquidated = mc.status === 'For Review';
-                                                    const canLiquidate = ['Processing for CV', 'CV Received', 'Processing'].includes(ca.status) && !isLiquidated;
+                                                    const canLiquidate = ['CV Received', 'Processing'].includes(ca.status) && !isLiquidated;
 
                                                     return (
                                                         <TableRow key={mc.id}>
@@ -372,6 +374,3 @@ export default function LiquidationsPage() {
         </ProtectedPage>
     );
 }
-
-    
-

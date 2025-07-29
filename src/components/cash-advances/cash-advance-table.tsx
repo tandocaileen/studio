@@ -52,16 +52,14 @@ type CashAdvanceTableProps = {
 
 const ITEMS_PER_PAGE = 10;
 
-export function CashAdvanceTable({ advances: initialAdvances, onBulkUpdate }: CashAdvanceTableProps) {
+export function CashAdvanceTable({ advances, onBulkUpdate }: CashAdvanceTableProps) {
   const [selectedAdvances, setSelectedAdvances] = React.useState<EnrichedCashAdvance[]>([]);
 
   const [previewingAdvance, setPreviewingAdvance] = React.useState<EnrichedCashAdvance | null>(null);
   
-  // State for single-item actions
   const [releasingCvAdvance, setReleasingCvAdvance] = React.useState<EnrichedCashAdvance | null>(null);
   const [confirmingCvReceiptAdvance, setConfirmingCvReceiptAdvance] = React.useState<EnrichedCashAdvance | null>(null);
 
-  // State for bulk actions
   const [isBulkReleaseCvDialogOpen, setIsBulkReleaseCvDialogOpen] = React.useState(false);
   const [isBulkReceiveCvDialogOpen, setIsBulkReceiveCvDialogOpen] = React.useState(false);
   
@@ -75,7 +73,7 @@ export function CashAdvanceTable({ advances: initialAdvances, onBulkUpdate }: Ca
   React.useEffect(() => {
     setSelectedAdvances([]);
     setCurrentPage(1);
-  }, [initialAdvances]);
+  }, [advances]);
   
   const handleUpdate = (updatedItem: CashAdvance) => {
     onBulkUpdate([updatedItem]);
@@ -182,8 +180,8 @@ export function CashAdvanceTable({ advances: initialAdvances, onBulkUpdate }: Ca
     }
   };
 
-  const totalPages = Math.ceil(initialAdvances.length / ITEMS_PER_PAGE);
-  const paginatedAdvances = initialAdvances.slice(
+  const totalPages = Math.ceil(advances.length / ITEMS_PER_PAGE);
+  const paginatedAdvances = advances.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
@@ -344,14 +342,14 @@ export function CashAdvanceTable({ advances: initialAdvances, onBulkUpdate }: Ca
             ))}
           </TableBody>
         </Table>
-         {initialAdvances.length === 0 && (
+         {advances.length === 0 && (
               <div className="text-center p-8 text-muted-foreground">No cash advances to display.</div>
           )}
       </CardContent>
        <CardFooter>
             <div className="flex items-center justify-between w-full">
                 <div className="text-xs text-muted-foreground">
-                    Showing {Math.min(paginatedAdvances.length, initialAdvances.length)} of {initialAdvances.length} cash advances.
+                    Showing {Math.min(paginatedAdvances.length, advances.length)} of {advances.length} cash advances.
                 </div>
                 <div className="flex items-center gap-2">
                     <Button
@@ -470,7 +468,7 @@ export function CashAdvanceTable({ advances: initialAdvances, onBulkUpdate }: Ca
                 <DialogTitle>Bulk Confirm CV Receipt</DialogTitle>
                 <DialogDescription>
                     Enter the CV number that applies to all {selectedAdvances.length} selected cash advances.
-                    <span className="font-semibold text-destructive">Warning:</span> Please ensure all selected cash advances are covered by the same check voucher.
+                    <span className="font-semibold text-destructive block mt-2">Warning:</span> Please ensure all selected cash advances are covered by the same check voucher.
                 </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">

@@ -6,7 +6,7 @@ import { Header } from "@/components/layout/header";
 import { AppSidebar } from "@/components/layout/sidebar";
 import { ProtectedPage } from '@/components/auth/protected-page';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { getLiaisons, getMotorcycles } from '@/lib/data';
+import { getLiaisons, getMotorcycles, addEndorsement, updateMotorcycles } from '@/lib/data';
 import { LiaisonUser, Motorcycle } from '@/types';
 import { AppLoader } from '@/components/layout/loader';
 import { Label } from '@/components/ui/label';
@@ -23,6 +23,7 @@ import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -38,6 +39,7 @@ function CreateEndorsementContent() {
     const { toast } = useToast();
     const [currentPage, setCurrentPage] = React.useState(1);
     const router = useRouter();
+    const { user } = useAuth();
 
     React.useEffect(() => {
         setIsLoading(true);
@@ -71,27 +73,40 @@ function CreateEndorsementContent() {
         setIsSummaryOpen(true);
     }
 
-    const handleConfirmEndorsement = () => {
+    const handleConfirmEndorsement = async () => {
+        if (!user || !selectedLiaison) return;
         setIsLoading(true);
-        
-        // Simulate API call
-        setTimeout(() => {
-            const updatedMotorcycles = motorcycles?.map(mc => {
-                if (selectedMotorcycles.some(sm => sm.id === mc.id)) {
-                    const newStatus = mc.status === 'Ready to Register' ? 'Endorsed - Ready' : 'Endorsed - Incomplete';
-                    return { ...mc, status: newStatus, assignedLiaison: selectedLiaison?.name };
-                }
-                return mc;
-            });
-            // This update is for demo purposes. In a real app, you'd invalidate a query cache.
-            // setMotorcycles(updatedMotorcycles || []);
-            
+
+        const endorsementCode = `ENDO-${format(new Date(), 'yyyyMMdd')}-${Math.random().toString(36).substring(2, 5).toUpperCase()}`;
+
+        const newEndorsement = {
+            id: endorsementCode,
+            transactionDate: new Date(),
+            liaisonId: selectedLiaison.id,
+            liaisonName: selectedLiaison.name,
+            remarks: remarks,
+            motorcycleIds: selectedMotorcycles.map(m => m.id),
+            createdBy: user.name,
+        };
+
+        const motorcyclesToUpdate = selectedMotorcycles.map(mc => {
+            const newStatus = mc.status === 'Ready to Register' ? 'Endorsed - Ready' : 'Endorsed - Incomplete';
+            return { ...mc, status: newStatus, assignedLiaison: selectedLiaison?.name };
+        });
+
+        try {
+            await addEndorsement(newEndorsement);
+            await updateMotorcycles(motorcyclesToUpdate);
+
             toast({ title: 'Endorsement Created!', description: `${selectedMotorcycles.length} unit(s) have been endorsed to ${selectedLiaison?.name}.` });
             
             setIsLoading(false);
             setIsSummaryOpen(false);
             router.push('/endorsements');
-        }, 1000);
+        } catch (error) {
+            toast({ title: 'Error', description: 'Failed to create endorsement.', variant: 'destructive' });
+            setIsLoading(false);
+        }
     }
 
     if (isLoading || !motorcycles || !liaisons) {
@@ -118,7 +133,6 @@ function CreateEndorsementContent() {
     return (
         <>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                {/* Left Panel: Endorsement Form */}
                 <Card className="lg:col-span-1 sticky top-20">
                     <CardHeader>
                         <CardTitle>Endorsement Details</CardTitle>
@@ -168,7 +182,6 @@ function CreateEndorsementContent() {
                     </CardContent>
                 </Card>
 
-                {/* Right Panel: Motorcycle Selection */}
                 <div className="lg:col-span-2 grid gap-8">
                     <Card>
                         <CardHeader>

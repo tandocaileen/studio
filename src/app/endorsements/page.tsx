@@ -35,13 +35,15 @@ function EndorsementsContent() {
     const router = useRouter();
 
     React.useEffect(() => {
-        Promise.all([
-            getEndorsements(),
-            getMotorcycles()
-        ]).then(([endorsementData, motorcycleData]) => {
+        const fetchData = async () => {
+            const [endorsementData, motorcycleData] = await Promise.all([
+                getEndorsements(),
+                getMotorcycles()
+            ]);
             setEndorsements(endorsementData);
             setMotorcycles(motorcycleData);
-        });
+        };
+        fetchData();
     }, []);
     
     const handleViewDetails = (endorsement: Endorsement) => {

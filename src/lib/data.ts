@@ -1,5 +1,4 @@
 
-
 import type { Motorcycle, CashAdvance, LiaisonUser, Endorsement } from '@/types';
 
 const today = new Date();
@@ -9,7 +8,7 @@ const addDays = (date: Date, days: number) => {
   return result;
 };
 
-const motorcycles: Motorcycle[] = [
+const initialMotorcycles: Motorcycle[] = [
   {
     id: '1',
     make: 'Honda',
@@ -487,7 +486,7 @@ const motorcycles: Motorcycle[] = [
   },
 ];
 
-const cashAdvances: CashAdvance[] = [
+const initialCashAdvances: CashAdvance[] = [
   {
     id: 'ca-070124-001',
     personnel: 'RODEL PASTRANO',
@@ -558,7 +557,6 @@ const cashAdvances: CashAdvance[] = [
     status: 'Processing for CV',
     motorcycleIds: ['13']
   },
-  // Demo Liaison Data
   {
     id: 'ca-demo-001',
     personnel: 'Demo Liaison',
@@ -652,7 +650,7 @@ const cashAdvances: CashAdvance[] = [
   },
 ];
 
-const liaisonUsers: LiaisonUser[] = [
+const initialLiaisonUsers: LiaisonUser[] = [
     { id: '1', name: 'JINKY JOY AGBALOG', assignedBranch: 'LA UNION', processingFee: 300.00, orFee: 2115.18-300 },
     { id: '2', name: 'BABY LIEZELL CAUILAN', assignedBranch: 'ILAGAN', processingFee: 250.00, orFee: 2310.18-250 },
     { id: '3', name: 'RODEL PASTRANO', assignedBranch: 'SAN FERNANDO', processingFee: 300.00, orFee: 1885.18-300 },
@@ -670,7 +668,7 @@ const liaisonUsers: LiaisonUser[] = [
     { id: '15', name: 'Demo Liaison', assignedBranch: 'Main Office', processingFee: 1500, orFee: 1000 },
 ];
 
-const endorsements: Endorsement[] = [
+const initialEndorsements: Endorsement[] = [
     { id: 'ENDO-20240720-001', transactionDate: addDays(today, -10), liaisonId: '8', liaisonName: 'BRYLE NIKKO HAMILI', motorcycleIds: ['4', '9', '6'], remarks: 'Please prioritize processing for this unit.', createdBy: 'Supervisor A'},
     { id: 'ENDO-20240722-001', transactionDate: addDays(today, -8), liaisonId: '8', liaisonName: 'BRYLE NIKKO HAMILI', motorcycleIds: ['1', '7'], createdBy: 'Cashier B'},
     { id: 'ENDO-20240725-001', transactionDate: addDays(today, -5), liaisonId: '8', liaisonName: 'BRYLE NIKKO HAMILI', motorcycleIds: ['5', '16'], remarks: 'For registration.', createdBy: 'Supervisor A'},
@@ -685,29 +683,108 @@ const endorsements: Endorsement[] = [
     { id: 'ENDO-20240801-004', transactionDate: addDays(today, -4), liaisonId: '15', liaisonName: 'Demo Liaison', motorcycleIds: ['4', '9', '12'], remarks: 'Incomplete units for follow up.', createdBy: 'Supervisor A'},
 ]
 
-export async function getMotorcycles() {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 500));
-  return JSON.parse(JSON.stringify(motorcycles)).map((m: any) => ({...m, purchaseDate: new Date(m.purchaseDate), insuranceEffectiveDate: m.insuranceEffectiveDate ? new Date(m.insuranceEffectiveDate) : undefined, insuranceExpirationDate: m.insuranceExpirationDate ? new Date(m.insuranceExpirationDate) : undefined, documents: m.documents.map((d:any) => ({...d, uploadedAt: new Date(d.uploadedAt), expiresAt: d.expiresAt ? new Date(d.expiresAt) : undefined}))}));
+const MC_KEY = 'lto_motorcycles';
+const CA_KEY = 'lto_cash_advances';
+const ENDO_KEY = 'lto_endorsements';
+
+// Helper to get data from localStorage or initialize it
+const getData = <T,>(key: string, initialData: T[]): T[] => {
+    if (typeof window === 'undefined') {
+        return initialData;
+    }
+    try {
+        const stored = localStorage.getItem(key);
+        if (stored) {
+            return JSON.parse(stored, (key, value) => {
+                // Reviver to convert ISO strings back to Date objects
+                if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(value)) {
+                    return new Date(value);
+                }
+                return value;
+            });
+        } else {
+            localStorage.setItem(key, JSON.stringify(initialData));
+            return initialData;
+        }
+    } catch (error) {
+        console.error(`Error with localStorage for key ${key}:`, error);
+        return initialData;
+    }
+};
+
+// Helper to save data to localStorage
+const saveData = <T,>(key: string, data: T[]) => {
+    if (typeof window === 'undefined') return;
+    try {
+        localStorage.setItem(key, JSON.stringify(data));
+    } catch (error) {
+        console.error(`Error saving to localStorage for key ${key}:`, error);
+    }
+};
+
+
+// --- Motorcycles ---
+export async function getMotorcycles(): Promise<Motorcycle[]> {
+    await new Promise(resolve => setTimeout(resolve, 250));
+    return getData<Motorcycle>(MC_KEY, initialMotorcycles);
 }
 
-export async function getCashAdvances() {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 500));
-  return JSON.parse(JSON.stringify(cashAdvances)).map((c: any) => ({...c, date: new Date(c.date)}));
+export async function updateMotorcycles(updatedMotorcycles: Motorcycle | Motorcycle[]) {
+    await new Promise(resolve => setTimeout(resolve, 100));
+    const allMotorcycles = await getMotorcycles();
+    const motorcyclesMap = new Map(allMotorcycles.map(m => [m.id, m]));
+    
+    const toUpdate = Array.isArray(updatedMotorcycles) ? updatedMotorcycles : [updatedMotorcycles];
+    toUpdate.forEach(um => motorcyclesMap.set(um.id, um));
+
+    saveData(MC_KEY, Array.from(motorcyclesMap.values()));
+}
+
+
+// --- Cash Advances ---
+export async function getCashAdvances(): Promise<CashAdvance[]> {
+    await new Promise(resolve => setTimeout(resolve, 250));
+    return getData<CashAdvance>(CA_KEY, initialCashAdvances);
+}
+
+export async function addCashAdvance(newAdvance: CashAdvance) {
+    await new Promise(resolve => setTimeout(resolve, 100));
+    const allCAs = await getCashAdvances();
+    saveData(CA_KEY, [...allCAs, newAdvance]);
+}
+
+export async function updateCashAdvances(updatedCAs: CashAdvance | CashAdvance[]) {
+    await new Promise(resolve => setTimeout(resolve, 100));
+    const allCAs = await getCashAdvances();
+    const caMap = new Map(allCAs.map(ca => [ca.id, ca]));
+
+    const toUpdate = Array.isArray(updatedCAs) ? updatedCAs : [updatedCAs];
+    toUpdate.forEach(uca => caMap.set(uca.id, uca));
+    
+    saveData(CA_KEY, Array.from(caMap.values()));
+}
+
+
+// --- Liaisons ---
+export async function getLiaisons(): Promise<LiaisonUser[]> {
+    await new Promise(resolve => setTimeout(resolve, 100));
+    // Liaisons are considered static for this demo
+    return initialLiaisonUsers;
+}
+
+
+// --- Endorsements ---
+export async function getEndorsements(): Promise<Endorsement[]> {
+    await new Promise(resolve => setTimeout(resolve, 250));
+    return getData<Endorsement>(ENDO_KEY, initialEndorsements);
+}
+
+export async function addEndorsement(newEndorsement: Endorsement) {
+    await new Promise(resolve => setTimeout(resolve, 100));
+    const allEndorsements = await getEndorsements();
+    saveData(ENDO_KEY, [...allEndorsements, newEndorsement]);
 }
 
 export function getBranches() {
-  return [...new Set(liaisonUsers.map(l => l.assignedBranch))];
+  return [...new Set(initialLiaisonUsers.map(l => l.assignedBranch))];
 }
-
-export async function getLiaisons() {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return liaisonUsers;
-}
-
-export async function getEndorsements() {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return JSON.parse(JSON.stringify(endorsements)).map((e: any) => ({...e, transactionDate: new Date(e.transactionDate)}));
-}
-

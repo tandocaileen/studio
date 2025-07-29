@@ -4,7 +4,7 @@
 import { Header } from "@/components/layout/header";
 import { AppSidebar } from "@/components/layout/sidebar";
 import { CashAdvanceTable } from "@/components/cash-advances/cash-advance-table";
-import { getCashAdvances, getLiaisons, getMotorcycles } from "@/lib/data";
+import { getCashAdvances, getLiaisons, getMotorcycles, updateCashAdvances } from "@/lib/data";
 import React, { useState, useEffect } from "react";
 import { AppLoader } from "@/components/layout/loader";
 import { ProtectedPage } from "@/components/auth/protected-page";
@@ -38,7 +38,6 @@ function CashAdvancesContent({ searchQuery }: { searchQuery: string }) {
     const [liaisons, setLiaisons] = useState<LiaisonUser[] | null>(null);
     const { user } = useAuth();
     
-    // Filter state
     const [isFilterPanelVisible, setIsFilterPanelVisible] = useState(true);
 
     const [activeDateRange, setActiveDateRange] = useState<DateRange>('all');
@@ -53,13 +52,17 @@ function CashAdvancesContent({ searchQuery }: { searchQuery: string }) {
 
     useEffect(() => {
         if (!user) return;
-
-        Promise.all([getCashAdvances(), getMotorcycles(), getLiaisons()]).then(([cashAdvances, motorcycles, liaisonData]) => {
+        
+        const fetchData = async () => {
+            const [cashAdvances, motorcycles, liaisonData] = await Promise.all([
+                getCashAdvances(), 
+                getMotorcycles(), 
+                getLiaisons()
+            ]);
             setAllCAs(cashAdvances);
             setAllMotorcycles(motorcycles);
             setLiaisons(liaisonData);
-            
-            // Set role-based pre-filters
+
             if (user?.role === 'Cashier') {
                 setActiveStatusFilters(['Processing for CV']);
                 setTempStatusFilters(['Processing for CV']);
@@ -70,7 +73,9 @@ function CashAdvancesContent({ searchQuery }: { searchQuery: string }) {
                  setActiveStatusFilters([]);
                  setTempStatusFilters([]);
             }
-        });
+        };
+
+        fetchData();
     }, [user]);
     
     if (!allCAs || !user || !liaisons || !allMotorcycles) {
@@ -176,18 +181,10 @@ function CashAdvancesContent({ searchQuery }: { searchQuery: string }) {
         return false;
     });
     
-    const handleUpdateAdvances = (updatedItems: CashAdvance[]) => {
-        const updatedMap = new Map(updatedItems.map(item => [item.id, item]));
-        
-        setAllCAs(currentCAs => {
-            if (!currentCAs) return [];
-            return currentCAs.map(item => {
-                if (updatedMap.has(item.id)) {
-                    return updatedMap.get(item.id)!;
-                }
-                return item;
-            });
-        });
+    const handleUpdateAdvances = async (updatedItems: CashAdvance[]) => {
+        await updateCashAdvances(updatedItems);
+        const cashAdvances = await getCashAdvances();
+        setAllCAs(cashAdvances);
     };
 
     return (
@@ -200,7 +197,10 @@ function CashAdvancesContent({ searchQuery }: { searchQuery: string }) {
             </div>
             <div className={cn("grid grid-cols-1 lg:grid-cols-4 gap-6 items-start", !isFilterPanelVisible && "lg:grid-cols-1")}>
                 <div className={cn("lg:col-span-3", !isFilterPanelVisible && "lg:col-span-4")}>
-                    <CashAdvanceTable advances={filteredBySearch} onBulkUpdate={handleUpdateAdvances} />
+                    <CashAdvanceTable 
+                        advances={filteredBySearch} 
+                        onBulkUpdate={handleUpdateAdvances}
+                    />
                 </div>
                 {isFilterPanelVisible && (
                      <div className="lg:col-span-1 lg:sticky top-20">
@@ -330,4 +330,4 @@ export default function CashAdvancesPage() {
             </div>
         </ProtectedPage>
     );
-    
+}

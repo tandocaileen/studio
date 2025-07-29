@@ -4,7 +4,7 @@
 import { Header } from "@/components/layout/header";
 import { AppSidebar } from "@/components/layout/sidebar";
 import { MotorcycleTable } from "@/components/dashboard/motorcycle-table";
-import { getCashAdvances, getEndorsements, getLiaisons, getMotorcycles } from "@/lib/data";
+import { getCashAdvances, getEndorsements, getLiaisons, getMotorcycles, updateMotorcycles } from "@/lib/data";
 import React, { useState, useEffect } from "react";
 import { AppLoader } from "@/components/layout/loader";
 import { ProtectedPage } from "@/components/auth/protected-page";
@@ -60,19 +60,10 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
     return <AppLoader />;
   }
   
-  const handleStateUpdate = (updatedOrNewMotorcycles: Motorcycle | Motorcycle[]) => {
-      setMotorcycles(currentMotorcycles => {
-          if (!currentMotorcycles) return [];
-          const motorcyclesMap = new Map(currentMotorcycles.map(m => [m.id, m]));
-
-          if (Array.isArray(updatedOrNewMotorcycles)) {
-              updatedOrNewMotorcycles.forEach(um => motorcyclesMap.set(um.id, um));
-          } else {
-              motorcyclesMap.set(updatedOrNewMotorcycles.id, updatedOrNewMotorcycles);
-          }
-          
-          return Array.from(motorcyclesMap.values());
-      });
+  const handleStateUpdate = async (updatedOrNewMotorcycles: Motorcycle | Motorcycle[]) => {
+    await updateMotorcycles(updatedOrNewMotorcycles);
+    const updatedData = await getMotorcycles();
+    setMotorcycles(updatedData);
   };
   
   const applyFilters = () => {
@@ -264,21 +255,10 @@ function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
         return <AppLoader />;
     }
 
-    const handleStateUpdate = (updatedOrNewMotorcycles: Motorcycle | Motorcycle[]) => {
-        setMotorcycles(currentMotorcycles => {
-            if (!currentMotorcycles) return [];
-            const motorcyclesMap = new Map(currentMotorcycles.map(m => [m.id, m]));
-
-            const itemsToUpdate = Array.isArray(updatedOrNewMotorcycles) ? updatedOrNewMotorcycles : [updatedOrNewMotorcycles];
-
-            itemsToUpdate.forEach(um => {
-                const existing = motorcyclesMap.get(um.id);
-                // Ensure we merge, not just replace, to keep all motorcycle details intact
-                motorcyclesMap.set(um.id, { ...(existing || {}), ...um } as Motorcycle);
-            });
-            
-            return Array.from(motorcyclesMap.values());
-        });
+    const handleStateUpdate = async (updatedOrNewMotorcycles: Motorcycle | Motorcycle[]) => {
+        await updateMotorcycles(updatedOrNewMotorcycles);
+        const updatedData = await getMotorcycles();
+        setMotorcycles(updatedData);
     };
 
     const uniqueEndorsers = [...new Set(endorsements.map(e => e.createdBy))];
@@ -496,5 +476,3 @@ export default function DashboardPage() {
     </ProtectedPage>
   );
 }
-
-    

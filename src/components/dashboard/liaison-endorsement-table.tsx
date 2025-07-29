@@ -15,7 +15,6 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Motorcycle, Endorsement, MotorcycleStatus } from '@/types';
@@ -27,11 +26,11 @@ import { useAuth } from '@/context/AuthContext';
 import { CashAdvancePreview } from './cash-advance-preview';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog';
 import { format } from 'date-fns';
-import { useRouter } from 'next/navigation';
 import { ScrollArea } from '../ui/scroll-area';
 import { Label } from '../ui/label';
 import { MotorcycleDetailsDialog } from './motorcycle-details-dialog';
 import { Textarea } from '../ui/textarea';
+import { addCashAdvance, updateMotorcycles } from '@/lib/data';
 
 type LiaisonEndorsementTableProps = {
   endorsements: Endorsement[];
@@ -70,7 +69,6 @@ export function LiaisonEndorsementTable({
   const handleSelectAllInGroup = (groupMotorcycles: Motorcycle[], checked: boolean | 'indeterminate') => {
     const eligibleMotorcycles = groupMotorcycles.filter(m => m.status === 'Endorsed - Ready');
     if (checked === true) {
-      // Add all eligible motorcycles from this group to selection, avoiding duplicates
       setSelectedMotorcycles(prev => {
         const newSelection = [...prev];
         eligibleMotorcycles.forEach(mc => {
@@ -81,7 +79,6 @@ export function LiaisonEndorsementTable({
         return newSelection;
       });
     } else {
-      // Remove all motorcycles from this group from selection
       const groupMcIds = new Set(groupMotorcycles.map(m => m.id));
       setSelectedMotorcycles(prev => prev.filter(m => !groupMcIds.has(m.id)));
     }
@@ -137,9 +134,10 @@ export function LiaisonEndorsementTable({
 
       console.log('Cash advance generated: ', result);
       
-      const updatedMotorcycles = selectedMotorcycles.map(m => ({ ...m, status: 'Processing' as MotorcycleStatus }));
+      const motorcyclesToUpdate = selectedMotorcycles.map(m => ({ ...m, status: 'Processing' as MotorcycleStatus }));
       
-      if (onStateChange) onStateChange(updatedMotorcycles);
+      await addCashAdvance(result);
+      if (onStateChange) onStateChange(motorcyclesToUpdate);
       
       toast({
         title: 'Cash Advance Request Submitted',
@@ -169,6 +167,13 @@ export function LiaisonEndorsementTable({
 
   const handleViewMotorcycle = (motorcycle: Motorcycle) => {
     setEditingMotorcycle(motorcycle);
+  };
+
+  const handleSaveMotorcycle = async (updatedData: Partial<Motorcycle>) => {
+    if (!editingMotorcycle) return;
+    const updatedMC = { ...editingMotorcycle, ...updatedData };
+    if (onStateChange) onStateChange(updatedMC);
+    setEditingMotorcycle(null);
   };
 
   const filteredEndorsements = endorsements.filter(e => {
@@ -317,7 +322,6 @@ export function LiaisonEndorsementTable({
           </div>
         )}
 
-    {/* CA Preview Dialog */}
     <Dialog open={isPreviewingCa} onOpenChange={setIsPreviewingCa}>
       <DialogContent className="max-w-4xl">
           <DialogHeader>
@@ -411,11 +415,9 @@ export function LiaisonEndorsementTable({
             motorcycle={editingMotorcycle}
             isOpen={!!editingMotorcycle}
             onClose={() => setEditingMotorcycle(null)}
-            onSave={() => {}}
+            onSave={handleSaveMotorcycle}
         />
     )}
   </>
   );
 }
-
-    
