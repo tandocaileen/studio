@@ -65,7 +65,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
   const [isGeneratingCa, setIsGeneratingCa] = React.useState(false);
   const [liaisons, setLiaisons] = React.useState<any[]>([]);
   const [currentPage, setCurrentPage] = React.useState(1);
-  const [sortColumn, setSortColumn] = React.useState<SortableColumn>('id');
+  const [sortColumn, setSortColumn] = React.useState<SortableColumn>('status');
   const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc'>('asc');
   
   React.useEffect(() => {
@@ -457,7 +457,15 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                           <Label htmlFor="edit-accountCode">Account Code</Label>
                           <Input id="edit-accountCode" value={editedData.accountCode || ''} disabled />
                       </div>
-                      <div className="grid gap-2">
+                       <div className="grid gap-2">
+                          <Label htmlFor="edit-chassisNumber">Chassis No.</Label>
+                          <Input id="edit-chassisNumber" value={editedData.chassisNumber || ''} disabled />
+                      </div>
+                       <div className="grid gap-2">
+                          <Label htmlFor="edit-engineNumber">Engine No.</Label>
+                          <Input id="edit-engineNumber" value={editedData.engineNumber || ''} disabled />
+                      </div>
+                       <div className="grid gap-2">
                           <Label htmlFor="edit-status">Status</Label>
                           <Input id="edit-status" value={editedData.status || ''} disabled />
                       </div>
@@ -465,6 +473,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                           <Label htmlFor="edit-assignedLiaison">Assigned Liaison</Label>
                           <Input id="edit-assignedLiaison" value={editedData.assignedLiaison || 'N/A'} disabled />
                       </div>
+
                        <div className="grid gap-2">
                           <Label htmlFor="edit-csrNumber">CSR No. <span className="text-destructive">*</span></Label>
                           <Input id="edit-csrNumber" name="csrNumber" value={editedData.csrNumber || ''} onChange={(e) => handleDataChange('csrNumber', e.target.value)} className={cn(!editedData.csrNumber && 'border-destructive')} />
@@ -474,8 +483,8 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                           <Input id="edit-crNumber" name="crNumber" value={editedData.crNumber || ''} onChange={(e) => handleDataChange('crNumber', e.target.value)} className={cn(!editedData.crNumber && 'border-destructive')} />
                       </div>
                        <div className="grid gap-2 md:col-span-2">
-                          <Label htmlFor="edit-hpgControlNumber">HPG Control No.</Label>
-                          <Input id="edit-hpgControlNumber" name="hpgControlNumber" value={editedData.hpgControlNumber || ''} onChange={(e) => handleDataChange('hpgControlNumber', e.target.value)} />
+                          <Label htmlFor="edit-hpgControlNumber">HPG Control No. <span className="text-destructive">*</span></Label>
+                          <Input id="edit-hpgControlNumber" name="hpgControlNumber" value={editedData.hpgControlNumber || ''} onChange={(e) => handleDataChange('hpgControlNumber', e.target.value)} className={cn(!editedData.hpgControlNumber && 'border-destructive')} />
                       </div>
                     </div>
                     
