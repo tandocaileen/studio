@@ -17,17 +17,14 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  DropdownMenuSub,
-  DropdownMenuSubTrigger,
-  DropdownMenuSubContent,
 } from '@/components/ui/dropdown-menu';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CashAdvance } from '@/types';
-import { MoreHorizontal, PlusCircle, Check, X, FileUp, Download, Eye, FileCheck, Banknote, ShieldAlert, PackageCheck } from 'lucide-react';
+import { MoreHorizontal, Download, Eye, Banknote, PackageCheck } from 'lucide-react';
 import { format } from 'date-fns';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Label } from '../ui/label';
 import { Input } from '../ui/input';
 import { useToast } from '@/hooks/use-toast';
@@ -68,6 +65,7 @@ export function CashAdvanceTable({ advances: initialAdvances, onBulkUpdate }: Ca
   // State for bulk actions
   const [isBulkReleaseCvDialogOpen, setIsBulkReleaseCvDialogOpen] = React.useState(false);
   const [isBulkReceiveCvDialogOpen, setIsBulkReceiveCvDialogOpen] = React.useState(false);
+  
   const [cvNumber, setCvNumber] = React.useState('');
   
   const { toast } = useToast();
@@ -92,38 +90,47 @@ export function CashAdvanceTable({ advances: initialAdvances, onBulkUpdate }: Ca
 
   const handleReleaseCvSubmit = () => {
     if (!releasingCvAdvance) return;
+    const updatedItem = {
+      ...releasingCvAdvance,
+      cashAdvance: { ...releasingCvAdvance.cashAdvance, status: 'CV Released' as const }
+    };
+    handleUpdate(updatedItem);
+    toast({ title: 'Success', description: `Cash advance #${releasingCvAdvance.cashAdvance.id} marked as "CV Released".` });
+    setReleasingCvAdvance(null);
+  };
+  
+  const handleConfirmCvReceiptSubmit = () => {
+    if (!confirmingCvReceiptAdvance) return;
     if (!cvNumber) {
         toast({ title: 'CV Number Required', description: 'Please enter a Check Voucher number.', variant: 'destructive' });
         return;
     }
     const updatedItem = {
-      ...releasingCvAdvance,
+      ...confirmingCvReceiptAdvance,
       cashAdvance: {
-        ...releasingCvAdvance.cashAdvance,
-        status: 'CV Released' as const,
+        ...confirmingCvReceiptAdvance.cashAdvance,
+        status: 'CV Received' as const,
         checkVoucherNumber: cvNumber,
         checkVoucherReleaseDate: new Date(),
       }
     };
     handleUpdate(updatedItem);
-    toast({ title: 'Success', description: `Cash advance #${releasingCvAdvance.cashAdvance.id} marked as "CV Released".` });
-    setReleasingCvAdvance(null);
+    toast({ title: 'Success', description: `Cash advance #${confirmingCvReceiptAdvance.cashAdvance.id} marked as "CV Received".` });
+    setConfirmingCvReceiptAdvance(null);
     setCvNumber('');
   };
-  
-  const handleConfirmCvReceiptSubmit = () => {
-      if (!confirmingCvReceiptAdvance) return;
-      const updatedItem = {
-          ...confirmingCvReceiptAdvance,
-          cashAdvance: { ...confirmingCvReceiptAdvance.cashAdvance, status: 'CV Received' as const }
-      };
-      handleUpdate(updatedItem);
-      toast({ title: 'Success', description: `Cash advance #${confirmingCvReceiptAdvance.cashAdvance.id} marked as "CV Received".` });
-      setConfirmingCvReceiptAdvance(null);
-  };
-
 
   const handleBulkReleaseCv = () => {
+    const updated = selectedAdvances.map(item => ({
+        ...item,
+        cashAdvance: { ...item.cashAdvance, status: 'CV Released' as const }
+    }));
+    handleBulkUpdate(updated);
+    toast({ title: 'Success', description: `${updated.length} cash advances marked as "CV Released".` });
+    setIsBulkReleaseCvDialogOpen(false);
+  };
+  
+  const handleBulkConfirmCvReceipt = () => {
     if (!cvNumber) {
         toast({ title: 'CV Number Required', description: 'Please enter a Check Voucher number.', variant: 'destructive' });
         return;
@@ -132,28 +139,15 @@ export function CashAdvanceTable({ advances: initialAdvances, onBulkUpdate }: Ca
         ...item,
         cashAdvance: {
             ...item.cashAdvance,
-            status: 'CV Released' as const,
+            status: 'CV Received' as const,
             checkVoucherNumber: cvNumber,
             checkVoucherReleaseDate: new Date(),
         }
     }));
     handleBulkUpdate(updated);
-    toast({ title: 'Success', description: `${updated.length} cash advances marked as "CV Released".` });
-    setIsBulkReleaseCvDialogOpen(false);
-    setCvNumber('');
-  };
-
-  const handleBulkConfirmCvReceipt = () => {
-    const updated = selectedAdvances.map(item => ({
-        ...item,
-        cashAdvance: {
-            ...item.cashAdvance,
-            status: 'CV Received' as const,
-        }
-    }));
-    handleBulkUpdate(updated);
     toast({ title: 'Success', description: `${updated.length} cash advances marked as "CV Received".` });
     setIsBulkReceiveCvDialogOpen(false);
+    setCvNumber('');
   };
 
 
@@ -419,12 +413,27 @@ export function CashAdvanceTable({ advances: initialAdvances, onBulkUpdate }: Ca
         </DialogContent>
     </Dialog>
 
-    <Dialog open={!!releasingCvAdvance} onOpenChange={(open) => !open && setReleasingCvAdvance(null)}>
+    <AlertDialog open={!!releasingCvAdvance} onOpenChange={(open) => !open && setReleasingCvAdvance(null)}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+            <AlertDialogTitle>Release Check Voucher?</AlertDialogTitle>
+            <AlertDialogDescription>
+                This will mark cash advance #{releasingCvAdvance?.cashAdvance.id} as "CV Released". The CV number will be entered upon receipt confirmation. This action cannot be undone.
+            </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleReleaseCvSubmit}>Release</AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+    </AlertDialog>
+
+    <Dialog open={!!confirmingCvReceiptAdvance} onOpenChange={(open) => !open && setConfirmingCvReceiptAdvance(null)}>
         <DialogContent className="sm:max-w-md">
             <DialogHeader>
-                <DialogTitle>Release CV for CA #{releasingCvAdvance?.cashAdvance.id}</DialogTitle>
+                <DialogTitle>Confirm CV Receipt for CA #{confirmingCvReceiptAdvance?.cashAdvance.id}</DialogTitle>
                 <DialogDescription>
-                    Enter the Check Voucher number to release this cash advance.
+                    Enter the Check Voucher number to confirm receipt.
                 </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
@@ -442,33 +451,34 @@ export function CashAdvanceTable({ advances: initialAdvances, onBulkUpdate }: Ca
                 </div>
             </div>
             <DialogFooter>
-                <Button variant="outline" onClick={() => setReleasingCvAdvance(null)}>Cancel</Button>
-                <Button onClick={handleReleaseCvSubmit}>Release</Button>
+                <Button variant="outline" onClick={() => setConfirmingCvReceiptAdvance(null)}>Cancel</Button>
+                <Button onClick={handleConfirmCvReceiptSubmit}>Confirm Receipt</Button>
             </DialogFooter>
         </DialogContent>
     </Dialog>
-
-    <AlertDialog open={!!confirmingCvReceiptAdvance} onOpenChange={(open) => !open && setConfirmingCvReceiptAdvance(null)}>
+    
+    <AlertDialog open={isBulkReleaseCvDialogOpen} onOpenChange={setIsBulkReleaseCvDialogOpen}>
         <AlertDialogContent>
             <AlertDialogHeader>
-            <AlertDialogTitle>Confirm CV Receipt?</AlertDialogTitle>
+            <AlertDialogTitle>Bulk Release CV?</AlertDialogTitle>
             <AlertDialogDescription>
-                This will mark cash advance #{confirmingCvReceiptAdvance?.cashAdvance.id} as "CV Received". This action cannot be undone.
+                This will mark {selectedAdvances.length} cash advance(s) as "CV Released". This action cannot be undone.
             </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmCvReceiptSubmit}>Confirm Receipt</AlertDialogAction>
+            <AlertDialogAction onClick={handleBulkReleaseCv}>Release Selected</AlertDialogAction>
             </AlertDialogFooter>
         </AlertDialogContent>
     </AlertDialog>
-    
-    <Dialog open={isBulkReleaseCvDialogOpen} onOpenChange={setIsBulkReleaseCvDialogOpen}>
+
+    <Dialog open={isBulkReceiveCvDialogOpen} onOpenChange={setIsBulkReceiveCvDialogOpen}>
         <DialogContent className="sm:max-w-md">
             <DialogHeader>
-                <DialogTitle>Bulk Release CV</DialogTitle>
+                <DialogTitle>Bulk Confirm CV Receipt</DialogTitle>
                 <DialogDescription>
                     Enter the CV number that applies to all {selectedAdvances.length} selected cash advances.
+                    <span className="font-semibold text-destructive">Warning:</span> Please ensure all selected cash advances are covered by the same check voucher.
                 </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
@@ -486,27 +496,11 @@ export function CashAdvanceTable({ advances: initialAdvances, onBulkUpdate }: Ca
                 </div>
             </div>
             <DialogFooter>
-                <Button variant="outline" onClick={() => setIsBulkReleaseCvDialogOpen(false)}>Cancel</Button>
-                <Button onClick={handleBulkReleaseCv}>Release Selected</Button>
+                <Button variant="outline" onClick={() => setIsBulkReceiveCvDialogOpen(false)}>Cancel</Button>
+                <Button onClick={handleBulkConfirmCvReceipt}>Confirm Receipt for Selected</Button>
             </DialogFooter>
         </DialogContent>
     </Dialog>
-
-    <AlertDialog open={isBulkReceiveCvDialogOpen} onOpenChange={setIsBulkReceiveCvDialogOpen}>
-        <AlertDialogContent>
-            <AlertDialogHeader>
-            <AlertDialogTitle>Confirm CV Receipt?</AlertDialogTitle>
-            <AlertDialogDescription>
-                This will mark {selectedAdvances.length} cash advance(s) as "CV Received". <br/>
-                <span className="font-semibold text-destructive">Warning:</span> Please ensure all selected cash advances are covered by the same check voucher. This action cannot be undone.
-            </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleBulkConfirmCvReceipt}>Confirm Receipt</AlertDialogAction>
-            </AlertDialogFooter>
-        </AlertDialogContent>
-    </AlertDialog>
     </>
   );
 }
