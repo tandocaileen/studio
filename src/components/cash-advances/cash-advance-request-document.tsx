@@ -12,9 +12,31 @@ type CashAdvanceRequestDocumentProps = {
 
 export const CashAdvanceRequestDocument = React.forwardRef<HTMLDivElement, CashAdvanceRequestDocumentProps>(({ advance, motorcycles }, ref) => {
     
-    const totalProcessingFee = motorcycles.reduce((sum, mc) => sum + (mc.processingFee || 0), 0);
-    const totalOrFee = motorcycles.reduce((sum, mc) => sum + (mc.orFee || 0), 0);
-    const grandTotal = totalProcessingFee + totalOrFee;
+    const getFeePerMc = (feeType: 'processing' | 'or'): number => {
+        if (!motorcycles || motorcycles.length === 0) return 0;
+
+        const totalFeeFromMC = motorcycles.reduce((sum, mc) => {
+            if (feeType === 'processing') return sum + (mc.processingFee || 0);
+            return sum + (mc.orFee || 0);
+        }, 0);
+
+        if (totalFeeFromMC > 0) {
+            return totalFeeFromMC / motorcycles.length;
+        }
+
+        // Fallback for older CAs that only have a total amount
+        const totalCAAmount = advance.amount;
+        // This is a rough estimation assuming fees are consistent, which they are in this app's logic
+        const processingFeeFromCA = 300; // A common value, could be more dynamic
+        const orFeeFromCA = (totalCAAmount / motorcycles.length) - processingFeeFromCA;
+
+        if (feeType === 'processing') return processingFeeFromCA;
+        return orFeeFromCA > 0 ? orFeeFromCA : 0;
+    }
+    
+    const processingFee = getFeePerMc('processing');
+    const orFee = getFeePerMc('or');
+    const grandTotal = advance.amount;
 
     return (
         <div ref={ref} className="bg-white text-black p-8 font-sans">
@@ -68,13 +90,13 @@ export const CashAdvanceRequestDocument = React.forwardRef<HTMLDivElement, CashA
                     </TableHeader>
                     <TableBody>
                         {motorcycles.map(mc => {
-                            const subtotal = (mc.processingFee || 0) + (mc.orFee || 0);
+                            const subtotal = processingFee + orFee;
                             return (
                                 <TableRow key={mc.id}>
                                     <TableCell>{mc.make} {mc.model}</TableCell>
                                     <TableCell>{mc.customerName}</TableCell>
-                                    <TableCell className="text-right font-mono">₱{(mc.processingFee || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</TableCell>
-                                    <TableCell className="text-right font-mono">₱{(mc.orFee || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</TableCell>
+                                    <TableCell className="text-right font-mono">₱{processingFee.toLocaleString('en-US', { minimumFractionDigits: 2 })}</TableCell>
+                                    <TableCell className="text-right font-mono">₱{orFee.toLocaleString('en-US', { minimumFractionDigits: 2 })}</TableCell>
                                     <TableCell className="text-right font-mono">₱{subtotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}</TableCell>
                                 </TableRow>
                             )
