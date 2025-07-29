@@ -24,6 +24,7 @@ import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMe
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { LiaisonEndorsementTable } from "@/components/dashboard/liaison-endorsement-table";
 
 const ALL_STATUSES: MotorcycleStatus[] = ['Incomplete', 'Ready to Register', 'Endorsed - Incomplete', 'Endorsed - Ready', 'Processing', 'For Review'];
 
@@ -165,78 +166,59 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
   );
 }
 
-const LIAISON_STATUSES: MotorcycleStatus[] = ['Endorsed - Incomplete', 'Endorsed - Ready', 'Processing', 'For Review'];
-
 function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
   const [motorcycles, setMotorcycles] = useState<Motorcycle[] | null>(null);
-  const [activeStatusFilters, setActiveStatusFilters] = useState<string[]>(['Endorsed - Ready', 'Endorsed - Incomplete']);
-  const [tempStatusFilters, setTempStatusFilters] = useState<string[]>(['Endorsed - Ready', 'Endorsed - Incomplete']);
+  const [endorsements, setEndorsements] = useState<Endorsement[] | null>(null);
   
-  useEffect(() => {
-    getMotorcycles().then(setMotorcycles);
-  }, []);
-
   const { user } = useAuth();
+
+  useEffect(() => {
+    if (user) {
+        Promise.all([
+            getMotorcycles(),
+            getEndorsements()
+        ]).then(([motorcycleData, endorsementData]) => {
+            const userEndorsements = endorsementData.filter(e => e.liaisonId === user.name); // NOTE: Using name for now
+            const userMotorcycleIds = new Set(userEndorsements.flatMap(e => e.motorcycleIds));
+            const userMotorcycles = motorcycleData.filter(m => userMotorcycleIds.has(m.id));
+
+            setEndorsements(userEndorsements);
+            setMotorcycles(userMotorcycles);
+        });
+    }
+  }, [user]);
+
   const userBranch = "Main Office"; 
 
-  if (!user || !motorcycles) {
+  if (!user || !motorcycles || !endorsements) {
     return <AppLoader />;
   }
-  
-  const handleCheckboxChange = (status: string, checked: boolean) => {
-    setTempStatusFilters(prev => {
-        if (checked) {
-            return [...prev, status];
-        } else {
-            return prev.filter(s => s !== status);
-        }
-    });
+
+  const handleStateUpdate = (updatedMotorcycles: Motorcycle | Motorcycle[]) => {
+      setMotorcycles(currentMotorcycles => {
+          if (!currentMotorcycles) return [];
+          const motorcyclesMap = new Map(currentMotorcycles.map(m => [m.id, m]));
+
+          if (Array.isArray(updatedMotorcycles)) {
+              updatedMotorcycles.forEach(um => motorcyclesMap.set(um.id, um));
+          } else {
+              motorcyclesMap.set(updatedMotorcycles.id, updatedMotorcycles);
+          }
+          
+          return Array.from(motorcyclesMap.values());
+      });
   };
 
-  const applyFilters = () => {
-      setActiveStatusFilters(tempStatusFilters);
-  };
-  
-  const clearFilters = () => {
-      setTempStatusFilters([]);
-      setActiveStatusFilters([]);
-  };
-
-  const handleStateUpdate = (updatedMotorcycles: Motorcycle[]) => {
-     if (Array.isArray(updatedMotorcycles)) {
-        setMotorcycles(currentMotorcycles => {
-            if (!currentMotorcycles) return [];
-            const updatedIds = new Set(updatedMotorcycles.map(um => um.id));
-            const currentMotorcyclesMap = new Map(currentMotorcycles.map(m => [m.id, m]));
-            updatedMotorcycles.forEach(um => currentMotorcyclesMap.set(um.id, um));
-            return Array.from(currentMotorcyclesMap.values());
-        });
-      }
-  };
-
-  // Filter logic based on user role
-  const filteredMotorcycles = motorcycles.filter(m => {
-    const isUserAssigned = m.assignedLiaison === user.name;
-    if (!isUserAssigned) return false;
-
-    if (activeStatusFilters.length > 0 && !activeStatusFilters.includes(m.status)) {
-        return false;
-    }
-    
+  const filteredEndorsements = endorsements.filter(e => {
     if (!searchQuery) return true;
-
-    // Search query filtering
-    const searchFilter =
-      m.plateNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      m.make.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      m.model.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      m.engineNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      m.chassisNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (m.customerName && m.customerName.toLowerCase().includes(searchQuery.toLowerCase()));
-      
-    return searchFilter;
+    const query = searchQuery.toLowerCase();
+    if (e.id.toLowerCase().includes(query)) return true;
+    if (e.createdBy.toLowerCase().includes(query)) return true;
+    const associatedMotorcycles = motorcycles.filter(m => e.motorcycleIds.includes(m.id));
+    if (associatedMotorcycles.some(m => m.customerName?.toLowerCase().includes(query))) return true;
+    if (associatedMotorcycles.some(m => m.plateNumber?.toLowerCase().includes(query))) return true;
+    return false;
   });
-
 
   return (
     <>
@@ -251,53 +233,11 @@ function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
               </p>
           </div>
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
-        <div className="lg:col-span-3">
-             <Card>
-                <CardContent className="p-6">
-                    <MotorcycleTable motorcycles={filteredMotorcycles} onStateChange={handleStateUpdate} />
-                </CardContent>
-            </Card>
-        </div>
-        <div className="lg:col-span-1 lg:sticky top-20">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Filters</CardTitle>
-                    <CardDescription>Refine your view</CardDescription>
-                </CardHeader>
-                <CardContent className="grid gap-4">
-                    <div>
-                        <Label className="font-semibold text-sm">Status</Label>
-                         <Separator className="my-2" />
-                        <div className="grid gap-2">
-                           {LIAISON_STATUSES.map(status => (
-                            <div key={status} className="flex items-center gap-2">
-                                <Checkbox 
-                                    id={`filter-${status}`}
-                                    checked={tempStatusFilters.includes(status)}
-                                    onCheckedChange={(checked) => handleCheckboxChange(status, !!checked)}
-                                />
-                                <Label htmlFor={`filter-${status}`} className="font-normal text-sm">
-                                    {status}
-                                </Label>
-                            </div>
-                           ))}
-                        </div>
-                    </div>
-                </CardContent>
-                <CardFooter className="flex flex-col gap-2">
-                    <Button onClick={applyFilters} className="w-full">
-                        <Filter className="mr-2 h-4 w-4" />
-                        Apply Filters
-                    </Button>
-                    <Button onClick={clearFilters} variant="ghost" className="w-full">
-                        <RotateCcw className="mr-2 h-4 w-4" />
-                        Clear
-                    </Button>
-                </CardFooter>
-            </Card>
-        </div>
-      </div>
+      <LiaisonEndorsementTable 
+        endorsements={filteredEndorsements}
+        motorcycles={motorcycles}
+        onStateChange={handleStateUpdate}
+      />
     </>
   );
 }

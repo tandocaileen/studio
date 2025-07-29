@@ -149,7 +149,7 @@ const motorcycles: Motorcycle[] = [
     status: 'Endorsed - Incomplete',
     documents: [],
     customerName: 'Andres Bonifacio',
-    assignedLiaison: 'Demo Liaison',
+    assignedLiaison: 'BRYLE NIKKO HAMILI',
     processingFee: 1500,
     orFee: 1000,
     salesInvoiceNo: 'SI-00126',
@@ -184,7 +184,7 @@ const motorcycles: Motorcycle[] = [
     insuranceType: 'TPL',
     insuranceEffectiveDate: new Date('2024-01-01'),
     insuranceExpirationDate: new Date('2025-01-01'),
-    assignedLiaison: 'Demo Liaison',
+    assignedLiaison: 'BRYLE NIKKO HAMILI',
   },
    {
     id: '6',
@@ -205,7 +205,7 @@ const motorcycles: Motorcycle[] = [
       { type: 'CSR', url: '#/doc/csr654', uploadedAt: new Date('2024-05-15') },
     ],
     customerName: 'Apolinario Mabini',
-    assignedLiaison: 'Demo Liaison',
+    assignedLiaison: 'BRYLE NIKKO HAMILI',
     processingFee: 1500,
     orFee: 1000,
     salesInvoiceNo: 'SI-00128',
@@ -234,7 +234,7 @@ const motorcycles: Motorcycle[] = [
     status: 'Processing',
     documents: [],
     customerName: 'Emilio Aguinaldo',
-    assignedLiaison: 'Demo Liaison',
+    assignedLiaison: 'BRYLE NIKKO HAMILI',
     processingFee: 1500,
     orFee: 1000,
     salesInvoiceNo: 'SI-00129',
@@ -383,7 +383,7 @@ const cashAdvances: CashAdvance[] = [
   },
   {
     id: 'ca-070124-003',
-    personnel: 'Demo Liaison',
+    personnel: 'BRYLE NIKKO HAMILI',
     purpose: 'New registration for 1 unit',
     amount: 2600,
     date: addDays(today, -20),
@@ -392,7 +392,7 @@ const cashAdvances: CashAdvance[] = [
   },
   {
     id: 'ca-070124-004',
-    personnel: 'Demo Liaison',
+    personnel: 'BRYLE NIKKO HAMILI',
     purpose: 'Registration for 2 units',
     amount: 5000,
     date: addDays(today, -5),
@@ -444,12 +444,12 @@ const liaisonUsers: LiaisonUser[] = [
 ];
 
 const endorsements: Endorsement[] = [
-    { id: 'ENDO-20240720-001', transactionDate: addDays(today, -10), liaisonId: '15', liaisonName: 'Demo Liaison', motorcycleIds: ['4'], remarks: 'Please prioritize processing for this unit.'},
-    { id: 'ENDO-20240722-001', transactionDate: addDays(today, -8), liaisonId: '8', liaisonName: 'BRYLE NIKKO HAMILI', motorcycleIds: ['1', '3']},
-    { id: 'ENDO-20240725-001', transactionDate: addDays(today, -5), liaisonId: '15', liaisonName: 'Demo Liaison', motorcycleIds: ['5', '6', '7'], remarks: 'For registration.'},
-    { id: 'ENDO-20240728-001', transactionDate: addDays(today, -2), liaisonId: '3', liaisonName: 'RODEL PASTRANO', motorcycleIds: ['2'], remarks: 'For renewal.'},
-    { id: 'ENDO-20240728-002', transactionDate: addDays(today, -2), liaisonId: '10', liaisonName: 'RODERICK GUTIERREZ', motorcycleIds: ['10']},
-    { id: 'ENDO-20240729-001', transactionDate: addDays(today, -1), liaisonId: '1', liaisonName: 'JINKY JOY AGBALOG', motorcycleIds: ['11'], remarks: 'Urgent'},
+    { id: 'ENDO-20240720-001', transactionDate: addDays(today, -10), liaisonId: '8', liaisonName: 'BRYLE NIKKO HAMILI', motorcycleIds: ['4'], remarks: 'Please prioritize processing for this unit.', createdBy: 'Supervisor A'},
+    { id: 'ENDO-20240722-001', transactionDate: addDays(today, -8), liaisonId: '8', liaisonName: 'BRYLE NIKKO HAMILI', motorcycleIds: ['1', '3'], createdBy: 'Cashier B'},
+    { id: 'ENDO-20240725-001', transactionDate: addDays(today, -5), liaisonId: '8', liaisonName: 'BRYLE NIKKO HAMILI', motorcycleIds: ['5', '6', '7'], remarks: 'For registration.', createdBy: 'Supervisor A'},
+    { id: 'ENDO-20240728-001', transactionDate: addDays(today, -2), liaisonId: '3', liaisonName: 'RODEL PASTRANO', motorcycleIds: ['2'], remarks: 'For renewal.', createdBy: 'Cashier B'},
+    { id: 'ENDO-20240728-002', transactionDate: addDays(today, -2), liaisonId: '10', liaisonName: 'RODERICK GUTIERREZ', motorcycleIds: ['10'], createdBy: 'Supervisor A'},
+    { id: 'ENDO-20240729-001', transactionDate: addDays(today, -1), liaisonId: '1', liaisonName: 'JINKY JOY AGBALOG', motorcycleIds: ['11'], remarks: 'Urgent', createdBy: 'Supervisor A'},
 ]
 
 export async function getMotorcycles() {

@@ -91,4 +91,5 @@ export type Endorsement = {
     liaisonName: string;
     remarks?: string;
     motorcycleIds: string[];
+    createdBy: string;
 }
