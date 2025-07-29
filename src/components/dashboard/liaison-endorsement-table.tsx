@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/collapsible';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Motorcycle, Endorsement, MotorcycleStatus } from '@/types';
+import { Motorcycle, Endorsement, MotorcycleStatus, LiaisonUser } from '@/types';
 import { ChevronDown, DollarSign, Eye } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Checkbox } from '../ui/checkbox';
@@ -30,7 +30,7 @@ import { ScrollArea } from '../ui/scroll-area';
 import { Label } from '../ui/label';
 import { MotorcycleDetailsDialog } from './motorcycle-details-dialog';
 import { Textarea } from '../ui/textarea';
-import { addCashAdvance, updateMotorcycles } from '@/lib/data';
+import { addCashAdvance, getLiaisons, updateMotorcycles } from '@/lib/data';
 
 type LiaisonEndorsementTableProps = {
   endorsements: Endorsement[];
@@ -56,9 +56,24 @@ export function LiaisonEndorsementTable({
   const [viewingEndorsement, setViewingEndorsement] = React.useState<EnrichedEndorsement | null>(null);
   const [editingMotorcycle, setEditingMotorcycle] = React.useState<Motorcycle | null>(null);
   const [remarks, setRemarks] = React.useState('');
+  const [liaisonFees, setLiaisonFees] = React.useState<{processingFee: number, orFee: number} | null>(null);
   
   const { toast } = useToast();
   const { user } = useAuth();
+  
+  React.useEffect(() => {
+    if (user) {
+        getLiaisons().then(liaisons => {
+            const currentUserLiaison = liaisons.find(l => l.name === user.name);
+            if(currentUserLiaison) {
+                setLiaisonFees({
+                    processingFee: currentUserLiaison.processingFee,
+                    orFee: currentUserLiaison.orFee
+                });
+            }
+        });
+    }
+  }, [user]);
 
   const handleSelectMotorcycle = (motorcycle: Motorcycle, checked: boolean) => {
     setSelectedMotorcycles(prev =>
@@ -113,10 +128,16 @@ export function LiaisonEndorsementTable({
     });
 
     try {
-      if (!user) throw new Error("User not found");
+      if (!user || !liaisonFees) throw new Error("User or fees not found");
       
+      const motorcyclesWithFees = selectedMotorcycles.map(m => ({
+          ...m,
+          processingFee: liaisonFees.processingFee,
+          orFee: liaisonFees.orFee,
+      }));
+
       const result = await generateCashAdvance({ 
-          motorcycles: selectedMotorcycles,
+          motorcycles: motorcyclesWithFees,
           liaison: user.name,
           remarks: remarks,
       });
@@ -178,6 +199,12 @@ export function LiaisonEndorsementTable({
     return false;
   });
 
+  const motorcyclesForPreview = selectedMotorcycles.map(mc => ({
+    ...mc,
+    processingFee: liaisonFees?.processingFee || 0,
+    orFee: liaisonFees?.orFee || 0
+  }));
+
 
   return (
     <>
@@ -217,8 +244,7 @@ export function LiaisonEndorsementTable({
 
 
               return (
-                <Collapsible asChild key={endorsement.id}>
-                  <>
+                <React.Fragment key={endorsement.id}>
                   <TableRow className="hover:bg-muted/50">
                     <TableCell>
                       <CollapsibleTrigger asChild>
@@ -239,8 +265,8 @@ export function LiaisonEndorsementTable({
                     <TableCell>{endorsement.motorcycleIds.length}</TableCell>
                   </TableRow>
                   <CollapsibleContent asChild>
-                    <tr className="bg-muted/20">
-                      <TableCell colSpan={6} className="p-0">
+                    <tr>
+                      <TableCell colSpan={6} className="p-0 bg-muted/20">
                           <div className="p-4">
                             <Table>
                                 <TableHeader>
@@ -293,8 +319,7 @@ export function LiaisonEndorsementTable({
                       </TableCell>
                     </tr>
                   </CollapsibleContent>
-                  </>
-                </Collapsible>
+                </React.Fragment>
               );
             })}
           </TableBody>
@@ -315,7 +340,7 @@ export function LiaisonEndorsementTable({
           </DialogHeader>
           <div className="grid gap-4">
             <div className="mt-4 max-h-[60vh] overflow-y-auto p-2 border rounded-md">
-                <CashAdvancePreview motorcycles={selectedMotorcycles} />
+                <CashAdvancePreview motorcycles={motorcyclesForPreview} />
             </div>
             <div className="grid gap-2">
                 <Label htmlFor="remarks">Remarks (Optional)</Label>
