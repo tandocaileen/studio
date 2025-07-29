@@ -34,19 +34,10 @@ const getData = <T,>(key: string, initialData: T[]): T[] => {
         return initialData;
     }
     try {
-        const stored = localStorage.getItem(key);
-        if (stored) {
-            return JSON.parse(stored, (key, value) => {
-                // Reviver to convert ISO strings back to Date objects
-                if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}\.\d{3}Z$/.test(value)) {
-                    return new Date(value);
-                }
-                return value;
-            });
-        } else {
-            localStorage.setItem(key, JSON.stringify(initialData));
-            return initialData;
-        }
+        // To ensure a clean slate, we directly set the initial (empty) data.
+        // This effectively clears localStorage for this key on app load.
+        localStorage.setItem(key, JSON.stringify(initialData));
+        return initialData;
     } catch (error) {
         console.error(`Error with localStorage for key ${key}:`, error);
         return initialData;
@@ -72,8 +63,12 @@ export async function getMotorcycles(): Promise<Motorcycle[]> {
 
 export async function updateMotorcycles(updatedMotorcycles: Motorcycle | Motorcycle[]) {
     await new Promise(resolve => setTimeout(resolve, 50));
-    const allMotorcycles = await getMotorcycles();
-    const motorcyclesMap = new Map(allMotorcycles.map(m => [m.id, m]));
+    
+    // Since getData now resets, we need to read what's currently in memory for the session
+    const stored = localStorage.getItem(MC_KEY);
+    const allMotorcycles = stored ? JSON.parse(stored) : [];
+
+    const motorcyclesMap = new Map(allMotorcycles.map((m: Motorcycle) => [m.id, m]));
     
     const toUpdate = Array.isArray(updatedMotorcycles) ? updatedMotorcycles : [updatedMotorcycles];
     toUpdate.forEach(um => motorcyclesMap.set(um.id, um));
@@ -90,14 +85,16 @@ export async function getCashAdvances(): Promise<CashAdvance[]> {
 
 export async function addCashAdvance(newAdvance: CashAdvance) {
     await new Promise(resolve => setTimeout(resolve, 50));
-    const allCAs = await getCashAdvances();
+    const stored = localStorage.getItem(CA_KEY);
+    const allCAs = stored ? JSON.parse(stored) : [];
     saveData(CA_KEY, [...allCAs, newAdvance]);
 }
 
 export async function updateCashAdvances(updatedCAs: CashAdvance | CashAdvance[]) {
     await new Promise(resolve => setTimeout(resolve, 50));
-    const allCAs = await getCashAdvances();
-    const caMap = new Map(allCAs.map(ca => [ca.id, ca]));
+    const stored = localStorage.getItem(CA_KEY);
+    const allCAs = stored ? JSON.parse(stored) : [];
+    const caMap = new Map(allCAs.map((ca: CashAdvance) => [ca.id, ca]));
 
     const toUpdate = Array.isArray(updatedCAs) ? updatedCAs : [updatedCAs];
     toUpdate.forEach(uca => caMap.set(uca.id, uca));
@@ -122,7 +119,8 @@ export async function getEndorsements(): Promise<Endorsement[]> {
 
 export async function addEndorsement(newEndorsement: Endorsement) {
     await new Promise(resolve => setTimeout(resolve, 50));
-    const allEndorsements = await getEndorsements();
+    const stored = localStorage.getItem(ENDO_KEY);
+    const allEndorsements = stored ? JSON.parse(stored) : [];
     saveData(ENDO_KEY, [...allEndorsements, newEndorsement]);
 }
 
