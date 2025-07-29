@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth, UserRole } from "@/context/AuthContext";
 import { Logo } from "@/components/icons";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useTheme } from "next-themes";
 import { Moon, Sun } from "lucide-react";
@@ -19,16 +19,23 @@ export default function LoginPage() {
     const [email, setEmail] = useState('demo@ltoportal.com');
     const [password, setPassword] = useState('password');
     const [role, setRole] = useState<UserRole>('Store Supervisor');
-    const { login } = useAuth();
+    const { user, login } = useAuth();
     const router = useRouter();
     const { setTheme } = useTheme();
+
+    useEffect(() => {
+        // After a successful login, the user object will be updated.
+        // This effect will then trigger the redirect to the homepage.
+        if (user) {
+          router.push('/');
+        }
+    }, [user, router]);
 
 
     const handleLogin = () => {
         // In a real app, you'd validate credentials against a backend.
         // For this demo, we'll just log the user in with the selected role.
         login({ email, name: `Demo ${role}`, role });
-        router.push('/');
     };
 
     return (

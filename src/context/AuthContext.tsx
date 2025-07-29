@@ -20,41 +20,62 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Helper function to set a cookie
+const setCookie = (name: string, value: string, days: number) => {
+    let expires = "";
+    if (days) {
+        const date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        expires = "; expires=" + date.toUTCString();
+    }
+    // Encode the value to handle special characters
+    document.cookie = name + "=" + (encodeURIComponent(value) || "")  + expires + "; path=/";
+}
+
+// Helper function to remove a cookie
+const removeCookie = (name: string) => {
+    document.cookie = name + '=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+}
+
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // In a real app, you would verify the user's session token with a backend.
-        // For this demo, we'll check localStorage.
         try {
             const storedUser = localStorage.getItem('ltoportal-user');
             if (storedUser) {
                 const parsedUser = JSON.parse(storedUser);
-                // Basic validation to ensure the stored user has a role
                 if (parsedUser.role) {
                     setUser(parsedUser);
                 } else {
                      localStorage.removeItem('ltoportal-user');
+                     removeCookie('ltoportal-user');
                 }
             }
         } catch (error) {
             console.error("Failed to parse user from localStorage", error);
-            // If parsing fails, ensure user is logged out
             localStorage.removeItem('ltoportal-user');
+            removeCookie('ltoportal-user');
         }
         setLoading(false);
     }, []);
 
     const login = (userData: User) => {
+        const userString = JSON.stringify(userData);
         setUser(userData);
-        localStorage.setItem('ltoportal-user', JSON.stringify(userData));
+        localStorage.setItem('ltoportal-user', userString);
+        // Set a session cookie for the middleware to read
+        setCookie('ltoportal-user', userString, 1);
     };
 
     const logout = () => {
         setUser(null);
         localStorage.removeItem('ltoportal-user');
-         // Redirect to login page
+        // Remove the session cookie
+        removeCookie('ltoportal-user');
+        // Use window.location to ensure a full page refresh and state clearing
         window.location.href = '/login';
     };
 
