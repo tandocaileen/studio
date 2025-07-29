@@ -27,6 +27,8 @@ export type Motorcycle = {
   cocNumber?: string;
   policyNumber?: string;
   insuranceType?: string;
+  insuranceEffectiveDate?: Date;
+  insuranceExpirationDate?: Date;
   hpgControlNumber?: string;
   sarCode?: string;
   processingFee?: number;
@@ -87,5 +89,3 @@ export type Endorsement = {
     remarks?: string;
     motorcycleIds: string[];
 }
-
-    

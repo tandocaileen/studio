@@ -39,6 +39,8 @@ const motorcycles: Motorcycle[] = [
     policyNumber: 'POL-123',
     sarCode: 'SAR-123',
     insuranceType: 'TPL',
+    insuranceEffectiveDate: new Date('2024-01-01'),
+    insuranceExpirationDate: new Date('2025-01-01'),
     crNumber: 'CR12345',
     csrNumber: 'CSR12345',
     liquidationDetails: {
@@ -82,6 +84,8 @@ const motorcycles: Motorcycle[] = [
     policyNumber: 'POL-456',
     sarCode: 'SAR-456',
     insuranceType: 'TPL',
+    insuranceEffectiveDate: new Date('2024-01-01'),
+    insuranceExpirationDate: new Date('2025-01-01'),
     crNumber: 'CR67890',
     csrNumber: 'CSR67890',
   },
@@ -114,6 +118,8 @@ const motorcycles: Motorcycle[] = [
     policyNumber: 'POL-789',
     sarCode: 'SAR-789',
     insuranceType: 'TPL',
+    insuranceEffectiveDate: new Date('2024-01-01'),
+    insuranceExpirationDate: new Date('2025-01-01'),
     crNumber: 'CR11223',
     csrNumber: 'CSR11223',
      liquidationDetails: {
@@ -176,6 +182,8 @@ const motorcycles: Motorcycle[] = [
     policyNumber: 'POL-PCX',
     sarCode: 'SAR-PCX',
     insuranceType: 'TPL',
+    insuranceEffectiveDate: new Date('2024-01-01'),
+    insuranceExpirationDate: new Date('2025-01-01'),
     assignedLiaison: 'Demo Liaison',
   },
    {
@@ -207,6 +215,8 @@ const motorcycles: Motorcycle[] = [
     policyNumber: 'POL-AEROX',
     sarCode: 'SAR-AEROX',
     insuranceType: 'TPL',
+    insuranceEffectiveDate: new Date('2024-01-01'),
+    insuranceExpirationDate: new Date('2025-01-01'),
     csrNumber: 'CSRMIOAEROX',
   },
   {
@@ -262,6 +272,8 @@ const motorcycles: Motorcycle[] = [
     policyNumber: 'POL-R150',
     sarCode: 'SAR-R150',
     insuranceType: 'TPL',
+    insuranceEffectiveDate: new Date('2024-01-01'),
+    insuranceExpirationDate: new Date('2025-01-01'),
   },
   {
     id: '9',
@@ -311,6 +323,8 @@ const motorcycles: Motorcycle[] = [
     policyNumber: 'POL-GRAVIS',
     sarCode: 'SAR-GRAVIS',
     insuranceType: 'TPL',
+    insuranceEffectiveDate: new Date('2024-01-01'),
+    insuranceExpirationDate: new Date('2025-01-01'),
   },
   {
     id: '11',
@@ -340,6 +354,8 @@ const motorcycles: Motorcycle[] = [
     policyNumber: 'POL-N400',
     sarCode: 'SAR-N400',
     insuranceType: 'TPL',
+    insuranceEffectiveDate: new Date('2024-01-01'),
+    insuranceExpirationDate: new Date('2025-01-01'),
   },
 ];
 
@@ -439,7 +455,7 @@ const endorsements: Endorsement[] = [
 export async function getMotorcycles() {
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 500));
-  return JSON.parse(JSON.stringify(motorcycles)).map((m: any) => ({...m, purchaseDate: new Date(m.purchaseDate), documents: m.documents.map((d:any) => ({...d, uploadedAt: new Date(d.uploadedAt), expiresAt: d.expiresAt ? new Date(d.expiresAt) : undefined}))}));
+  return JSON.parse(JSON.stringify(motorcycles)).map((m: any) => ({...m, purchaseDate: new Date(m.purchaseDate), insuranceEffectiveDate: m.insuranceEffectiveDate ? new Date(m.insuranceEffectiveDate) : undefined, insuranceExpirationDate: m.insuranceExpirationDate ? new Date(m.insuranceExpirationDate) : undefined, documents: m.documents.map((d:any) => ({...d, uploadedAt: new Date(d.uploadedAt), expiresAt: d.expiresAt ? new Date(d.expiresAt) : undefined}))}));
 }
 
 export async function getCashAdvances() {
@@ -461,5 +477,3 @@ export async function getEndorsements() {
     await new Promise(resolve => setTimeout(resolve, 500));
     return JSON.parse(JSON.stringify(endorsements)).map((e: any) => ({...e, transactionDate: new Date(e.transactionDate)}));
 }
-
-    

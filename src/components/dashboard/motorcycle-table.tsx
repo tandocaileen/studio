@@ -356,10 +356,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                             <Truck className="mr-2 h-4 w-4" />
                             <span>View / Edit Details</span>
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => setViewingDocumentsMotorcycle(motorcycle)}>
-                            <FileText className="mr-2 h-4 w-4" />
-                            <span>View Documents</span>
-                          </DropdownMenuItem>
+                          
                            {canEditInsuranceAndControl && (
                             <>
                               <DropdownMenuItem onClick={() => handleAction(`Logging maintenance for ${motorcycle.plateNumber}.`)}>
@@ -438,15 +435,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                           <Label htmlFor="edit-model">Model</Label>
                           <Input id="edit-model" name="model" value={editedData.model || ''} disabled />
                       </div>
-                       <div className="grid gap-2">
-                          <Label htmlFor="edit-engineNumber">Engine No.</Label>
-                          <Input id="edit-engineNumber" name="engineNumber" value={editedData.engineNumber || ''} disabled />
-                      </div>
                       <div className="grid gap-2">
-                          <Label htmlFor="edit-chassisNumber">Chassis No.</Label>
-                          <Input id="edit-chassisNumber" name="chassisNumber" value={editedData.chassisNumber || ''} disabled />
-                      </div>
-                       <div className="grid gap-2">
                           <Label htmlFor="edit-branch">Branch</Label>
                            <Select value={editedData.assignedBranch} disabled>
                             <SelectTrigger>
@@ -460,6 +449,14 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                        <div className="grid gap-2">
                           <Label htmlFor="edit-accountCode">Account Code</Label>
                           <Input id="edit-accountCode" name="accountCode" value={editedData.accountCode || ''} disabled />
+                      </div>
+                       <div className="grid gap-2">
+                          <Label htmlFor="edit-engineNumber">Engine No.</Label>
+                          <Input id="edit-engineNumber" name="engineNumber" value={editedData.engineNumber || ''} disabled />
+                      </div>
+                      <div className="grid gap-2">
+                          <Label htmlFor="edit-chassisNumber">Chassis No.</Label>
+                          <Input id="edit-chassisNumber" name="chassisNumber" value={editedData.chassisNumber || ''} disabled />
                       </div>
                     </div>
 
@@ -495,6 +492,58 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                             <Input id="edit-hpgControlNumber" name="hpgControlNumber" value={editedData.hpgControlNumber || ''} onChange={handleInputChange} disabled={!canEditInsuranceAndControl} required />
                         </div>
                         <div className="grid gap-2">
+                            <Label>Effective Date</Label>
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                <Button
+                                    variant={"outline"}
+                                    className={cn(
+                                    "w-full justify-start text-left font-normal",
+                                    !editedData.insuranceEffectiveDate && "text-muted-foreground"
+                                    )}
+                                    disabled={!canEditInsuranceAndControl}
+                                >
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    {editedData.insuranceEffectiveDate ? format(new Date(editedData.insuranceEffectiveDate), "PPP") : <span>Pick a date</span>}
+                                </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0">
+                                <Calendar
+                                    mode="single"
+                                    selected={editedData.insuranceEffectiveDate ? new Date(editedData.insuranceEffectiveDate) : undefined}
+                                    onSelect={(date) => setEditedData(prev => ({ ...prev, insuranceEffectiveDate: date }))}
+                                    initialFocus
+                                />
+                                </PopoverContent>
+                            </Popover>
+                        </div>
+                        <div className="grid gap-2">
+                            <Label>Expiration Date</Label>
+                             <Popover>
+                                <PopoverTrigger asChild>
+                                <Button
+                                    variant={"outline"}
+                                    className={cn(
+                                    "w-full justify-start text-left font-normal",
+                                    !editedData.insuranceExpirationDate && "text-muted-foreground"
+                                    )}
+                                    disabled={!canEditInsuranceAndControl}
+                                >
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    {editedData.insuranceExpirationDate ? format(new Date(editedData.insuranceExpirationDate), "PPP") : <span>Pick a date</span>}
+                                </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0">
+                                <Calendar
+                                    mode="single"
+                                    selected={editedData.insuranceExpirationDate ? new Date(editedData.insuranceExpirationDate) : undefined}
+                                    onSelect={(date) => setEditedData(prev => ({ ...prev, insuranceExpirationDate: date }))}
+                                    initialFocus
+                                />
+                                </PopoverContent>
+                            </Popover>
+                        </div>
+                        <div className="grid gap-2">
                             <Label htmlFor="edit-sarCode">SAR Code</Label>
                             <Input id="edit-sarCode" name="sarCode" value={editedData.sarCode || ''} onChange={handleInputChange} disabled={!canEditInsuranceAndControl} required />
                         </div>
@@ -508,7 +557,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
           </DialogContent>
       </Dialog>
       
-      {/* View Documents Dialog */}
+      {/* View Documents Dialog - This is intentionally left empty now */}
       <Dialog open={!!viewingDocumentsMotorcycle} onOpenChange={(open) => !open && setViewingDocumentsMotorcycle(null)}>
         <DialogContent>
           <DialogHeader>
@@ -518,34 +567,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
             </DialogDescription>
           </DialogHeader>
           <div className="mt-4">
-            {viewingDocumentsMotorcycle?.documents && viewingDocumentsMotorcycle.documents.length > 0 ? (
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>Document Type</TableHead>
-                        <TableHead>Uploaded On</TableHead>
-                        <TableHead>Expires On</TableHead>
-                        <TableHead>Action</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                {viewingDocumentsMotorcycle.documents.map((doc, index) => (
-                    <TableRow key={index}>
-                        <TableCell>{doc.type}</TableCell>
-                        <TableCell>{format(new Date(doc.uploadedAt), 'MMM dd, yyyy')}</TableCell>
-                        <TableCell>{doc.expiresAt ? format(new Date(doc.expiresAt), 'MMM dd, yyyy') : 'N/A'}</TableCell>
-                        <TableCell>
-                           <Button variant="outline" size="sm" onClick={() => window.open(doc.url, '_blank')}>
-                                View <ExternalLink className="ml-2 h-3 w-3 inline-block" />
-                           </Button>
-                        </TableCell>
-                    </TableRow>
-                ))}
-                </TableBody>
-            </Table>
-            ) : (
-                <p className="text-sm text-muted-foreground">No documents found for this motorcycle.</p>
-            )}
+            <p className="text-sm text-muted-foreground">Document attachments have been removed from this view.</p>
           </div>
         </DialogContent>
       </Dialog>
