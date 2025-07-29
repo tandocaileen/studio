@@ -32,7 +32,6 @@ export const CashAdvancePreview = React.forwardRef<HTMLDivElement, CashAdvancePr
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>Plate No.</TableHead>
                             <TableHead>Make & Model</TableHead>
                             <TableHead>Customer</TableHead>
                             <TableHead className="text-right">Processing Fee</TableHead>
@@ -43,7 +42,6 @@ export const CashAdvancePreview = React.forwardRef<HTMLDivElement, CashAdvancePr
                     <TableBody>
                         {motorcycles.map(mc => (
                             <TableRow key={mc.id}>
-                                <TableCell>{mc.plateNumber}</TableCell>
                                 <TableCell>{mc.make} {mc.model}</TableCell>
                                 <TableCell>{mc.customerName}</TableCell>
                                 <TableCell className="text-right font-mono">₱{(mc.processingFee || 0).toLocaleString()}</TableCell>
@@ -54,15 +52,15 @@ export const CashAdvancePreview = React.forwardRef<HTMLDivElement, CashAdvancePr
                     </TableBody>
                     <TableFooter>
                          <TableRow className="font-bold">
-                            <TableCell colSpan={5} className="text-right">Total Processing Fee</TableCell>
+                            <TableCell colSpan={4} className="text-right">Total Processing Fee</TableCell>
                             <TableCell className="text-right font-mono">₱{totalProcessingFee.toLocaleString('en-US', { minimumFractionDigits: 2 })}</TableCell>
                         </TableRow>
                          <TableRow className="font-bold">
-                            <TableCell colSpan={5} className="text-right">Total OR Fee</TableCell>
+                            <TableCell colSpan={4} className="text-right">Total OR Fee</TableCell>
                             <TableCell className="text-right font-mono">₱{totalOrFee.toLocaleString('en-US', { minimumFractionDigits: 2 })}</TableCell>
                         </TableRow>
                          <TableRow className="font-bold text-lg bg-gray-100">
-                            <TableCell colSpan={5} className="text-right">Grand Total Cash Advance</TableCell>
+                            <TableCell colSpan={4} className="text-right">Grand Total Cash Advance</TableCell>
                             <TableCell className="text-right font-mono">₱{grandTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}</TableCell>
                         </TableRow>
                     </TableFooter>
