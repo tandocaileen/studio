@@ -185,7 +185,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
 
   const handleSelectAll = (checked: boolean | 'indeterminate') => {
     if (checked === true) {
-      setSelectedMotorcycles(paginatedMotorcycles);
+      setSelectedMotorcycles(paginatedMotorcycles.filter(m => m.status === 'Endorsed - Ready'));
     } else {
       setSelectedMotorcycles([]);
     }
@@ -302,7 +302,11 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
     currentPage * ITEMS_PER_PAGE
   );
 
-  const isAllSelectedOnPage = paginatedMotorcycles.length > 0 && paginatedMotorcycles.every(pm => selectedMotorcycles.some(sm => sm.id === pm.id));
+  const isAllOnPageSelectable = paginatedMotorcycles.every(pm => pm.status === 'Endorsed - Ready');
+  const isAllSelectedOnPage = paginatedMotorcycles.length > 0 && 
+    paginatedMotorcycles
+      .filter(pm => pm.status === 'Endorsed - Ready')
+      .every(pm => selectedMotorcycles.some(sm => sm.id === pm.id));
 
 
   return (
@@ -320,7 +324,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
           </div>
           <div className="flex gap-2">
             {isLiaison && (
-              <Button size="sm" className="gap-1" onClick={handleOpenCaPreview} disabled={isGenerateCaDisabled}>
+              <Button size="sm" className="gap-1" onClick={handleOpenCaPreview} loading={isGeneratingCa} disabled={isGenerateCaDisabled}>
                   <DollarSign className="h-4 w-4" />
                   <span className="hidden sm:inline">Generate CA</span>
               </Button>
@@ -334,9 +338,10 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                 {isLiaison && (
                   <TableHead className="w-[40px]">
                     <Checkbox
-                      checked={isAllSelectedOnPage}
+                      checked={isAllSelectedOnPage && isAllOnPageSelectable}
                       onCheckedChange={(checked) => handleSelectAll(checked)}
                       aria-label="Select all"
+                      disabled={!isAllOnPageSelectable}
                     />
                   </TableHead>
                 )}
@@ -780,5 +785,3 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
     </>
   );
 }
-
-    
