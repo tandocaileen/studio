@@ -204,7 +204,7 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
                       
                       {(isCashierOrSupervisor) && <DropdownMenuSeparator />}
                       
-                      {isCashierOrSupervisor && (
+                      {isCashier && (
                           <DropdownMenuItem disabled={advance.cashAdvance.status !== 'Processing for CV'} onClick={() => setReleasingAdvance(advance)}>
                             <FileCheck className="mr-2 h-4 w-4" />
                             <span>Release CV</span>
@@ -323,3 +323,5 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
     </>
   );
 }
+
+    
