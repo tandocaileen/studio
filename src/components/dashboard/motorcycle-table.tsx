@@ -499,15 +499,15 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
 
                        <div className="grid gap-2">
                           <Label htmlFor="edit-csrNumber">CSR No. <span className="text-destructive">*</span></Label>
-                          <Input id="edit-csrNumber" name="csrNumber" value={editedData.csrNumber || ''} onChange={(e) => handleDataChange('csrNumber', e.target.value)} className={cn(!editedData.csrNumber && 'border-destructive')} />
+                          <Input id="edit-csrNumber" name="csrNumber" value={editedData.csrNumber || ''} onChange={(e) => handleDataChange('csrNumber', e.target.value)} className={cn(!editedData.csrNumber && 'border-destructive')} disabled={isLiaison} />
                       </div>
                        <div className="grid gap-2">
                           <Label htmlFor="edit-crNumber">CR No. <span className="text-destructive">*</span></Label>
-                          <Input id="edit-crNumber" name="crNumber" value={editedData.crNumber || ''} onChange={(e) => handleDataChange('crNumber', e.target.value)} className={cn(!editedData.crNumber && 'border-destructive')} />
+                          <Input id="edit-crNumber" name="crNumber" value={editedData.crNumber || ''} onChange={(e) => handleDataChange('crNumber', e.target.value)} className={cn(!editedData.crNumber && 'border-destructive')} disabled={isLiaison} />
                       </div>
                        <div className="grid gap-2">
                           <Label htmlFor="edit-hpgControlNumber">HPG Control No. <span className="text-destructive">*</span></Label>
-                          <Input id="edit-hpgControlNumber" name="hpgControlNumber" value={editedData.hpgControlNumber || ''} onChange={(e) => handleDataChange('hpgControlNumber', e.target.value)} className={cn(!editedData.hpgControlNumber && 'border-destructive')} />
+                          <Input id="edit-hpgControlNumber" name="hpgControlNumber" value={editedData.hpgControlNumber || ''} onChange={(e) => handleDataChange('hpgControlNumber', e.target.value)} className={cn(!editedData.hpgControlNumber && 'border-destructive')} disabled={isLiaison} />
                       </div>
                     </div>
                     
@@ -521,7 +521,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
               </ScrollArea>
               <DialogFooter>
                   <Button variant="outline" onClick={handleCancelEdit}>Close</Button>
-                  <Button onClick={handleSaveEdit}>Save Changes</Button>
+                  {!isLiaison && <Button onClick={handleSaveEdit}>Save Changes</Button>}
               </DialogFooter>
           </DialogContent>
       </Dialog>
@@ -547,5 +547,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
     </>
   );
 }
+
+    
 
     
