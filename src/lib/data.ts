@@ -148,7 +148,7 @@ const initialCashAdvances: CashAdvance[] = [
 ];
 
 const initialLiaisonUsers: LiaisonUser[] = [
-    { id: 'user-001', name: 'Bryle Nikko Hamili', assignedBranch: 'CEBU', processingFee: 1500, orFee: 1000 },
+    SINGLE_LIAISON_USER,
     { id: 'user-002', name: 'Demo Cashier', assignedBranch: 'CEBU', processingFee: 0, orFee: 0 },
     { id: 'user-003', name: 'Demo Store Supervisor', assignedBranch: 'CEBU', processingFee: 0, orFee: 0 },
 ];
@@ -258,3 +258,5 @@ export async function addEndorsement(newEndorsement: Endorsement) {
 export function getBranches() {
   return [...new Set(initialLiaisonUsers.map(l => l.assignedBranch))];
 }
+
+    
