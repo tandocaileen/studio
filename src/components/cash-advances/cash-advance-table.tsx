@@ -65,12 +65,15 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
     ));
   }
 
-  const handleAction = (message: string) => {
+  const handleMarkAsCvReceived = (advance: EnrichedCashAdvance) => {
+    updateAdvanceState(advance.cashAdvance.id, {
+        status: 'CV Received',
+    });
     toast({
-      title: 'Action Triggered',
-      description: message,
-    })
-  }
+        title: 'CV Received!',
+        description: `CA# ${advance.cashAdvance.id} has been marked as received by the liaison.`,
+    });
+  };
   
   const handleReleaseCv = () => {
     if (!releasingAdvance || !cvNumber) {
@@ -212,14 +215,14 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
                       )}
 
                       {isCashierOrSupervisor && (
-                          <DropdownMenuItem disabled={advance.cashAdvance.status !== 'Check Voucher Released'} onClick={() => handleAction(`Marked as CV Received for ${advance.cashAdvance.personnel}.`)}>
+                          <DropdownMenuItem disabled={advance.cashAdvance.status !== 'Check Voucher Released'} onClick={() => handleMarkAsCvReceived(advance)}>
                             <Banknote className="mr-2 h-4 w-4" />
                             <span>Mark as CV Received</span>
                           </DropdownMenuItem>
                       )}
 
                       {user?.role === 'Liaison' && (
-                         <DropdownMenuItem disabled={!['CV Received'].includes(advance.cashAdvance.status)} onClick={() => handleAction(`Liquidated advance for ${advance.cashAdvance.personnel}.`)}>
+                         <DropdownMenuItem disabled={!['CV Received'].includes(advance.cashAdvance.status)} onClick={() => {}}>
                             <FileUp className="mr-2 h-4 w-4" />
                             <span>Liquidate</span>
                         </DropdownMenuItem>
@@ -323,5 +326,3 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
     </>
   );
 }
-
-    
