@@ -61,14 +61,15 @@ function CashAdvancesContent({ searchQuery }: { searchQuery: string }) {
 
             const enriched: EnrichedCashAdvance[] = relevantAdvances.map(ca => {
                 const associatedMotorcycles = ca.motorcycleIds
-                    ? motorcycles.filter(m => ca.motorcycleIds!.includes(m.id))
-                    : (ca.motorcycleId ? [motorcycles.find(m => m.id === ca.motorcycleId)!] : []);
-
+                    ? ca.motorcycleIds.map(id => motorcycles.find(m => m.id === id)).filter(Boolean) as Motorcycle[]
+                    : (ca.motorcycleId ? [motorcycles.find(m => m.id === ca.motorcycleId)!].filter(Boolean) as Motorcycle[] : []);
+                
                 return { 
                     cashAdvance: ca, 
-                    motorcycles: associatedMotorcycles.filter(Boolean) as Motorcycle[]
+                    motorcycles: associatedMotorcycles
                 };
             });
+
             setAdvances(enriched);
             setLiaisons(liaisonData);
             
@@ -326,4 +327,5 @@ export default function CashAdvancesPage() {
             </div>
         </ProtectedPage>
     );
-}
+
+    
