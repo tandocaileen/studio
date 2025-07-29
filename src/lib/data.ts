@@ -25,7 +25,7 @@ const initialMotorcycles: Motorcycle[] = [
     assignedBranch: 'CEBU',
     purchaseDate: new Date('2023-01-15'),
     supplier: 'Yamaha Motors',
-    status: 'Ready to Register',
+    status: 'Processing',
     documents: [],
     customerName: 'Apolinario Mabini',
     salesInvoiceNo: 'SI-00123',
@@ -52,7 +52,7 @@ const initialMotorcycles: Motorcycle[] = [
     assignedBranch: 'CEBU',
     purchaseDate: new Date('2024-05-20'),
     supplier: 'Honda Prestige',
-    status: 'Ready to Register',
+    status: 'Processing',
     documents: [],
     customerName: 'Emilio Aguinaldo',
     salesInvoiceNo: 'SI-00124',
@@ -116,7 +116,28 @@ const initialMotorcycles: Motorcycle[] = [
   },
 ];
 
-const initialCashAdvances: CashAdvance[] = [];
+const initialCashAdvances: CashAdvance[] = [
+  {
+    id: 'ca-072024-001',
+    personnel: 'Bryle Nikko Hamili',
+    purpose: 'Cash advance for registration of 2 units.',
+    amount: 5000.00,
+    date: addDays(today, -2),
+    status: 'CV Received',
+    motorcycleIds: ['mc-001', 'mc-002'],
+    checkVoucherNumber: 'CV-2024-07-101',
+    checkVoucherReleaseDate: addDays(today, -1)
+  },
+   {
+    id: 'ca-072024-002',
+    personnel: 'Bryle Nikko Hamili',
+    purpose: 'Cash advance for registration of 1 unit.',
+    amount: 2500.00,
+    date: addDays(today, -5),
+    status: 'Processing for CV',
+    motorcycleIds: ['mc-003']
+  }
+];
 
 const initialLiaisonUsers: LiaisonUser[] = [
     { id: 'user-001', name: 'Bryle Nikko Hamili', assignedBranch: 'CEBU', processingFee: 1500, orFee: 1000 },
@@ -140,7 +161,7 @@ const getData = <T,>(key: string, initialData: T[]): T[] => {
         if (stored) {
             return JSON.parse(stored, (key, value) => {
                 // Reviver to convert ISO strings back to Date objects
-                if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(value)) {
+                if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}\.\d{3}Z$/.test(value)) {
                     return new Date(value);
                 }
                 return value;
