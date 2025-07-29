@@ -71,11 +71,8 @@ const generateInitialData = () => {
         };
         motorcycles.push(mc);
     }
-    
-    // 2. Set statuses according to user definition
-    // 5 Motorcycles as "Ready to Register"
-    motorcycles.slice(5, 10).forEach(mc => {
-        mc.status = 'Ready to Register';
+
+    const fillOutDetails = (mc: Motorcycle) => {
         mc.cocNumber = `COC-${Math.floor(Math.random() * 9000) + 1000}`;
         mc.policyNumber = `POL-${Math.floor(Math.random() * 9000) + 1000}`;
         mc.insuranceType = 'TPL';
@@ -85,29 +82,29 @@ const generateInitialData = () => {
         mc.sarCode = `SAR-${Math.floor(Math.random() * 9000) + 1000}`;
         mc.csrNumber = `CSR-${Math.floor(Math.random() * 9000) + 1000}`;
         mc.crNumber = `CR-${Math.floor(Math.random() * 9000) + 1000}`;
+        return mc;
+    }
+    
+    // 2. Set 5 Motorcycles to "Ready to Register"
+    motorcycles.slice(5, 10).forEach(mc => {
+        fillOutDetails(mc);
+        mc.status = 'Ready to Register';
     });
 
-    // 20 motorcycles to be endorsed
-    const mcsForEndorsement = motorcycles.slice(10);
-    
-    // 3. Create 10 Endorsements to Bryle, 2 MCs each
+    // 3. Create 10 Endorsements to Bryle, 2 MCs each, for a total of 20 MCs
+    // These are motorcycles from index 10 to 29
+    const mcsForEndorsement = motorcycles.slice(10); 
     for (let i = 0; i < 10; i++) {
         const mc1 = mcsForEndorsement[i * 2];
         const mc2 = mcsForEndorsement[i * 2 + 1];
-        const daysAgo = (i < 3) ? (i * 2) + 1 : (i * 3) + 2; // Make first 3 recent
+        
+        // Vary the dates, making the first 3 recent
+        const daysAgo = (i < 3) ? (i * 2) + 1 : (i * 5) + 8;
 
-        // Make first MC of endorsement Ready, second Incomplete
+        // First MC of endorsement is ready, second is incomplete
+        fillOutDetails(mc1);
         mc1.status = 'Endorsed - Ready';
         mc1.assignedLiaison = DEMO_LIAISON.name;
-        mc1.cocNumber = `COC-${Math.floor(Math.random() * 9000) + 1000}`;
-        mc1.policyNumber = `POL-${Math.floor(Math.random() * 9000) + 1000}`;
-        mc1.insuranceType = 'TPL';
-        mc1.insuranceEffectiveDate = mc1.purchaseDate;
-        mc1.insuranceExpirationDate = addDays(mc1.purchaseDate, 365);
-        mc1.hpgControlNumber = `HPG-${Math.floor(Math.random() * 9000) + 1000}`;
-        mc1.sarCode = `SAR-${Math.floor(Math.random() * 9000) + 1000}`;
-        mc1.csrNumber = `CSR-${Math.floor(Math.random() * 9000) + 1000}`;
-        mc1.crNumber = `CR-${Math.floor(Math.random() * 9000) + 1000}`;
         
         mc2.status = 'Endorsed - Incomplete';
         mc2.assignedLiaison = DEMO_LIAISON.name;
@@ -124,28 +121,31 @@ const generateInitialData = () => {
         endorsements.push(endorsement);
     }
 
-    // 4. Create some CAs to put some endorsed units into "Processing"
-    const mcsForCA = endorsements[3].motorcycleIds; // Use an older endorsement
+    // 4. Create CAs for some endorsed units to move them to "Processing"
+    // Use an older endorsement to create a CA
+    const endorsementForCA1 = endorsements.find(e => e.id === 'ENDO-2407-04')!;
+    const mcsForCA1 = endorsementForCA1.motorcycleIds;
     const ca1: CashAdvance = {
         id: 'ca-072024-001',
         personnel: DEMO_LIAISON.name,
         personnelBranch: DEMO_LIAISON.assignedBranch,
-        purpose: `Cash advance for registration of ${mcsForCA.length} units.`,
-        amount: mcsForCA.length * (DEMO_LIAISON.processingFee + DEMO_LIAISON.orFee),
+        purpose: `Cash advance for registration of ${mcsForCA1.length} units.`,
+        amount: mcsForCA1.length * (DEMO_LIAISON.processingFee + DEMO_LIAISON.orFee),
         date: addDays(today, -8),
         status: 'CV Released',
-        motorcycleIds: mcsForCA,
+        motorcycleIds: mcsForCA1,
         checkVoucherNumber: 'CV-2024-07-010',
         checkVoucherReleaseDate: addDays(today, -7)
     };
     cashAdvances.push(ca1);
-    mcsForCA.forEach(mcId => {
+    mcsForCA1.forEach(mcId => {
         const mc = motorcycles.find(m => m.id === mcId)!;
         mc.status = 'Processing';
     });
     
-    // 5. Create a liquidated CA to put some units into "For Review"
-    const mcsForLiquidation = endorsements[4].motorcycleIds;
+    // 5. Create a liquidated CA to move some units to "For Review"
+    const endorsementForCA2 = endorsements.find(e => e.id === 'ENDO-2407-05')!;
+    const mcsForLiquidation = endorsementForCA2.motorcycleIds;
     const ca2: CashAdvance = {
         id: 'ca-071524-002',
         personnel: DEMO_LIAISON.name,
@@ -182,7 +182,7 @@ const generateInitialData = () => {
 const MC_KEY = 'lto_motorcycles';
 const CA_KEY = 'lto_cash_advances';
 const ENDO_KEY = 'lto_endorsements';
-const DATA_FLAG = 'data_generated_flag_v5'; // Increment version to force reset
+const DATA_FLAG = 'data_generated_flag_v6'; // Increment version to force reset
 
 const initializeData = () => {
     if (typeof window !== 'undefined') {
