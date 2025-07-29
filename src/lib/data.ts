@@ -184,9 +184,6 @@ ca3_mcIds.forEach(mcId => {
 
 const initialLiaisonUsers: LiaisonUser[] = [
     SINGLE_LIAISON_USER,
-    // Add other non-liaison users for login purposes
-    { id: 'user-002', name: 'Demo Cashier', assignedBranch: 'CEBU', processingFee: 0, orFee: 0 },
-    { id: 'user-003', name: 'Demo Store Supervisor', assignedBranch: 'CEBU', processingFee: 0, orFee: 0 },
 ];
 
 const MC_KEY = 'lto_motorcycles';
