@@ -231,7 +231,8 @@ export default function LiquidationsPage() {
                                                     if (!ca) return null;
                                                     
                                                     const isLiquidated = mc.status === 'For Review';
-                                                    const canLiquidate = ['Approved', 'CV Received'].includes(ca.status) && !isLiquidated;
+                                                    const canLiquidate = ['Approved', 'CV Received', 'Processing'].includes(ca.status) && !isLiquidated;
+                                                    const isPendingView = motorcycleViewFilter === 'pending';
 
                                                     return (
                                                         <TableRow key={mc.id}>
@@ -242,7 +243,7 @@ export default function LiquidationsPage() {
                                                             <TableCell className="text-right">₱{getMcAdvanceAmount(mc).toLocaleString()}</TableCell>
                                                             <TableCell>
                                                                 <Badge variant={isLiquidated ? 'default' : 'outline'}>
-                                                                    {isLiquidated ? "For Review" : mc.status}
+                                                                    {isLiquidated ? "For Review" : (isPendingView ? "Processing" : mc.status)}
                                                                 </Badge>
                                                             </TableCell>
                                                             <TableCell>
