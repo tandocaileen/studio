@@ -104,8 +104,8 @@ export function InsuranceControlForm({ editedData, onDataChange, canEdit }: Insu
                     </Popover>
                 </div>
                 <div className="grid gap-2">
-                    <Label htmlFor="edit-sarCode">SAR Code</Label>
-                    <Input id="edit-sarCode" name="sarCode" value={editedData.sarCode || ''} onChange={(e) => onDataChange('sarCode', e.target.value)} disabled={!canEdit} required />
+                    <Label htmlFor="edit-sarCode">SAR Code <span className="text-destructive">*</span></Label>
+                    <Input id="edit-sarCode" name="sarCode" value={editedData.sarCode || ''} onChange={(e) => onDataChange('sarCode', e.target.value)} disabled={!canEdit} required className={cn(!editedData.sarCode && 'border-destructive')} />
                 </div>
             </div>
         </div>

@@ -21,7 +21,7 @@ import {
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Motorcycle, Document, DocumentType } from '@/types';
+import { Motorcycle, Document, DocumentType, MotorcycleStatus } from '@/types';
 import { MoreHorizontal, PlusCircle, FileText, Truck, Wrench, DollarSign, ExternalLink, Save, XCircle, Trash2, CalendarIcon, ArrowUpDown } from 'lucide-react';
 import { getBranches, getLiaisons } from '@/lib/data';
 import {
@@ -144,7 +144,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
       console.log('Cash advance generated: ', result);
       
       const updatedMotorcycles = motorcycles.map(m => 
-          selectedMotorcycles.some(sm => sm.id === m.id) ? { ...m, status: 'Processing' } : m
+          selectedMotorcycles.some(sm => sm.id === m.id) ? { ...m, status: 'Processing' as MotorcycleStatus } : m
       );
       setMotorcycles(updatedMotorcycles);
       if (onStateChange) onStateChange(updatedMotorcycles);
@@ -219,7 +219,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
     // Check if all required fields are filled to auto-update status
     const requiredFields: (keyof Motorcycle)[] = [
         'csrNumber', 'crNumber', 'hpgControlNumber', 
-        'cocNumber', 'policyNumber', 'insuranceEffectiveDate', 'insuranceExpirationDate'
+        'cocNumber', 'policyNumber', 'insuranceEffectiveDate', 'insuranceExpirationDate', 'sarCode'
     ];
     const allFieldsFilled = requiredFields.every(field => !!updatedMotorcycle[field]);
 
@@ -279,7 +279,10 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
         comparison = aVal.localeCompare(bVal);
       } else if (typeof aVal === 'number' && typeof bVal === 'number') {
         comparison = aVal - bVal;
+      } else if (aVal instanceof Date && bVal instanceof Date) {
+        comparison = aVal.getTime() - bVal.getTime();
       }
+
 
       return sortDirection === 'asc' ? comparison : -comparison;
     });
@@ -344,7 +347,6 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                   </TableHead>
                 )}
                  {!isLiaison && (isSupervisor || isCashier) && <TableHead className="w-[40px]"></TableHead>}
-                <SortableHeader column="id">Sales ID</SortableHeader>
                 <SortableHeader column="salesInvoiceNo">SI No.</SortableHeader>
                 <SortableHeader column="customerName">Customer Name</SortableHeader>
                 <SortableHeader column="accountCode">Account Code</SortableHeader>
@@ -372,7 +374,6 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                       </TableCell>
                     )}
                     {!isLiaison && (isSupervisor || isCashier) && <TableCell></TableCell>}
-                    <TableCell>{motorcycle.id}</TableCell>
                     <TableCell>{motorcycle.salesInvoiceNo}</TableCell>
                     <TableCell className="font-medium">{motorcycle.customerName}</TableCell>
                     <TableCell>{motorcycle.accountCode}</TableCell>
@@ -464,10 +465,6 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                 <div className="grid gap-4 py-4 pr-6">
                     <h3 className="font-semibold text-lg border-b pb-2 mb-2">Motorcycle Details</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="grid gap-2">
-                          <Label htmlFor="edit-id">Sales ID</Label>
-                          <Input id="edit-id" value={editedData.id || ''} disabled />
-                      </div>
                        <div className="grid gap-2">
                           <Label htmlFor="edit-salesInvoiceNo">SI No.</Label>
                           <Input id="edit-salesInvoiceNo" value={editedData.salesInvoiceNo || ''} disabled />
@@ -488,7 +485,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                           <Label htmlFor="edit-engineNumber">Engine No.</Label>
                           <Input id="edit-engineNumber" value={editedData.engineNumber || ''} disabled />
                       </div>
-                      <div className="grid gap-2">
+                       <div className="grid gap-2">
                           <Label htmlFor="edit-status">Status</Label>
                           <Input id="edit-status" value={editedData.status || ''} disabled />
                       </div>
@@ -496,7 +493,6 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                           <Label htmlFor="edit-assignedLiaison">Assigned Liaison</Label>
                           <Input id="edit-assignedLiaison" value={editedData.assignedLiaison || 'N/A'} disabled />
                       </div>
-
                        <div className="grid gap-2">
                           <Label htmlFor="edit-csrNumber">CSR No. <span className="text-destructive">*</span></Label>
                           <Input id="edit-csrNumber" name="csrNumber" value={editedData.csrNumber || ''} onChange={(e) => handleDataChange('csrNumber', e.target.value)} className={cn(!editedData.csrNumber && 'border-destructive')} disabled={isLiaison} />
