@@ -114,20 +114,9 @@ export function LiaisonEndorsementTable({
 
     try {
       if (!user) throw new Error("User not found");
-
-      const motorcyclesForAI = selectedMotorcycles.map(m => ({
-        ...m,
-        purchaseDate: new Date(m.purchaseDate).toISOString(),
-        documents: m.documents.map(d => ({
-            ...d,
-            uploadedAt: new Date(d.uploadedAt).toISOString(),
-            expiresAt: d.expiresAt ? new Date(d.expiresAt).toISOString() : undefined,
-            type: d.type
-        }))
-      }));
-
+      
       const result = await generateCashAdvance({ 
-          motorcycles: motorcyclesForAI,
+          motorcycles: selectedMotorcycles,
           liaison: user.name,
           remarks: remarks,
       });
@@ -268,9 +257,6 @@ export function LiaisonEndorsementTable({
                                         <TableHead>Customer Name</TableHead>
                                         <TableHead>Account Code</TableHead>
                                         <TableHead>Chassis No.</TableHead>
-                                        <TableHead>CSR No.</TableHead>
-                                        <TableHead>CR No.</TableHead>
-                                        <TableHead>HPG Control</TableHead>
                                         <TableHead>Status</TableHead>
                                         <TableHead>Action</TableHead>
                                     </TableRow>
@@ -289,9 +275,6 @@ export function LiaisonEndorsementTable({
                                             <TableCell>{mc.customerName}</TableCell>
                                             <TableCell>{mc.accountCode}</TableCell>
                                             <TableCell>{mc.chassisNumber}</TableCell>
-                                            <TableCell>{mc.csrNumber || 'N/A'}</TableCell>
-                                            <TableCell>{mc.crNumber || 'N/A'}</TableCell>
-                                            <TableCell>{mc.hpgControlNumber || 'N/A'}</TableCell>
                                             <TableCell>
                                                 <Badge variant={mc.status === 'Endorsed - Incomplete' ? 'destructive' : mc.status === 'Endorsed - Ready' ? 'default' : 'outline'}>
                                                     {mc.status}
@@ -421,3 +404,5 @@ export function LiaisonEndorsementTable({
   </>
   );
 }
+
+    

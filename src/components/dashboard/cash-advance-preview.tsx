@@ -34,8 +34,6 @@ export const CashAdvancePreview = React.forwardRef<HTMLDivElement, CashAdvancePr
                     <TableHeader>
                         <TableRow>
                             <TableHead>SI No.</TableHead>
-                            <TableHead>SI Date</TableHead>
-                            <TableHead>Account Code</TableHead>
                             <TableHead>Customer Name</TableHead>
                             <TableHead className="text-right">Processing Fee</TableHead>
                             <TableHead className="text-right">OR Fee</TableHead>
@@ -46,8 +44,6 @@ export const CashAdvancePreview = React.forwardRef<HTMLDivElement, CashAdvancePr
                         {motorcycles.map(mc => (
                             <TableRow key={mc.id}>
                                 <TableCell>{mc.salesInvoiceNo}</TableCell>
-                                <TableCell>{format(new Date(mc.purchaseDate), 'MMM dd, yyyy')}</TableCell>
-                                <TableCell>{mc.accountCode}</TableCell>
                                 <TableCell>{mc.customerName}</TableCell>
                                 <TableCell className="text-right font-mono">₱{(mc.processingFee || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</TableCell>
                                 <TableCell className="text-right font-mono">₱{(mc.orFee || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</TableCell>
@@ -57,7 +53,7 @@ export const CashAdvancePreview = React.forwardRef<HTMLDivElement, CashAdvancePr
                     </TableBody>
                     <TableFooter>
                          <TableRow className="font-bold text-lg bg-gray-100">
-                            <TableCell colSpan={6} className="text-right">Grand Total Cash Advance</TableCell>
+                            <TableCell colSpan={4} className="text-right">Grand Total Cash Advance</TableCell>
                             <TableCell className="text-right font-mono">₱{grandTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}</TableCell>
                         </TableRow>
                     </TableFooter>
@@ -68,3 +64,5 @@ export const CashAdvancePreview = React.forwardRef<HTMLDivElement, CashAdvancePr
 });
 
 CashAdvancePreview.displayName = 'CashAdvancePreview';
+
+    

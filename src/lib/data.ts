@@ -22,11 +22,7 @@ const initialMotorcycles: Motorcycle[] = [
     purchaseDate: new Date('2023-01-15'),
     supplier: 'Honda Prestige',
     status: 'For Review',
-    documents: [
-      { type: 'OR/CR', url: '#/doc/orcr123', uploadedAt: new Date('2023-01-20'), expiresAt: addDays(today, 300) },
-      { type: 'COC', url: '#', uploadedAt: new Date('2023-01-20') },
-      { type: 'Insurance', url: '#', uploadedAt: new Date('2023-01-20'), expiresAt: addDays(today, 25) },
-    ],
+    documents: [],
     customerName: 'Juan Dela Cruz',
     assignedLiaison: 'BRYLE NIKKO HAMILI',
     processingFee: 300.00,
@@ -67,11 +63,7 @@ const initialMotorcycles: Motorcycle[] = [
     purchaseDate: new Date('2022-05-20'),
     supplier: 'Yamaha Motors',
     status: 'Endorsed - Ready',
-    documents: [
-      { type: 'OR/CR', url: '#/doc/orcr456', uploadedAt: new Date('2022-05-25'), expiresAt: addDays(today, -10) },
-      { type: 'COC', url: '#', uploadedAt: new Date('2022-05-25') },
-      { type: 'Insurance', url: '#', uploadedAt: new Date('2022-05-25'), expiresAt: addDays(today, 5) },
-    ],
+    documents: [],
     customerName: 'Maria Clara',
     assignedLiaison: 'RODEL PASTRANO',
     processingFee: 300.00,
@@ -88,73 +80,7 @@ const initialMotorcycles: Motorcycle[] = [
     crNumber: 'CR67890',
     csrNumber: 'CSR67890',
   },
-  {
-    id: '3',
-    make: 'Suzuki',
-    model: 'Burgman Street',
-    year: 2023,
-    color: 'White',
-    plateNumber: '789 GHI',
-    engineNumber: 'E11223344',
-    chassisNumber: 'C11223344',
-    assignedBranch: 'ILOILO',
-    purchaseDate: new Date('2023-03-10'),
-    supplier: 'Suzuki Philippines',
-    status: 'For Review',
-    documents: [
-      { type: 'OR/CR', url: '#/doc/orcr789', uploadedAt: new Date('2023-03-15'), expiresAt: addDays(today, 400) },
-      { type: 'COC', url: '#', uploadedAt: new Date('2023-03-15') },
-      { type: 'Insurance', url: '#', uploadedAt: new Date('2023-03-15'), expiresAt: addDays(today, 150) },
-    ],
-    customerName: 'Jose Rizal',
-    assignedLiaison: 'BENJO SEQUIERO',
-    processingFee: 150.00,
-    orFee: 1826.43,
-    salesInvoiceNo: 'SI-00125',
-    accountCode: 'AC-JRZ-001',
-    hpgControlNumber: 'HPG-CTRL-003',
-    cocNumber: 'COC-789',
-    policyNumber: 'POL-789',
-    sarCode: 'SAR-789',
-    insuranceType: 'TPL',
-    insuranceEffectiveDate: new Date('2024-01-01'),
-    insuranceExpirationDate: new Date('2025-01-01'),
-    crNumber: 'CR11223',
-    csrNumber: 'CSR11223',
-     liquidationDetails: {
-      parentCaId: 'ca-070124-002',
-      ltoOrNumber: 'LTO-OR-456',
-      ltoOrAmount: 1800,
-      ltoProcessFee: 150,
-      totalLiquidation: 1950,
-      shortageOverage: 26.43,
-      remarks: 'Full Liquidation',
-      liquidatedBy: 'BENJO SEQUIERO',
-      liquidationDate: addDays(today, -25)
-    }
-  },
-  {
-    id: '4',
-    make: 'Kawasaki',
-    model: 'Rouser NS200',
-    year: 2021,
-    color: 'Red',
-    plateNumber: '101 JKL',
-    engineNumber: 'E55667788',
-    chassisNumber: 'C55667788',
-    assignedBranch: 'Main Office',
-    purchaseDate: new Date('2021-11-01'),
-    supplier: 'Wheeltek',
-    status: 'Endorsed - Incomplete',
-    documents: [],
-    customerName: 'Andres Bonifacio',
-    assignedLiaison: 'BRYLE NIKKO HAMILI',
-    processingFee: 1500,
-    orFee: 1000,
-    salesInvoiceNo: 'SI-00126',
-    accountCode: 'AC-ABF-001',
-  },
-  {
+    {
     id: '5',
     make: 'Honda',
     model: 'PCX160',
@@ -167,10 +93,7 @@ const initialMotorcycles: Motorcycle[] = [
     purchaseDate: new Date('2023-08-01'),
     supplier: 'Honda Prestige',
     status: 'Endorsed - Ready',
-    documents: [
-        { type: 'COC', url: '#', uploadedAt: new Date('2023-08-05') },
-        { type: 'Insurance', url: '#', uploadedAt: new Date('2023-08-05'), expiresAt: addDays(today, 360) },
-    ],
+    documents: [],
     customerName: 'Gabriela Silang',
     processingFee: 1550,
     orFee: 1050,
@@ -187,303 +110,6 @@ const initialMotorcycles: Motorcycle[] = [
     crNumber: 'CRPCX160',
     csrNumber: 'CSRPXC160'
   },
-   {
-    id: '6',
-    make: 'Yamaha',
-    model: 'Mio Aerox',
-    year: 2024,
-    color: 'Matte Grey',
-    plateNumber: '345 PQR',
-    engineNumber: 'E65432198',
-    chassisNumber: 'C65432198',
-    assignedBranch: 'Main Office',
-    purchaseDate: new Date('2024-05-10'),
-    supplier: 'Yamaha Motors',
-    status: 'Processing',
-    documents: [
-      { type: 'COC', url: '#', uploadedAt: new Date('2024-05-15') },
-      { type: 'Insurance', url: '#', uploadedAt: new Date('2024-05-15'), expiresAt: addDays(today, 365) },
-      { type: 'CSR', url: '#/doc/csr654', uploadedAt: new Date('2024-05-15') },
-    ],
-    customerName: 'Apolinario Mabini',
-    assignedLiaison: 'BRYLE NIKKO HAMILI',
-    processingFee: 1500,
-    orFee: 1000,
-    salesInvoiceNo: 'SI-00128',
-    accountCode: 'AC-APM-001',
-    hpgControlNumber: 'HPG-CTRL-006',
-    cocNumber: 'COC-AEROX',
-    policyNumber: 'POL-AEROX',
-    sarCode: 'SAR-AEROX',
-    insuranceType: 'TPL',
-    insuranceEffectiveDate: new Date('2024-01-01'),
-    insuranceExpirationDate: new Date('2025-01-01'),
-    csrNumber: 'CSRMIOAEROX',
-  },
-  {
-    id: '7',
-    make: 'Honda',
-    model: 'ADV 160',
-    year: 2024,
-    color: 'Red',
-    plateNumber: '678 STU',
-    engineNumber: 'E78901234',
-    chassisNumber: 'C78901234',
-    assignedBranch: 'East Branch',
-    purchaseDate: new Date('2024-06-01'),
-    supplier: 'Honda Prestige',
-    status: 'Processing',
-    documents: [],
-    customerName: 'Emilio Aguinaldo',
-    assignedLiaison: 'BRYLE NIKKO HAMILI',
-    processingFee: 1500,
-    orFee: 1000,
-    salesInvoiceNo: 'SI-00129',
-    accountCode: 'AC-EAG-001',
-    hpgControlNumber: 'HPG-CTRL-007',
-    cocNumber: 'COC-ADV',
-    policyNumber: 'POL-ADV',
-    sarCode: 'SAR-ADV',
-    insuranceType: 'TPL',
-  },
-  {
-    id: '8',
-    make: 'Suzuki',
-    model: 'Raider R150',
-    year: 2024,
-    color: 'Blue',
-    plateNumber: '111 VWX',
-    engineNumber: 'E88889999',
-    chassisNumber: 'C88889999',
-    assignedBranch: 'DAVAO',
-    purchaseDate: new Date('2024-07-01'),
-    supplier: 'Suzuki Dagupan',
-    status: 'Endorsed - Ready',
-    documents: [
-        { type: 'COC', url: '#', uploadedAt: new Date('2024-07-05') },
-        { type: 'Insurance', url: '#', uploadedAt: new Date('2024-07-05'), expiresAt: addDays(today, 365) },
-    ],
-    customerName: 'Melchora Aquino',
-    assignedLiaison: 'ALI VIN SALEH COLINA',
-    processingFee: 244.82,
-    orFee: 1836.43-244.82,
-    salesInvoiceNo: 'SI-00130',
-    accountCode: 'AC-MAQ-001',
-    hpgControlNumber: 'HPG-CTRL-008',
-    cocNumber: 'COC-R150',
-    policyNumber: 'POL-R150',
-    sarCode: 'SAR-R150',
-    insuranceType: 'TPL',
-    insuranceEffectiveDate: new Date('2024-01-01'),
-    insuranceExpirationDate: new Date('2025-01-01'),
-  },
-  {
-    id: '9',
-    make: 'Honda',
-    model: 'BeAT',
-    year: 2023,
-    color: 'Pink',
-    plateNumber: '222 YZA',
-    engineNumber: 'E77776666',
-    chassisNumber: 'C77776666',
-    assignedBranch: 'CEBU',
-    purchaseDate: new Date('2023-10-10'),
-    supplier: 'Honda Prestige',
-    status: 'Endorsed - Incomplete',
-    documents: [],
-    customerName: 'Lapu-Lapu',
-    assignedLiaison: 'BRYLE NIKKO HAMILI',
-    processingFee: 300,
-    orFee: 1826.43-300,
-    salesInvoiceNo: 'SI-00131',
-    accountCode: 'AC-LPL-001',
-  },
-  {
-    id: '10',
-    make: 'Yamaha',
-    model: 'Mio Gravis',
-    year: 2024,
-    color: 'Matte Red',
-    plateNumber: '333 BCD',
-    engineNumber: 'E55554444',
-    chassisNumber: 'C55554444',
-    assignedBranch: 'ZAMBOANGA',
-    purchaseDate: new Date('2024-02-15'),
-    supplier: 'Yamaha Motors',
-    status: 'Endorsed - Ready',
-    documents: [
-       { type: 'COC', url: '#', uploadedAt: new Date('2024-02-20') },
-       { type: 'Insurance', url: '#', uploadedAt: new Date('2024-02-20'), expiresAt: addDays(today, 300) },
-    ],
-    customerName: 'Gregorio del Pilar',
-    assignedLiaison: 'RODERICK GUTIERREZ',
-    processingFee: 250.00,
-    orFee: 1742.68-250,
-    salesInvoiceNo: 'SI-00132',
-    accountCode: 'AC-GDP-001',
-    hpgControlNumber: 'HPG-CTRL-010',
-    cocNumber: 'COC-GRAVIS',
-    policyNumber: 'POL-GRAVIS',
-    sarCode: 'SAR-GRAVIS',
-    insuranceType: 'TPL',
-    insuranceEffectiveDate: new Date('2024-01-01'),
-    insuranceExpirationDate: new Date('2025-01-01'),
-  },
-  {
-    id: '11',
-    make: 'Kawasaki',
-    model: 'Ninja 400',
-    year: 2023,
-    color: 'Green',
-    plateNumber: '444 EFG',
-    engineNumber: 'E33332222',
-    chassisNumber: 'C33332222',
-    assignedBranch: 'LA UNION',
-    purchaseDate: new Date('2023-11-20'),
-    supplier: 'Wheeltek',
-    status: 'Processing',
-    documents: [
-       { type: 'COC', url: '#', uploadedAt: new Date('2023-11-25') },
-       { type: 'Insurance', url: '#', uploadedAt: new Date('2023-11-25'), expiresAt: addDays(today, 250) },
-    ],
-    customerName: 'Antonio Luna',
-    assignedLiaison: 'JINKY JOY AGBALOG',
-    processingFee: 300.00,
-    orFee: 2115.18-300,
-    salesInvoiceNo: 'SI-00133',
-    accountCode: 'AC-ALN-001',
-    hpgControlNumber: 'HPG-CTRL-011',
-    cocNumber: 'COC-N400',
-    policyNumber: 'POL-N400',
-    sarCode: 'SAR-N400',
-    insuranceType: 'TPL',
-    insuranceEffectiveDate: new Date('2024-01-01'),
-    insuranceExpirationDate: new Date('2025-01-01'),
-  },
-  {
-    id: '12',
-    make: 'Suzuki',
-    model: 'Gixxer',
-    year: 2024,
-    color: 'Black',
-    plateNumber: '555 HIJ',
-    engineNumber: 'E22221111',
-    chassisNumber: 'C22221111',
-    assignedBranch: 'ILOILO',
-    purchaseDate: new Date('2024-01-10'),
-    supplier: 'Suzuki Philippines',
-    status: 'Endorsed - Incomplete',
-    documents: [],
-    customerName: 'Graciano López Jaena',
-    assignedLiaison: 'BENJO SEQUIERO',
-    processingFee: 200.00,
-    orFee: 1900.00,
-    salesInvoiceNo: 'SI-00134',
-    accountCode: 'AC-GLJ-001',
-  },
-  {
-    id: '13',
-    make: 'Honda',
-    model: 'XR150L',
-    year: 2023,
-    color: 'Red',
-    plateNumber: '666 KLM',
-    engineNumber: 'E11110000',
-    chassisNumber: 'C11110000',
-    assignedBranch: 'SAN FERNANDO',
-    purchaseDate: new Date('2023-12-05'),
-    supplier: 'Honda Prestige',
-    status: 'Endorsed - Ready',
-    documents: [ { type: 'COC', url: '#', uploadedAt: new Date('2023-12-10') }],
-    customerName: 'Marcelo H. del Pilar',
-    assignedLiaison: 'RODEL PASTRANO',
-    processingFee: 300.00,
-    orFee: 1800.00,
-    salesInvoiceNo: 'SI-00135',
-    accountCode: 'AC-MHP-001',
-    hpgControlNumber: 'HPG-CTRL-013',
-    cocNumber: 'COC-XR150L',
-    policyNumber: 'POL-XR150L',
-    sarCode: 'SAR-XR150L',
-    insuranceType: 'TPL',
-    insuranceEffectiveDate: new Date('2024-01-01'),
-    insuranceExpirationDate: new Date('2025-01-01'),
-  },
-  {
-    id: '14',
-    make: 'Yamaha',
-    model: 'YTX 125',
-    year: 2024,
-    color: 'Blue',
-    plateNumber: '777 NOP',
-    engineNumber: 'E00009999',
-    chassisNumber: 'C00009999',
-    assignedBranch: 'ILOILO',
-    purchaseDate: new Date('2024-03-20'),
-    supplier: 'Yamaha Motors',
-    status: 'Ready to Register',
-    documents: [{ type: 'COC', url: '#', uploadedAt: new Date('2024-03-25') }],
-    customerName: 'Mariano Ponce',
-    processingFee: 150.00,
-    orFee: 1700.00,
-    salesInvoiceNo: 'SI-00136',
-    accountCode: 'AC-MPN-001',
-    hpgControlNumber: 'HPG-CTRL-014',
-    cocNumber: 'COC-YTX',
-    policyNumber: 'POL-YTX',
-    sarCode: 'SAR-YTX',
-    insuranceType: 'TPL',
-    insuranceEffectiveDate: new Date('2024-01-01'),
-    insuranceExpirationDate: new Date('2025-01-01'),
-  },
-  {
-    id: '15',
-    make: 'Honda',
-    model: 'Wave 110',
-    year: 2024,
-    color: 'Black',
-    plateNumber: '888 QRS',
-    engineNumber: 'E98765432',
-    chassisNumber: 'C98765432',
-    assignedBranch: 'CEBU',
-    purchaseDate: new Date('2024-04-15'),
-    supplier: 'Honda Prestige',
-    status: 'Incomplete',
-    documents: [],
-    customerName: 'Juan Luna',
-    processingFee: 300.00,
-    orFee: 1600.00,
-    salesInvoiceNo: 'SI-00137',
-    accountCode: 'AC-JLN-001',
-  },
-  {
-    id: '16',
-    make: 'Suzuki',
-    model: 'Skydrive',
-    year: 2023,
-    color: 'Silver',
-    plateNumber: '999 TUV',
-    engineNumber: 'E87654321',
-    chassisNumber: 'C87654321',
-    assignedBranch: 'CEBU',
-    purchaseDate: new Date('2023-09-01'),
-    supplier: 'Suzuki Philippines',
-    status: 'Endorsed - Ready',
-    documents: [{ type: 'COC', url: '#', uploadedAt: new Date('2023-09-05') }],
-    customerName: 'Pedro Paterno',
-    assignedLiaison: 'BRYLE NIKKO HAMILI',
-    processingFee: 300.00,
-    orFee: 1750.00,
-    salesInvoiceNo: 'SI-00138',
-    accountCode: 'AC-PPN-001',
-    hpgControlNumber: 'HPG-CTRL-016',
-    cocNumber: 'COC-SKY',
-    policyNumber: 'POL-SKY',
-    sarCode: 'SAR-SKY',
-    insuranceType: 'TPL',
-    insuranceEffectiveDate: new Date('2024-01-01'),
-    insuranceExpirationDate: new Date('2025-01-01'),
-  },
 ];
 
 const initialCashAdvances: CashAdvance[] = [
@@ -499,154 +125,14 @@ const initialCashAdvances: CashAdvance[] = [
   {
     id: 'ca-070124-002',
     personnel: 'BRYLE NIKKO HAMILI',
-    purpose: 'Registration for 2 units',
-    amount: 4102.86,
+    purpose: 'Registration for 1 unit',
+    amount: 2126.43,
     date: addDays(today, -30),
     status: 'Liquidated',
-    motorcycleIds: ['1', '3'],
-    totalLiquidation: 4050,
+    motorcycleIds: ['1'],
+    totalLiquidation: 2100,
     checkVoucherNumber: 'CV-2024-06-010',
     checkVoucherReleaseDate: addDays(today, -28),
-  },
-  {
-    id: 'ca-070124-003',
-    personnel: 'BRYLE NIKKO HAMILI',
-    purpose: 'New registration for 1 unit',
-    amount: 2600,
-    date: addDays(today, -20),
-    status: 'Processing for CV',
-    motorcycleIds: ['5']
-  },
-  {
-    id: 'ca-070124-004',
-    personnel: 'BRYLE NIKKO HAMILI',
-    purpose: 'Registration for 2 units',
-    amount: 5000,
-    date: addDays(today, -5),
-    status: 'CV Released',
-    motorcycleIds: ['6', '7']
-  },
-  {
-    id: 'ca-070124-005',
-    personnel: 'RODEL PASTRANO',
-    purpose: 'Renewal for 1 unit',
-    amount: 2185.18,
-    date: addDays(today, -2),
-    status: 'CV Received',
-    checkVoucherNumber: 'CV-2024-07-002',
-    checkVoucherReleaseDate: addDays(today, -2),
-    motorcycleIds: []
-  },
-  {
-    id: 'ca-070124-006',
-    personnel: 'JINKY JOY AGBALOG',
-    purpose: 'Registration for Ninja 400',
-    amount: 2115.18,
-    date: addDays(today, -1),
-    status: 'CV Received',
-    checkVoucherNumber: 'CV-2024-07-003',
-    checkVoucherReleaseDate: addDays(today, -1),
-    motorcycleIds: ['11']
-  },
-  {
-    id: 'ca-080124-001',
-    personnel: 'RODEL PASTRANO',
-    purpose: 'Registration for XR150L',
-    amount: 2100.00,
-    date: new Date(),
-    status: 'Processing for CV',
-    motorcycleIds: ['13']
-  },
-  {
-    id: 'ca-demo-001',
-    personnel: 'Demo Liaison',
-    purpose: 'Demo registration for 1 unit',
-    amount: 1500,
-    date: addDays(today, -1),
-    status: 'Processing for CV',
-    motorcycleIds: [],
-  },
-  {
-    id: 'ca-demo-002',
-    personnel: 'Demo Liaison',
-    purpose: 'Demo registration for 2 units',
-    amount: 3200,
-    date: addDays(today, -3),
-    status: 'Processing for CV',
-    motorcycleIds: [],
-  },
-  {
-    id: 'ca-demo-003',
-    personnel: 'Demo Liaison',
-    purpose: 'Demo renewal for 1 unit',
-    amount: 1850,
-    date: addDays(today, -5),
-    status: 'Processing for CV',
-    motorcycleIds: [],
-  },
-  {
-    id: 'ca-demo-004',
-    personnel: 'Demo Liaison',
-    purpose: 'Demo registration for 3 units',
-    amount: 5500,
-    date: addDays(today, -7),
-    status: 'CV Released',
-    motorcycleIds: [],
-  },
-  {
-    id: 'ca-demo-005',
-    personnel: 'Demo Liaison',
-    purpose: 'Demo parts purchase',
-    amount: 850,
-    date: addDays(today, -8),
-    status: 'CV Received',
-    checkVoucherNumber: 'CV-DEMO-002',
-    checkVoucherReleaseDate: addDays(today, -7),
-    motorcycleIds: [],
-  },
-  {
-    id: 'ca-demo-006',
-    personnel: 'Demo Liaison',
-    purpose: 'Demo registration for 1 unit',
-    amount: 1980,
-    date: addDays(today, -10),
-    status: 'Liquidated',
-    totalLiquidation: 1980,
-    checkVoucherNumber: 'CV-DEMO-003',
-    checkVoucherReleaseDate: addDays(today, -9),
-    motorcycleIds: [],
-  },
-  {
-    id: 'ca-demo-007',
-    personnel: 'Demo Liaison',
-    purpose: 'Demo travel expenses',
-    amount: 2500,
-    date: addDays(today, -12),
-    status: 'Liquidated',
-    totalLiquidation: 2450,
-    checkVoucherNumber: 'CV-DEMO-004',
-    checkVoucherReleaseDate: addDays(today, -11),
-    motorcycleIds: [],
-  },
-  {
-    id: 'ca-demo-009',
-    personnel: 'Demo Liaison',
-    purpose: 'Demo unit maintenance',
-    amount: 750,
-    date: addDays(today, -20),
-    status: 'Processing for CV',
-    motorcycleIds: [],
-  },
-  {
-    id: 'ca-demo-010',
-    personnel: 'Demo Liaison',
-    purpose: 'Demo registration for 2 units',
-    amount: 4100,
-    date: addDays(today, -25),
-    status: 'CV Received',
-    checkVoucherNumber: 'CV-DEMO-005',
-    checkVoucherReleaseDate: addDays(today, -24),
-    motorcycleIds: [],
   },
 ];
 
@@ -669,19 +155,9 @@ const initialLiaisonUsers: LiaisonUser[] = [
 ];
 
 const initialEndorsements: Endorsement[] = [
-    { id: 'ENDO-20240720-001', transactionDate: addDays(today, -10), liaisonId: '8', liaisonName: 'BRYLE NIKKO HAMILI', motorcycleIds: ['4', '9', '6'], remarks: 'Please prioritize processing for this unit.', createdBy: 'Supervisor A'},
-    { id: 'ENDO-20240722-001', transactionDate: addDays(today, -8), liaisonId: '8', liaisonName: 'BRYLE NIKKO HAMILI', motorcycleIds: ['1', '7'], createdBy: 'Cashier B'},
-    { id: 'ENDO-20240725-001', transactionDate: addDays(today, -5), liaisonId: '8', liaisonName: 'BRYLE NIKKO HAMILI', motorcycleIds: ['5', '16'], remarks: 'For registration.', createdBy: 'Supervisor A'},
-    { id: 'ENDO-20240728-001', transactionDate: addDays(today, -2), liaisonId: '3', liaisonName: 'RODEL PASTRANO', motorcycleIds: ['2', '13'], remarks: 'For renewal.', createdBy: 'Cashier B'},
-    { id: 'ENDO-20240728-002', transactionDate: addDays(today, -2), liaisonId: '10', liaisonName: 'RODERICK GUTIERREZ', motorcycleIds: ['10'], createdBy: 'Supervisor A'},
-    { id: 'ENDO-20240729-001', transactionDate: addDays(today, -1), liaisonId: '1', liaisonName: 'JINKY JOY AGBALOG', motorcycleIds: ['11'], remarks: 'Urgent', createdBy: 'Supervisor A'},
-    { id: 'ENDO-20240730-001', transactionDate: addDays(today, -1), liaisonId: '7', liaisonName: 'BENJO SEQUIERO', motorcycleIds: ['12', '3'], remarks: 'Please complete details', createdBy: 'Supervisor A'},
-    { id: 'ENDO-20240730-002', transactionDate: addDays(today, -1), liaisonId: '12', liaisonName: 'ALI VIN SALEH COLINA', motorcycleIds: ['8'], remarks: 'Davao units.', createdBy: 'Supervisor A'},
-    { id: 'ENDO-20240801-001', transactionDate: addDays(today, -2), liaisonId: '3', liaisonName: 'RODEL PASTRANO', motorcycleIds: ['2', '13'], remarks: 'For renewal.', createdBy: 'Cashier B'},
-    { id: 'ENDO-20240801-002', transactionDate: addDays(today, -1), liaisonId: '15', liaisonName: 'Demo Liaison', motorcycleIds: ['5'], remarks: 'More demo units.', createdBy: 'Cashier B'},
-    { id: 'ENDO-20240801-003', transactionDate: addDays(today, -3), liaisonId: '15', liaisonName: 'Demo Liaison', motorcycleIds: ['8', '10', '13'], remarks: 'Cross-branch units.', createdBy: 'Supervisor A'},
-    { id: 'ENDO-20240801-004', transactionDate: addDays(today, -4), liaisonId: '15', liaisonName: 'Demo Liaison', motorcycleIds: ['4', '9', '12'], remarks: 'Incomplete units for follow up.', createdBy: 'Supervisor A'},
-]
+    { id: 'ENDO-20240728-001', transactionDate: addDays(today, -2), liaisonId: '3', liaisonName: 'RODEL PASTRANO', motorcycleIds: ['2'], remarks: 'For renewal.', createdBy: 'Cashier B'},
+    { id: 'ENDO-20240725-001', transactionDate: addDays(today, -5), liaisonId: '8', liaisonName: 'BRYLE NIKKO HAMILI', motorcycleIds: ['5'], remarks: 'For registration.', createdBy: 'Supervisor A'},
+];
 
 const MC_KEY = 'lto_motorcycles';
 const CA_KEY = 'lto_cash_advances';
@@ -725,12 +201,12 @@ const saveData = <T,>(key: string, data: T[]) => {
 
 // --- Motorcycles ---
 export async function getMotorcycles(): Promise<Motorcycle[]> {
-    await new Promise(resolve => setTimeout(resolve, 250));
+    await new Promise(resolve => setTimeout(resolve, 50));
     return getData<Motorcycle>(MC_KEY, initialMotorcycles);
 }
 
 export async function updateMotorcycles(updatedMotorcycles: Motorcycle | Motorcycle[]) {
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 50));
     const allMotorcycles = await getMotorcycles();
     const motorcyclesMap = new Map(allMotorcycles.map(m => [m.id, m]));
     
@@ -743,18 +219,18 @@ export async function updateMotorcycles(updatedMotorcycles: Motorcycle | Motorcy
 
 // --- Cash Advances ---
 export async function getCashAdvances(): Promise<CashAdvance[]> {
-    await new Promise(resolve => setTimeout(resolve, 250));
+    await new Promise(resolve => setTimeout(resolve, 50));
     return getData<CashAdvance>(CA_KEY, initialCashAdvances);
 }
 
 export async function addCashAdvance(newAdvance: CashAdvance) {
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 50));
     const allCAs = await getCashAdvances();
     saveData(CA_KEY, [...allCAs, newAdvance]);
 }
 
 export async function updateCashAdvances(updatedCAs: CashAdvance | CashAdvance[]) {
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 50));
     const allCAs = await getCashAdvances();
     const caMap = new Map(allCAs.map(ca => [ca.id, ca]));
 
@@ -767,7 +243,7 @@ export async function updateCashAdvances(updatedCAs: CashAdvance | CashAdvance[]
 
 // --- Liaisons ---
 export async function getLiaisons(): Promise<LiaisonUser[]> {
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 50));
     // Liaisons are considered static for this demo
     return initialLiaisonUsers;
 }
@@ -775,12 +251,12 @@ export async function getLiaisons(): Promise<LiaisonUser[]> {
 
 // --- Endorsements ---
 export async function getEndorsements(): Promise<Endorsement[]> {
-    await new Promise(resolve => setTimeout(resolve, 250));
+    await new Promise(resolve => setTimeout(resolve, 50));
     return getData<Endorsement>(ENDO_KEY, initialEndorsements);
 }
 
 export async function addEndorsement(newEndorsement: Endorsement) {
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 50));
     const allEndorsements = await getEndorsements();
     saveData(ENDO_KEY, [...allEndorsements, newEndorsement]);
 }
@@ -788,3 +264,5 @@ export async function addEndorsement(newEndorsement: Endorsement) {
 export function getBranches() {
   return [...new Set(initialLiaisonUsers.map(l => l.assignedBranch))];
 }
+
+    
