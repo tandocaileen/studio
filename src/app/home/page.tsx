@@ -114,6 +114,8 @@ function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
 
     const [activeDateRange, setActiveDateRange] = useState<DateRange>('all');
     const [tempDateRange, setTempDateRange] = useState<DateRange>('all');
+    
+    const [isFilterPanelVisible, setIsFilterPanelVisible] = useState(true);
 
     const { user } = useAuth();
 
@@ -196,9 +198,13 @@ function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
                         {userBranch} - {user?.role}
                     </p>
                 </div>
+                <Button variant="outline" onClick={() => setIsFilterPanelVisible(!isFilterPanelVisible)}>
+                    <Filter className="mr-2 h-4 w-4" />
+                    Filters
+                </Button>
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
-                <div className="lg:col-span-3">
+            <div className={cn("grid grid-cols-1 lg:grid-cols-4 gap-6 items-start", !isFilterPanelVisible && "lg:grid-cols-1")}>
+                <div className={cn("lg:col-span-3", !isFilterPanelVisible && "lg:col-span-4")}>
                     <Card>
                         <CardContent className="p-6">
                             <LiaisonEndorsementTable 
@@ -210,70 +216,72 @@ function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
                         </CardContent>
                     </Card>
                 </div>
-                <div className="lg:col-span-1 lg:sticky top-20">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Filters</CardTitle>
-                            <CardDescription>Refine endorsements</CardDescription>
-                        </CardHeader>
-                        <CardContent className="grid gap-4">
-                            <Collapsible defaultOpen>
-                                <CollapsibleTrigger className="flex justify-between items-center w-full [&[data-state=open]>svg]:rotate-180">
-                                    <Label className="font-semibold text-sm">Endorsed By</Label>
-                                    <ChevronDown className="h-4 w-4 transition-transform" />
-                                </CollapsibleTrigger>
-                                <CollapsibleContent>
-                                    <Separator className="my-2" />
-                                    <div className="grid gap-2">
-                                        {uniqueEndorsers.map(endorser => (
-                                            <div key={endorser} className="flex items-center gap-2">
-                                                <Checkbox 
-                                                    id={`filter-endorser-${endorser}`}
-                                                    checked={tempEndorserFilters.includes(endorser)}
-                                                    onCheckedChange={(checked) => handleEndorserCheckboxChange(endorser, !!checked)}
-                                                />
-                                                <Label htmlFor={`filter-endorser-${endorser}`} className="font-normal text-sm">{endorser}</Label>
+                {isFilterPanelVisible && (
+                    <div className="lg:col-span-1 lg:sticky top-20">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Filters</CardTitle>
+                                <CardDescription>Refine endorsements</CardDescription>
+                            </CardHeader>
+                            <CardContent className="grid gap-4">
+                                <Collapsible defaultOpen>
+                                    <CollapsibleTrigger className="flex justify-between items-center w-full [&[data-state=open]>svg]:rotate-180">
+                                        <Label className="font-semibold text-sm">Endorsed By</Label>
+                                        <ChevronDown className="h-4 w-4 transition-transform" />
+                                    </CollapsibleTrigger>
+                                    <CollapsibleContent>
+                                        <Separator className="my-2" />
+                                        <div className="grid gap-2">
+                                            {uniqueEndorsers.map(endorser => (
+                                                <div key={endorser} className="flex items-center gap-2">
+                                                    <Checkbox 
+                                                        id={`filter-endorser-${endorser}`}
+                                                        checked={tempEndorserFilters.includes(endorser)}
+                                                        onCheckedChange={(checked) => handleEndorserCheckboxChange(endorser, !!checked)}
+                                                    />
+                                                    <Label htmlFor={`filter-endorser-${endorser}`} className="font-normal text-sm">{endorser}</Label>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </CollapsibleContent>
+                                </Collapsible>
+                                <Collapsible defaultOpen>
+                                    <CollapsibleTrigger className="flex justify-between items-center w-full [&[data-state=open]>svg]:rotate-180">
+                                        <Label className="font-semibold text-sm">Date Range</Label>
+                                        <ChevronDown className="h-4 w-4 transition-transform" />
+                                    </CollapsibleTrigger>
+                                    <CollapsibleContent>
+                                        <Separator className="my-2" />
+                                        <RadioGroup value={tempDateRange} onValueChange={(v) => setTempDateRange(v as DateRange)}>
+                                            <div className="flex items-center space-x-2">
+                                                <RadioGroupItem value="7d" id="r-7d" />
+                                                <Label htmlFor="r-7d" className="font-normal text-sm">Last 7 days</Label>
                                             </div>
-                                        ))}
-                                    </div>
-                                </CollapsibleContent>
-                            </Collapsible>
-                             <Collapsible defaultOpen>
-                                <CollapsibleTrigger className="flex justify-between items-center w-full [&[data-state=open]>svg]:rotate-180">
-                                    <Label className="font-semibold text-sm">Date Range</Label>
-                                     <ChevronDown className="h-4 w-4 transition-transform" />
-                                </CollapsibleTrigger>
-                                <CollapsibleContent>
-                                    <Separator className="my-2" />
-                                    <RadioGroup value={tempDateRange} onValueChange={(v) => setTempDateRange(v as DateRange)}>
-                                        <div className="flex items-center space-x-2">
-                                            <RadioGroupItem value="7d" id="r-7d" />
-                                            <Label htmlFor="r-7d" className="font-normal text-sm">Last 7 days</Label>
-                                        </div>
-                                        <div className="flex items-center space-x-2">
-                                            <RadioGroupItem value="30d" id="r-30d" />
-                                            <Label htmlFor="r-30d" className="font-normal text-sm">Last 30 days</Label>
-                                        </div>
-                                        <div className="flex items-center space-x-2">
-                                            <RadioGroupItem value="all" id="r-all" />
-                                            <Label htmlFor="r-all" className="font-normal text-sm">All time</Label>
-                                        </div>
-                                    </RadioGroup>
-                                </CollapsibleContent>
-                            </Collapsible>
-                        </CardContent>
-                        <CardFooter className="flex flex-col gap-2">
-                             <Button onClick={applyFilters} className="w-full">
-                                <Filter className="mr-2 h-4 w-4" />
-                                Apply Filters
-                            </Button>
-                            <Button onClick={clearFilters} variant="ghost" className="w-full">
-                                <RotateCcw className="mr-2 h-4 w-4" />
-                                Clear
-                            </Button>
-                        </CardFooter>
-                    </Card>
-                </div>
+                                            <div className="flex items-center space-x-2">
+                                                <RadioGroupItem value="30d" id="r-30d" />
+                                                <Label htmlFor="r-30d" className="font-normal text-sm">Last 30 days</Label>
+                                            </div>
+                                            <div className="flex items-center space-x-2">
+                                                <RadioGroupItem value="all" id="r-all" />
+                                                <Label htmlFor="r-all" className="font-normal text-sm">All time</Label>
+                                            </div>
+                                        </RadioGroup>
+                                    </CollapsibleContent>
+                                </Collapsible>
+                            </CardContent>
+                            <CardFooter className="flex flex-col gap-2">
+                                <Button onClick={applyFilters} className="w-full">
+                                    <Filter className="mr-2 h-4 w-4" />
+                                    Apply Filters
+                                </Button>
+                                <Button onClick={clearFilters} variant="ghost" className="w-full">
+                                    <RotateCcw className="mr-2 h-4 w-4" />
+                                    Clear
+                                </Button>
+                            </CardFooter>
+                        </Card>
+                    </div>
+                )}
             </div>
         </>
     );
@@ -343,5 +351,6 @@ export default function DashboardPage() {
     </ProtectedPage>
   );
 }
+
 
 
