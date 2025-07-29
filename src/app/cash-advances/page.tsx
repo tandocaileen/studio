@@ -71,6 +71,18 @@ function CashAdvancesContent({ searchQuery }: { searchQuery: string }) {
             });
             setAdvances(enriched);
             setLiaisons(liaisonData);
+            
+            // Set role-based pre-filters
+            if (user?.role === 'Cashier') {
+                setActiveStatusFilters(['Processing for CV']);
+                setTempStatusFilters(['Processing for CV']);
+            } else if (user?.role === 'Store Supervisor') {
+                setActiveStatusFilters(['CV Released']);
+                setTempStatusFilters(['CV Released']);
+            } else {
+                 setActiveStatusFilters([]);
+                 setTempStatusFilters([]);
+            }
         });
     }, [user]);
     
@@ -159,11 +171,25 @@ function CashAdvancesContent({ searchQuery }: { searchQuery: string }) {
 
         return false;
     });
+    
+    const handleUpdateAdvances = (updatedItems: EnrichedCashAdvance[]) => {
+        const updatedMap = new Map(updatedItems.map(item => [item.cashAdvance.id, item.cashAdvance]));
+        
+        setAdvances(currentAdvances => {
+            if (!currentAdvances) return [];
+            return currentAdvances.map(item => {
+                if (updatedMap.has(item.cashAdvance.id)) {
+                    return { ...item, cashAdvance: updatedMap.get(item.cashAdvance.id)! };
+                }
+                return item;
+            });
+        });
+    };
 
     return (
         <div className={cn("grid grid-cols-1 lg:grid-cols-4 gap-6 items-start", !isFilterPanelVisible && "lg:grid-cols-1")}>
             <div className={cn("lg:col-span-3", !isFilterPanelVisible && "lg:col-span-4")}>
-                <CashAdvanceTable advances={filteredBySearch} />
+                <CashAdvanceTable advances={filteredBySearch} onBulkUpdate={handleUpdateAdvances} />
             </div>
             {isFilterPanelVisible && (
                  <div className="lg:col-span-1 lg:sticky top-20">
@@ -293,5 +319,7 @@ export default function CashAdvancesPage() {
         </ProtectedPage>
     );
 }
+
+    
 
     

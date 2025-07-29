@@ -17,35 +17,54 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
 } from '@/components/ui/dropdown-menu';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CashAdvance } from '@/types';
-import { MoreHorizontal, PlusCircle, Check, X, FileUp, Download, Eye, FileCheck, Banknote } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, Check, X, FileUp, Download, Eye, FileCheck, Banknote, ShieldAlert, PackageCheck } from 'lucide-react';
 import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
 import { Label } from '../ui/label';
 import { Input } from '../ui/input';
-import { Textarea } from '../ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { CashAdvanceRequestDocument } from './cash-advance-request-document';
 import { generatePdf } from '@/lib/pdf';
 import type { EnrichedCashAdvance } from '@/app/cash-advances/page';
 import { useAuth } from '@/context/AuthContext';
+import { Checkbox } from '../ui/checkbox';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 
 type CashAdvanceTableProps = {
   advances: EnrichedCashAdvance[];
+  onBulkUpdate: (updatedItems: EnrichedCashAdvance[]) => void;
 };
 
 const ITEMS_PER_PAGE = 10;
 
-export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTableProps) {
+export function CashAdvanceTable({ advances: initialAdvances, onBulkUpdate }: CashAdvanceTableProps) {
   const [advances, setAdvances] = React.useState(initialAdvances);
+  const [selectedAdvances, setSelectedAdvances] = React.useState<EnrichedCashAdvance[]>([]);
+
   const [previewingAdvance, setPreviewingAdvance] = React.useState<EnrichedCashAdvance | null>(null);
   const [releasingCvAdvance, setReleasingCvAdvance] = React.useState<EnrichedCashAdvance | null>(null);
   const [cvNumber, setCvNumber] = React.useState('');
+  
+  const [isBulkReleaseCvDialogOpen, setIsBulkReleaseCvDialogOpen] = React.useState(false);
+  const [isBulkReceiveCvDialogOpen, setIsBulkReceiveCvDialogOpen] = React.useState(false);
   
   const { toast } = useToast();
   const documentRef = React.useRef(null);
@@ -54,44 +73,46 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
 
   React.useEffect(() => {
     setAdvances(initialAdvances);
+    setSelectedAdvances([]);
     setCurrentPage(1);
   }, [initialAdvances]);
-
-  const updateAdvanceState = (caId: string, updates: Partial<CashAdvance>) => {
-    setAdvances(prev => prev.map(item => 
-      item.cashAdvance.id === caId 
-        ? { ...item, cashAdvance: { ...item.cashAdvance, ...updates } }
-        : item
-    ));
-  }
   
-  const handleReleaseCv = () => {
-    if (!releasingCvAdvance || !cvNumber) {
-       toast({ title: 'Error', description: 'Please enter a Check Voucher number.', variant: 'destructive' });
-       return;
+  const handleBulkUpdate = (updatedItems: EnrichedCashAdvance[]) => {
+      onBulkUpdate(updatedItems);
+      setSelectedAdvances([]);
+  }
+
+  const handleBulkReleaseCv = () => {
+    if (!cvNumber) {
+        toast({ title: 'CV Number Required', description: 'Please enter a Check Voucher number.', variant: 'destructive' });
+        return;
     }
-    
-    updateAdvanceState(releasingCvAdvance.cashAdvance.id, {
-        status: 'CV Released',
-        checkVoucherNumber: cvNumber,
-        checkVoucherReleaseDate: new Date(),
-    });
-
-    toast({
-      title: 'CV Released!',
-      description: `CA# ${releasingCvAdvance.cashAdvance.id} marked as released with CV# ${cvNumber}.`,
-    });
-
-    setReleasingCvAdvance(null);
+    const updated = selectedAdvances.map(item => ({
+        ...item,
+        cashAdvance: {
+            ...item.cashAdvance,
+            status: 'CV Released' as const,
+            checkVoucherNumber: cvNumber,
+            checkVoucherReleaseDate: new Date(),
+        }
+    }));
+    handleBulkUpdate(updated);
+    toast({ title: 'Success', description: `${updated.length} cash advances marked as "CV Released".` });
+    setIsBulkReleaseCvDialogOpen(false);
     setCvNumber('');
   };
 
-  const handleConfirmCvReceipt = (caId: string) => {
-    updateAdvanceState(caId, { status: 'CV Received' });
-     toast({
-      title: 'CV Receipt Confirmed!',
-      description: `CA# ${caId} marked as received by the liaison.`,
-    });
+  const handleBulkConfirmCvReceipt = () => {
+    const updated = selectedAdvances.map(item => ({
+        ...item,
+        cashAdvance: {
+            ...item.cashAdvance,
+            status: 'CV Received' as const,
+        }
+    }));
+    handleBulkUpdate(updated);
+    toast({ title: 'Success', description: `${updated.length} cash advances marked as "CV Received".` });
+    setIsBulkReceiveCvDialogOpen(false);
   };
 
 
@@ -117,12 +138,30 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
   const isCashier = user?.role === 'Cashier';
   const isSupervisor = user?.role === 'Store Supervisor';
   const isCashierOrSupervisor = isCashier || isSupervisor;
+  
+  const handleSelectAll = (checked: boolean | 'indeterminate') => {
+    if (checked === true) {
+        setSelectedAdvances(paginatedAdvances);
+    } else {
+        setSelectedAdvances([]);
+    }
+  };
+
+  const handleSelectRow = (item: EnrichedCashAdvance, checked: boolean | 'indeterminate') => {
+    if (checked === true) {
+        setSelectedAdvances(prev => [...prev, item]);
+    } else {
+        setSelectedAdvances(prev => prev.filter(sa => sa.cashAdvance.id !== item.cashAdvance.id));
+    }
+  };
 
   const totalPages = Math.ceil(advances.length / ITEMS_PER_PAGE);
   const paginatedAdvances = advances.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
+
+  const isAllOnPageSelected = paginatedAdvances.length > 0 && selectedAdvances.length === paginatedAdvances.length;
 
   const getPrimaryCustomer = (advance: EnrichedCashAdvance) => {
     if (advance.motorcycles && advance.motorcycles.length > 0) {
@@ -147,6 +186,10 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
     return advance.cashAdvance.purpose;
   }
 
+  const canBulkRelease = selectedAdvances.length > 0 && selectedAdvances.every(a => a.cashAdvance.status === 'Processing for CV');
+  const canBulkReceive = selectedAdvances.length > 0 && selectedAdvances.every(a => a.cashAdvance.status === 'CV Released');
+
+
   return (
     <>
     <Card>
@@ -157,11 +200,45 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
             Track and manage all cash advance requests and liquidations.
           </CardDescription>
         </div>
+        {selectedAdvances.length > 0 && isCashierOrSupervisor && (
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline">
+                        Bulk Actions ({selectedAdvances.length})
+                        <MoreHorizontal className="ml-2 h-4 w-4" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                    {isCashier && (
+                        <DropdownMenuItem disabled={!canBulkRelease} onSelect={() => setIsBulkReleaseCvDialogOpen(true)}>
+                            <Banknote className="mr-2 h-4 w-4" />
+                            Release CV
+                        </DropdownMenuItem>
+                    )}
+                    {(isCashierOrSupervisor) && (
+                        <DropdownMenuItem disabled={!canBulkReceive} onSelect={() => setIsBulkReceiveCvDialogOpen(true)}>
+                            <PackageCheck className="mr-2 h-4 w-4" />
+                            Confirm CV Receipt
+                        </DropdownMenuItem>
+                    )}
+                </DropdownMenuContent>
+            </DropdownMenu>
+        )}
       </CardHeader>
       <CardContent>
         <Table>
           <TableHeader>
             <TableRow>
+              {isCashierOrSupervisor && (
+                <TableHead className="w-[40px]">
+                    <Checkbox
+                        checked={isAllOnPageSelected}
+                        onCheckedChange={handleSelectAll}
+                        aria-label="Select all on page"
+                    />
+                </TableHead>
+              )}
               <TableHead>{isCashierOrSupervisor ? 'Liaison' : 'Customer'}</TableHead>
               {isCashierOrSupervisor ? <TableHead>Purpose</TableHead> : <TableHead>Motorcycle</TableHead>}
               <TableHead className="text-right">Amount</TableHead>
@@ -174,7 +251,19 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
           </TableHeader>
           <TableBody>
             {paginatedAdvances.map((advance) => (
-              <TableRow key={advance.cashAdvance.id}>
+              <TableRow 
+                key={advance.cashAdvance.id}
+                data-state={selectedAdvances.some(sa => sa.cashAdvance.id === advance.cashAdvance.id) ? "selected" : undefined}
+                >
+                 {isCashierOrSupervisor && (
+                     <TableCell>
+                         <Checkbox
+                            checked={selectedAdvances.some(sa => sa.cashAdvance.id === advance.cashAdvance.id)}
+                            onCheckedChange={(checked) => handleSelectRow(advance, checked)}
+                            aria-label={`Select CA ${advance.cashAdvance.id}`}
+                         />
+                     </TableCell>
+                 )}
                  <TableCell className="font-medium">
                   {isCashierOrSupervisor ? advance.cashAdvance.personnel : getPrimaryCustomer(advance)}
                 </TableCell>
@@ -203,29 +292,6 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
                         <Eye className="mr-2 h-4 w-4" />
                         <span>Preview/Print</span>
                       </DropdownMenuItem>
-                      
-                      {(isCashierOrSupervisor) && <DropdownMenuSeparator />}
-                      
-                      {isCashier && (
-                          <DropdownMenuItem disabled={advance.cashAdvance.status !== 'Processing for CV'} onClick={() => setReleasingCvAdvance(advance)}>
-                            <Banknote className="mr-2 h-4 w-4" />
-                            <span>Release CV</span>
-                          </DropdownMenuItem>
-                      )}
-                      
-                      {isCashierOrSupervisor && (
-                          <DropdownMenuItem disabled={advance.cashAdvance.status !== 'CV Released'} onClick={() => handleConfirmCvReceipt(advance.cashAdvance.id)}>
-                              <FileCheck className="mr-2 h-4 w-4" />
-                              <span>Confirm CV Receipt</span>
-                          </DropdownMenuItem>
-                      )}
-
-                      {user?.role === 'Liaison' && (
-                         <DropdownMenuItem disabled={!['CV Received'].includes(advance.cashAdvance.status)} onClick={() => {}}>
-                            <FileUp className="mr-2 h-4 w-4" />
-                            <span>Liquidate</span>
-                        </DropdownMenuItem>
-                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
@@ -293,22 +359,22 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
             </DialogFooter>
         </DialogContent>
     </Dialog>
-
-    <Dialog open={!!releasingCvAdvance} onOpenChange={(open) => !open && setReleasingCvAdvance(null)}>
+    
+    <Dialog open={isBulkReleaseCvDialogOpen} onOpenChange={setIsBulkReleaseCvDialogOpen}>
         <DialogContent className="sm:max-w-md">
             <DialogHeader>
-                <DialogTitle>Release CV</DialogTitle>
+                <DialogTitle>Bulk Release CV</DialogTitle>
                 <DialogDescription>
-                    Enter the CV number for CA# {releasingCvAdvance?.cashAdvance.id} to mark it as released.
+                    Enter the CV number that applies to all {selectedAdvances.length} selected cash advances.
                 </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="cv-number" className="text-right">
+                    <Label htmlFor="bulk-cv-number" className="text-right">
                         CV Number
                     </Label>
                     <Input 
-                        id="cv-number" 
+                        id="bulk-cv-number" 
                         value={cvNumber}
                         onChange={(e) => setCvNumber(e.target.value)}
                         className="col-span-3"
@@ -317,11 +383,28 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
                 </div>
             </div>
             <DialogFooter>
-                <Button variant="outline" onClick={() => setReleasingCvAdvance(null)}>Cancel</Button>
-                <Button onClick={handleReleaseCv}>Release CV</Button>
+                <Button variant="outline" onClick={() => setIsBulkReleaseCvDialogOpen(false)}>Cancel</Button>
+                <Button onClick={handleBulkReleaseCv}>Release Selected</Button>
             </DialogFooter>
         </DialogContent>
     </Dialog>
+
+    <AlertDialog open={isBulkReceiveCvDialogOpen} onOpenChange={setIsBulkReceiveCvDialogOpen}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+            <AlertDialogTitle>Confirm CV Receipt?</AlertDialogTitle>
+            <AlertDialogDescription>
+                This will mark {selectedAdvances.length} cash advance(s) as "CV Received". This action cannot be undone. Are you sure?
+            </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleBulkConfirmCvReceipt}>Confirm Receipt</AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+    </AlertDialog>
     </>
   );
 }
+
+    

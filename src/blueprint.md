@@ -23,7 +23,7 @@ The application follows a strict, automated status progression for each motorcyc
 - **Motorcycle Registry**: Add and store comprehensive motorcycle details (make, model, plate number, customer name, etc.).
 - **Document Management**: Upload and track essential documents (OR/CR, COC, Insurance, etc.) with the ability to set expiration dates.
 - **Endorsements**: A formal process to assign motorcycles to a specific liaison for handling.
-- **Cash Advance (CA) Generation**: Liaisons can request cash advances for one or more motorcycles that are `Endorsed - Ready`. The system uses Genkit AI to generate a consolidated CA request with a unique ID and summarized purpose.
+- **Cash Advance (CA) Generation**: Liaisons can request cash advances for one or more motorcycles that are `Endorsed - Ready`. The system uses Genkit AI to generate a consolidated CA request with a unique ID and summarized purpose. It is assumed that a single Check Voucher (CV) can cover multiple CA requests.
 - **Liquidation**: Liaisons can submit liquidation reports for their processed CAs by uploading receipts and detailing expenses.
 - **Reporting**: The system can generate detailed, printable PDF reports for Cash Advances and Liquidations.
 
@@ -46,9 +46,9 @@ This role is responsible for the initial data entry, financial oversight, and ap
   - Create new endorsements, assigning one or more motorcycles to a specific liaison.
   - View all past and present endorsements.
 - **Cash Advances**:
-  - View all cash advance requests from all liaisons.
-  - **Approve / Reject** pending CA requests.
-  - Mark CAs as "Check Voucher Released" and later as "CV Received" to track the flow of funds.
+  - View all cash advance requests from all liaisons. The view is pre-filtered based on the next action required for their role.
+  - **Cashier**: Can bulk-release Check Vouchers for multiple CA requests at once.
+  - **Supervisor/Cashier**: Can bulk-confirm the receipt of Check Vouchers.
 - **Liquidations & Reporting**:
   - View all liquidation submissions from liaisons in a read-only format.
   - Generate and print detailed PDF Liquidation Reports for any cash advance.
@@ -104,10 +104,10 @@ Here is a step-by-step flow of a motorcycle through the system:
     - They click the **"Generate CA"** button. An AI-powered flow generates a single cash advance request.
     - The motorcycles' status automatically updates to **`Processing`**.
 
-5.  **Approve Cash Advance (Store Supervisor/Cashier)**
-    - The Supervisor sees the new `Pending` request on the **Cash Advances** page.
-    - They review the request and **Approve** it. The status changes to `Approved`.
-    - They later issue a check and update the status to **`Check Voucher Released`**, and finally **`CV Received`** once the liaison confirms receipt.
+5.  **Process Check Voucher (Cashier & Supervisor)**
+    - The **Cashier** sees the new request on the **Cash Advances** page (pre-filtered to 'Processing for CV').
+    - They select one or more requests, click **"Bulk Actions"**, and enter a single Check Voucher number to release the funds. The status for all selected requests changes to **`CV Released`**.
+    - The **Supervisor** or **Cashier** sees these on the Cash Advances page (pre-filtered to 'CV Released'). They select the requests and use the **"Bulk Actions"** menu to confirm the liaison has received the funds. The status changes to **`CV Received`**.
 
 6.  **Liquidate Expenses (Liaison)**
     - After completing the registration, the Liaison navigates to the **Liquidations** page.
@@ -119,3 +119,5 @@ Here is a step-by-step flow of a motorcycle through the system:
     - The Supervisor, Cashier, or Liaison can navigate to the **Liquidations** page or the **Reports** section.
     - They can find the relevant Cash Advance and click **"View Full Report"**.
     - A detailed, printable PDF document is displayed, showing the breakdown of the cash advance and liquidated expenses.
+
+    
