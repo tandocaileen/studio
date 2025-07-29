@@ -341,7 +341,7 @@ function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
                             <AlertCircle className="h-4 w-4" />
                             <AlertTitle className="text-yellow-900 dark:text-yellow-200">Suggestion</AlertTitle>
                             <AlertDescription className="text-xs text-yellow-700 dark:text-yellow-400">
-                                Gemini is faulty, during development, Pre-filter: Show only endorsements with at least 1 MC in Endorsed - Ready or Endorsed - Incomplete. Hide other MCs. Date = All time.
+                                Gemini is faulty, during development,use this logic: Show only endorsements with at least 1 MC in status in filter (Endorsed - Ready or Endorsed - Incomplete). Hide other MCs.
                             </AlertDescription>
                         </Alert>
                         <Card>
@@ -488,3 +488,4 @@ export default function DashboardPage() {
 }
 
     
+
