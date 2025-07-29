@@ -27,12 +27,12 @@ export function InsuranceControlForm({ editedData, onDataChange, canEdit }: Insu
             <h3 className="font-semibold text-lg border-b pb-2 mt-4 mb-2">Insurance &amp; Control</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                    <Label htmlFor="edit-cocNumber">COC No.</Label>
-                    <Input id="edit-cocNumber" name="cocNumber" value={editedData.cocNumber || ''} onChange={(e) => onDataChange('cocNumber', e.target.value)} disabled={!canEdit} required />
+                    <Label htmlFor="edit-cocNumber">COC No. (Required)</Label>
+                    <Input id="edit-cocNumber" name="cocNumber" value={editedData.cocNumber || ''} onChange={(e) => onDataChange('cocNumber', e.target.value)} disabled={!canEdit} required className={cn(!editedData.cocNumber && 'border-destructive')} />
                 </div>
                 <div className="grid gap-2">
-                    <Label htmlFor="edit-policyNumber">Policy No.</Label>
-                    <Input id="edit-policyNumber" name="policyNumber" value={editedData.policyNumber || ''} onChange={(e) => onDataChange('policyNumber', e.target.value)} disabled={!canEdit} required />
+                    <Label htmlFor="edit-policyNumber">Policy No. (Required)</Label>
+                    <Input id="edit-policyNumber" name="policyNumber" value={editedData.policyNumber || ''} onChange={(e) => onDataChange('policyNumber', e.target.value)} disabled={!canEdit} required className={cn(!editedData.policyNumber && 'border-destructive')} />
                 </div>
                 <div className="grid gap-2">
                     <Label htmlFor="edit-insuranceType">Insurance Type</Label>
@@ -52,14 +52,14 @@ export function InsuranceControlForm({ editedData, onDataChange, canEdit }: Insu
                     </Select>
                 </div>
                 <div className="grid gap-2">
-                    <Label>Effective Date</Label>
+                    <Label>Effective Date (Required)</Label>
                     <Popover>
                         <PopoverTrigger asChild>
                         <Button
                             variant={"outline"}
                             className={cn(
                             "w-full justify-start text-left font-normal",
-                            !editedData.insuranceEffectiveDate && "text-muted-foreground"
+                            !editedData.insuranceEffectiveDate && "text-muted-foreground border-destructive"
                             )}
                             disabled={!canEdit}
                         >
@@ -78,14 +78,14 @@ export function InsuranceControlForm({ editedData, onDataChange, canEdit }: Insu
                     </Popover>
                 </div>
                 <div className="grid gap-2">
-                    <Label>Expiration Date</Label>
+                    <Label>Expiration Date (Required)</Label>
                     <Popover>
                         <PopoverTrigger asChild>
                         <Button
                             variant={"outline"}
                             className={cn(
                             "w-full justify-start text-left font-normal",
-                            !editedData.insuranceExpirationDate && "text-muted-foreground"
+                            !editedData.insuranceExpirationDate && "text-muted-foreground border-destructive"
                             )}
                             disabled={!canEdit}
                         >

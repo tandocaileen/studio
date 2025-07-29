@@ -435,6 +435,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
               </DialogHeader>
               <ScrollArea className="max-h-[70vh]">
                 <div className="grid gap-4 py-4 pr-6">
+                    <h3 className="font-semibold text-lg border-b pb-2 mb-2">Motorcycle Details</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="grid gap-2">
                           <Label htmlFor="edit-id">Sales ID</Label>
@@ -453,12 +454,12 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                           <Input id="edit-accountCode" value={editedData.accountCode || ''} disabled />
                       </div>
                        <div className="grid gap-2">
-                          <Label htmlFor="edit-csrNumber">CSR No.</Label>
-                          <Input id="edit-csrNumber" name="csrNumber" value={editedData.csrNumber || ''} onChange={(e) => handleDataChange('csrNumber', e.target.value)} />
+                          <Label htmlFor="edit-csrNumber">CSR No. (Required)</Label>
+                          <Input id="edit-csrNumber" name="csrNumber" value={editedData.csrNumber || ''} onChange={(e) => handleDataChange('csrNumber', e.target.value)} className={cn(!editedData.csrNumber && 'border-destructive')} />
                       </div>
                        <div className="grid gap-2">
-                          <Label htmlFor="edit-crNumber">CR No.</Label>
-                          <Input id="edit-crNumber" name="crNumber" value={editedData.crNumber || ''} onChange={(e) => handleDataChange('crNumber', e.target.value)} />
+                          <Label htmlFor="edit-crNumber">CR No. (Required)</Label>
+                          <Input id="edit-crNumber" name="crNumber" value={editedData.crNumber || ''} onChange={(e) => handleDataChange('crNumber', e.target.value)} className={cn(!editedData.crNumber && 'border-destructive')} />
                       </div>
                        <div className="grid gap-2 md:col-span-2">
                           <Label htmlFor="edit-hpgControlNumber">HPG Control No.</Label>
@@ -502,3 +503,4 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
     </>
   );
 }
+
