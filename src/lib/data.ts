@@ -71,7 +71,7 @@ const generateInitialData = () => {
         };
         motorcycles.push(mc);
     }
-
+    
     const fillOutDetails = (mc: Motorcycle) => {
         mc.cocNumber = `COC-${Math.floor(Math.random() * 9000) + 1000}`;
         mc.policyNumber = `POL-${Math.floor(Math.random() * 9000) + 1000}`;
@@ -85,13 +85,13 @@ const generateInitialData = () => {
         return mc;
     }
     
-    // Set 5 Motorcycles to "Ready to Register"
+    // Status: Ready to Register (5 units)
     motorcycles.slice(5, 10).forEach(mc => {
         fillOutDetails(mc);
         mc.status = 'Ready to Register';
     });
 
-    // Endorse 20 motorcycles to Bryle Hamili
+    // Endorse 20 motorcycles to Bryle Hamili across 10 endorsements
     const mcsForEndorsement = motorcycles.slice(10); 
     for (let i = 0; i < 10; i++) {
         const mc1 = mcsForEndorsement[i * 2];
@@ -105,7 +105,7 @@ const generateInitialData = () => {
         fillOutDetails(mc1); // Make the first one ready
         
         const endorsement: Endorsement = {
-            id: `ENDO-2407-${i.toString().padStart(3, '0')}`,
+            id: `ENDO-2407-${(i+1).toString().padStart(3, '0')}`,
             transactionDate: addDays(today, -daysAgo),
             liaisonId: DEMO_LIAISON.id,
             liaisonName: DEMO_LIAISON.name,
@@ -115,7 +115,6 @@ const generateInitialData = () => {
         };
         endorsements.push(endorsement);
 
-        // Update motorcycle statuses AFTER creating endorsement
         mc1.status = 'Endorsed - Ready';
         mc1.assignedLiaison = DEMO_LIAISON.name;
         mc1.endorsementCode = endorsement.id;
@@ -126,7 +125,7 @@ const generateInitialData = () => {
     }
 
     // Create a CA for one of the recent endorsements
-    const endorsementForCA1 = endorsements.find(e => e.id === 'ENDO-2407-01')!;
+    const endorsementForCA1 = endorsements.find(e => e.id === 'ENDO-2407-001')!;
     const mcsForCA1 = endorsementForCA1.motorcycleIds.map(id => motorcycles.find(m => m.id === id)!).filter(mc => mc.status === 'Endorsed - Ready');
     
     if (mcsForCA1.length > 0) {
@@ -137,7 +136,9 @@ const generateInitialData = () => {
             purpose: `Cash advance for registration of ${mcsForCA1.length} unit(s).`,
             amount: mcsForCA1.length * (DEMO_LIAISON.processingFee + DEMO_LIAISON.orFee),
             date: addDays(today, -1),
-            status: 'Processing for CV',
+            status: 'CV Received',
+            checkVoucherNumber: 'CV-2024-07-011',
+            checkVoucherReleaseDate: addDays(today, -1),
             motorcycleIds: mcsForCA1.map(m => m.id),
         };
         cashAdvances.push(ca1);
@@ -147,7 +148,7 @@ const generateInitialData = () => {
     }
     
     // Create a liquidated CA from an older endorsement
-    const endorsementForCA2 = endorsements.find(e => e.id === 'ENDO-2407-05')!;
+    const endorsementForCA2 = endorsements.find(e => e.id === 'ENDO-2407-005')!;
     const mcsForLiquidation = endorsementForCA2.motorcycleIds.map(id => motorcycles.find(m => m.id === id)!);
     
     if (mcsForLiquidation.length > 0) {
@@ -156,7 +157,11 @@ const generateInitialData = () => {
             personnel: DEMO_LIAISON.name,
             personnelBranch: DEMO_LIAISON.assignedBranch,
             purpose: `Cash advance for registration of ${mcsForLiquidation.length} units.`,
-            amount: mcsForLiquidation.length * (DEMO_LIAISON.processingFee + DEMO_LIAISON.orFee),
+            amount: mcsForLiquidation.reduce((sum, mc) => {
+                // Ensure details are filled to avoid NaN
+                const filledMc = mc.cocNumber ? mc : fillOutDetails(mc);
+                return sum + (DEMO_LIAISON.processingFee + DEMO_LIAISON.orFee);
+            }, 0),
             date: addDays(today, -15),
             status: 'Liquidated',
             motorcycleIds: mcsForLiquidation.map(m=>m.id),
@@ -165,11 +170,10 @@ const generateInitialData = () => {
         };
         cashAdvances.push(ca2);
         
-        // Only liquidate the 'ready' unit
-        const readyUnit = mcsForLiquidation.find(mc => mc.cocNumber); // a proxy for being filled out
-        if(readyUnit) {
-            readyUnit.status = 'For Review';
-            readyUnit.liquidationDetails = {
+        mcsForLiquidation.forEach(mc => {
+            if (!mc.cocNumber) fillOutDetails(mc); // Ensure details are filled
+            mc.status = 'For Review';
+            mc.liquidationDetails = {
                 parentCaId: ca2.id,
                 ltoOrNumber: `LTO-OR-${Math.floor(Math.random() * 90000)}`,
                 ltoOrAmount: DEMO_LIAISON.orFee,
@@ -180,7 +184,7 @@ const generateInitialData = () => {
                 liquidatedBy: DEMO_LIAISON.name,
                 liquidationDate: addDays(today, -12)
             };
-        }
+        });
     }
 
 
@@ -191,7 +195,7 @@ const generateInitialData = () => {
 const MC_KEY = 'lto_motorcycles';
 const CA_KEY = 'lto_cash_advances';
 const ENDO_KEY = 'lto_endorsements';
-const DATA_FLAG = 'data_generated_flag_v8'; // Increment version to force reset
+const DATA_FLAG = 'data_generated_flag_v10'; // Increment version to force reset
 
 const initializeData = () => {
     if (typeof window !== 'undefined') {
