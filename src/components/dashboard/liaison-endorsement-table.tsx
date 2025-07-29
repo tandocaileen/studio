@@ -433,5 +433,3 @@ export function LiaisonEndorsementTable({
   </>
   );
 }
-
-    

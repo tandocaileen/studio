@@ -10,7 +10,7 @@ const addDays = (date: Date, days: number) => {
 
 const initialMotorcycles: Motorcycle[] = [
   {
-    id: '1',
+    id: 'mc-001',
     make: 'Honda',
     model: 'Click 125i',
     year: 2023,
@@ -21,10 +21,10 @@ const initialMotorcycles: Motorcycle[] = [
     assignedBranch: 'CEBU',
     purchaseDate: new Date('2023-01-15'),
     supplier: 'Honda Prestige',
-    status: 'For Review',
+    status: 'Endorsed - Ready',
     documents: [],
     customerName: 'Juan Dela Cruz',
-    assignedLiaison: 'BRYLE NIKKO HAMILI',
+    assignedLiaison: 'Bryle Nikko Hamili',
     salesInvoiceNo: 'SI-00123',
     accountCode: 'AC-JDC-001',
     hpgControlNumber: 'HPG-CTRL-001',
@@ -38,20 +38,9 @@ const initialMotorcycles: Motorcycle[] = [
     csrNumber: 'CSR12345',
     processingFee: 300.00,
     orFee: 1526.43,
-    liquidationDetails: {
-      parentCaId: 'ca-070124-002',
-      ltoOrNumber: 'LTO-OR-123',
-      ltoOrAmount: 1800,
-      ltoProcessFee: 300,
-      totalLiquidation: 2100,
-      shortageOverage: 26.43,
-      remarks: 'Full Liquidation',
-      liquidatedBy: 'BRYLE NIKKO HAMILI',
-      liquidationDate: addDays(today, -25)
-    }
   },
   {
-    id: '2',
+    id: 'mc-002',
     make: 'Yamaha',
     model: 'NMAX',
     year: 2022,
@@ -59,27 +48,25 @@ const initialMotorcycles: Motorcycle[] = [
     plateNumber: '456 DEF',
     engineNumber: 'E87654321',
     chassisNumber: 'C87654321',
-    assignedBranch: 'SAN FERNANDO',
+    assignedBranch: 'CEBU',
     purchaseDate: new Date('2022-05-20'),
     supplier: 'Yamaha Motors',
-    status: 'Endorsed - Ready',
+    status: 'Endorsed - Incomplete',
     documents: [],
     customerName: 'Maria Clara',
-    assignedLiaison: 'RODEL PASTRANO',
+    assignedLiaison: 'Bryle Nikko Hamili',
     salesInvoiceNo: 'SI-00124',
     accountCode: 'AC-MCL-001',
     hpgControlNumber: 'HPG-CTRL-002',
-    cocNumber: 'COC-456',
-    policyNumber: 'POL-456',
-    sarCode: 'SAR-456',
-    insuranceType: 'TPL',
-    insuranceEffectiveDate: new Date('2024-01-01'),
-    insuranceExpirationDate: new Date('2025-01-01'),
-    crNumber: 'CR67890',
-    csrNumber: 'CSR67890',
+    cocNumber: undefined,
+    policyNumber: undefined,
+    sarCode: undefined,
+    insuranceType: undefined,
+    crNumber: undefined,
+    csrNumber: undefined,
   },
     {
-    id: '5',
+    id: 'mc-003',
     make: 'Honda',
     model: 'PCX160',
     year: 2023,
@@ -90,7 +77,7 @@ const initialMotorcycles: Motorcycle[] = [
     assignedBranch: 'CEBU',
     purchaseDate: new Date('2023-08-01'),
     supplier: 'Honda Prestige',
-    status: 'Endorsed - Ready',
+    status: 'Ready to Register',
     documents: [],
     customerName: 'Gabriela Silang',
     salesInvoiceNo: 'SI-00127',
@@ -102,57 +89,54 @@ const initialMotorcycles: Motorcycle[] = [
     insuranceType: 'TPL',
     insuranceEffectiveDate: new Date('2024-01-01'),
     insuranceExpirationDate: new Date('2025-01-01'),
-    assignedLiaison: 'BRYLE NIKKO HAMILI',
     crNumber: 'CRPCX160',
     csrNumber: 'CSRPXC160'
+  },
+   {
+    id: 'mc-004',
+    make: 'Suzuki',
+    model: 'Raider 150',
+    year: 2024,
+    color: 'Red',
+    plateNumber: '789 GHI',
+    engineNumber: 'E98765432',
+    chassisNumber: 'C98765432',
+    assignedBranch: 'SAN FERNANDO',
+    purchaseDate: new Date('2024-02-10'),
+    supplier: 'Suzuki Motors',
+    status: 'Incomplete',
+    documents: [],
+    customerName: 'Jose Rizal',
+    assignedLiaison: undefined,
+    salesInvoiceNo: 'SI-00125',
+    accountCode: 'AC-JRZ-001',
+    hpgControlNumber: 'HPG-CTRL-003',
   },
 ];
 
 const initialCashAdvances: CashAdvance[] = [
   {
     id: 'ca-070124-001',
-    personnel: 'RODEL PASTRANO',
-    purpose: 'Renewal for 1 unit',
-    amount: 2185.18,
-    date: addDays(today, -40),
-    status: 'Processing for CV',
-    motorcycleIds: ['2']
-  },
-  {
-    id: 'ca-070124-002',
-    personnel: 'BRYLE NIKKO HAMILI',
+    personnel: 'Bryle Nikko Hamili',
     purpose: 'Registration for 1 unit',
-    amount: 2126.43,
+    amount: 1826.43,
     date: addDays(today, -30),
     status: 'Liquidated',
-    motorcycleIds: ['1'],
-    totalLiquidation: 2100,
+    motorcycleIds: ['mc-001'],
+    totalLiquidation: 1800,
     checkVoucherNumber: 'CV-2024-06-010',
     checkVoucherReleaseDate: addDays(today, -28),
   },
 ];
 
 const initialLiaisonUsers: LiaisonUser[] = [
-    { id: '1', name: 'JINKY JOY AGBALOG', assignedBranch: 'LA UNION', processingFee: 300.00, orFee: 1815.18 },
-    { id: '2', name: 'BABY LIEZELL CAUILAN', assignedBranch: 'ILAGAN', processingFee: 250.00, orFee: 2060.18 },
-    { id: '3', name: 'RODEL PASTRANO', assignedBranch: 'SAN FERNANDO', processingFee: 300.00, orFee: 1585.18 },
-    { id: '4', name: 'JUNIEFE AQUINO', assignedBranch: 'CALAMBA', processingFee: 200.00, orFee: 2159.43 },
-    { id: '5', name: 'LYNLYN GENEZA', assignedBranch: 'CALAPAN', processingFee: 250.00, orFee: 2101.43 },
-    { id: '6', name: 'RUSHEL MORGA', assignedBranch: 'LEGAZPI', processingFee: 250.00, orFee: 1910.18 },
-    { id: '7', name: 'BENJO SEQUIERO', assignedBranch: 'ILOILO', processingFee: 150.00, orFee: 1676.43 },
-    { id: '8', name: 'BRYLE NIKKO HAMILI', assignedBranch: 'CEBU', processingFee: 300.00, orFee: 1526.43 },
-    { id: '9', name: 'ALLAN ANTONI', assignedBranch: 'TACLOBAN', processingFee: 100.00, orFee: 1555.18 },
-    { id: '10', name: 'RODERICK GUTIERREZ', assignedBranch: 'ZAMBOANGA', processingFee: 250.00, orFee: 1492.68 },
-    { id: '11', name: 'JASSRAY PAMISA', assignedBranch: 'CDO', processingFee: 100.00, orFee: 1746.43 },
-    { id: '12', name: 'ALI VIN SALEH COLINA', assignedBranch: 'DAVAO', processingFee: 244.82, orFee: 1591.61 },
-    { id: '13', name: 'EMILY AMADEO', assignedBranch: 'MARBEL', processingFee: 130.00, orFee: 1766.43 },
-    { id: '14', name: 'GEORGETH YEE', assignedBranch: 'BUENAVISTA', processingFee: 150.00, orFee: 1696.43 },
-    { id: '15', name: 'Demo Liaison', assignedBranch: 'Main Office', processingFee: 1500, orFee: 1000 },
+    { id: 'user-001', name: 'Bryle Nikko Hamili', assignedBranch: 'CEBU', processingFee: 300.00, orFee: 1526.43 },
+    { id: 'user-002', name: 'Rodel Pastrano', assignedBranch: 'SAN FERNANDO', processingFee: 300.00, orFee: 1585.18 },
+    { id: 'user-003', name: 'Demo Liaison', assignedBranch: 'Main Office', processingFee: 250, orFee: 1500 },
 ];
 
 const initialEndorsements: Endorsement[] = [
-    { id: 'ENDO-20240728-001', transactionDate: addDays(today, -2), liaisonId: '3', liaisonName: 'RODEL PASTRANO', motorcycleIds: ['2'], remarks: 'For renewal.', createdBy: 'Cashier B'},
-    { id: 'ENDO-20240725-001', transactionDate: addDays(today, -5), liaisonId: '8', liaisonName: 'BRYLE NIKKO HAMILI', motorcycleIds: ['5'], remarks: 'For registration.', createdBy: 'Supervisor A'},
+    { id: 'ENDO-20240728-001', transactionDate: addDays(today, -2), liaisonId: 'user-001', liaisonName: 'Bryle Nikko Hamili', motorcycleIds: ['mc-001', 'mc-002'], remarks: 'For processing.', createdBy: 'Demo Supervisor'},
 ];
 
 const MC_KEY = 'lto_motorcycles';
@@ -260,5 +244,3 @@ export async function addEndorsement(newEndorsement: Endorsement) {
 export function getBranches() {
   return [...new Set(initialLiaisonUsers.map(l => l.assignedBranch))];
 }
-
-    
