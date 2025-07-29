@@ -415,7 +415,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
           <DialogContent className="sm:max-w-4xl max-w-[90vw] max-h-[90vh]">
               <DialogHeader>
                   <DialogTitle>
-                    View / Edit Details - {editingMotorcycle?.plateNumber}
+                    View / Edit Details - {editingMotorcycle?.customerName}
                   </DialogTitle>
                   <DialogDescription>
                       Update the insurance and control details for this unit.
@@ -425,10 +425,6 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                 <div className="grid gap-4 py-4 pr-6">
                     <h3 className="font-semibold text-lg border-b pb-2 mb-2">Motorcycle Details</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="grid gap-2">
-                          <Label htmlFor="edit-plateNumber">Plate No.</Label>
-                          <Input id="edit-plateNumber" name="plateNumber" value={editedData.plateNumber || ''} disabled />
-                      </div>
                       <div className="grid gap-2">
                           <Label htmlFor="edit-customerName">Customer Name</Label>
                           <Input id="edit-customerName" name="customerName" value={editedData.customerName || ''} disabled />
