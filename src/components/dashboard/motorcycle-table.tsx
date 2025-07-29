@@ -214,8 +214,18 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
     const updatedMotorcycle = {
       ...editingMotorcycle,
       ...editedData,
-      status: 'Ready to Register', // Change status upon saving details
     };
+
+    if (
+        editedData.cocNumber &&
+        editedData.policyNumber &&
+        editedData.insuranceType &&
+        editedData.hpgControlNumber &&
+        editedData.sarCode &&
+        editingMotorcycle.status === 'Incomplete'
+    ) {
+        updatedMotorcycle.status = 'Ready to Register';
+    }
     
     const updatedMotorcycles = motorcycles.map(m => 
       m.id === editingMotorcycle.id ? updatedMotorcycle : m
@@ -322,12 +332,14 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                   </TableHead>
                 )}
                  {!isLiaison && (isSupervisor || isCashier) && <TableHead className="w-[40px]"></TableHead>}
-                <SortableHeader column="id">Sale ID</SortableHeader>
-                <SortableHeader column="salesInvoiceNo">SI No.</SortableHeader>
-                <SortableHeader column="customerName">Customer Name</SortableHeader>
-                <SortableHeader column="csrNumber">CSR No.</SortableHeader>
-                <SortableHeader column="crNumber">CR No.</SortableHeader>
-                <SortableHeader column="status">Status</SortableHeader>
+                <SortableHeader column="id">SALES ID</SortableHeader>
+                <SortableHeader column="salesInvoiceNo">SI NO.</SortableHeader>
+                <SortableHeader column="customerName">CUSTOMER NAME</SortableHeader>
+                <SortableHeader column="accountCode">ACCOUNT CODE</SortableHeader>
+                <SortableHeader column="chassisNumber">CHASSIS NO</SortableHeader>
+                <SortableHeader column="csrNumber">CSR NO</SortableHeader>
+                <SortableHeader column="crNumber">CR NO</SortableHeader>
+                <SortableHeader column="hpgControlNumber">HPG CONTROL</SortableHeader>
                 <TableHead className="w-[100px]">
                   <span className="sr-only">Actions</span>
                 </TableHead>
@@ -350,11 +362,11 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                     <TableCell>{motorcycle.id}</TableCell>
                     <TableCell>{motorcycle.salesInvoiceNo}</TableCell>
                     <TableCell className="font-medium">{motorcycle.customerName}</TableCell>
+                    <TableCell>{motorcycle.accountCode}</TableCell>
+                    <TableCell>{motorcycle.chassisNumber}</TableCell>
                     <TableCell>{motorcycle.csrNumber || 'N/A'}</TableCell>
                     <TableCell>{motorcycle.crNumber || 'N/A'}</TableCell>
-                    <TableCell>
-                      <Badge variant={statusVariant(motorcycle.status)}>{motorcycle.status}</Badge>
-                    </TableCell>
+                    <TableCell>{motorcycle.hpgControlNumber || 'N/A'}</TableCell>
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -423,47 +435,52 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
       
       {/* Edit Motorcycle Dialog */}
       <Dialog open={!!editingMotorcycle} onOpenChange={(open) => !open && handleCancelEdit()}>
-          <DialogContent className="sm:max-w-4xl max-w-[90vw] max-h-[90vh]">
+          <DialogContent className="sm:max-w-2xl max-w-[90vw] max-h-[90vh]">
               <DialogHeader>
                   <DialogTitle>
                     View / Edit Details - {editingMotorcycle?.customerName}
                   </DialogTitle>
                   <DialogDescription>
-                      Update the insurance and control details for this unit.
+                      Update details for this unit.
                   </DialogDescription>
               </DialogHeader>
               <ScrollArea className="max-h-[70vh]">
                 <div className="grid gap-4 py-4 pr-6">
-                    <h3 className="font-semibold text-lg border-b pb-2 mb-2">Motorcycle Details</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="grid gap-2">
-                          <Label htmlFor="edit-customerName">Customer Name</Label>
-                          <Input id="edit-customerName" name="customerName" value={editedData.customerName || ''} disabled />
+                          <Label htmlFor="edit-id">SALES ID</Label>
+                          <Input id="edit-id" value={editedData.id || ''} disabled />
                       </div>
                        <div className="grid gap-2">
-                          <Label htmlFor="edit-accountCode">Account Code</Label>
-                          <Input id="edit-accountCode" name="accountCode" value={editedData.accountCode || ''} disabled />
+                          <Label htmlFor="edit-salesInvoiceNo">SI NO</Label>
+                          <Input id="edit-salesInvoiceNo" value={editedData.salesInvoiceNo || ''} disabled />
                       </div>
                        <div className="grid gap-2">
-                          <Label htmlFor="edit-engineNumber">Engine No.</Label>
-                          <Input id="edit-engineNumber" name="engineNumber" value={editedData.engineNumber || ''} disabled />
+                          <Label htmlFor="edit-customerName">CUSTOMER NAME</Label>
+                          <Input id="edit-customerName" value={editedData.customerName || ''} disabled />
                       </div>
-                      <div className="grid gap-2">
-                          <Label htmlFor="edit-chassisNumber">Chassis No.</Label>
-                          <Input id="edit-chassisNumber" name="chassisNumber" value={editedData.chassisNumber || ''} disabled />
+                       <div className="grid gap-2">
+                          <Label htmlFor="edit-accountCode">ACCOUNT CODE</Label>
+                          <Input id="edit-accountCode" value={editedData.accountCode || ''} disabled />
+                      </div>
+                       <div className="grid gap-2">
+                          <Label htmlFor="edit-csrNumber">CSR NO</Label>
+                          <Input id="edit-csrNumber" name="csrNumber" value={editedData.csrNumber || ''} onChange={(e) => handleDataChange('csrNumber', e.target.value)} />
+                      </div>
+                       <div className="grid gap-2">
+                          <Label htmlFor="edit-crNumber">CR NO</Label>
+                          <Input id="edit-crNumber" name="crNumber" value={editedData.crNumber || ''} onChange={(e) => handleDataChange('crNumber', e.target.value)} />
+                      </div>
+                       <div className="grid gap-2 md:col-span-2">
+                          <Label htmlFor="edit-hpgControlNumber">HPG CONTROL NO</Label>
+                          <Input id="edit-hpgControlNumber" name="hpgControlNumber" value={editedData.hpgControlNumber || ''} onChange={(e) => handleDataChange('hpgControlNumber', e.target.value)} />
                       </div>
                     </div>
-                    
-                    <InsuranceControlForm 
-                        editedData={editedData}
-                        onDataChange={handleDataChange}
-                        canEdit={canEditInsuranceAndControl}
-                    />
                 </div>
               </ScrollArea>
               <DialogFooter>
                   <Button variant="outline" onClick={handleCancelEdit}>Close</Button>
-                  {canEditInsuranceAndControl && <Button onClick={handleSaveEdit}>Save Changes</Button>}
+                  <Button onClick={handleSaveEdit}>Save Changes</Button>
               </DialogFooter>
           </DialogContent>
       </Dialog>
@@ -489,3 +506,5 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
     </>
   );
 }
+
+    

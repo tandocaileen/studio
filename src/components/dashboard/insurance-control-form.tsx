@@ -52,10 +52,6 @@ export function InsuranceControlForm({ editedData, onDataChange, canEdit }: Insu
                     </Select>
                 </div>
                 <div className="grid gap-2">
-                    <Label htmlFor="edit-hpgControlNumber">HPG Control No.</Label>
-                    <Input id="edit-hpgControlNumber" name="hpgControlNumber" value={editedData.hpgControlNumber || ''} onChange={(e) => onDataChange('hpgControlNumber', e.target.value)} disabled={!canEdit} required />
-                </div>
-                <div className="grid gap-2">
                     <Label>Effective Date</Label>
                     <Popover>
                         <PopoverTrigger asChild>
@@ -115,3 +111,5 @@ export function InsuranceControlForm({ editedData, onDataChange, canEdit }: Insu
         </div>
     );
 }
+
+    
