@@ -26,6 +26,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { LiaisonEndorsementTable } from "@/components/dashboard/liaison-endorsement-table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const ALL_SUPERVISOR_STATUSES: MotorcycleStatus[] = ['Incomplete', 'Ready to Register', 'Endorsed - Incomplete', 'Endorsed - Ready', 'Processing', 'For Review'];
 const ALL_LIAISON_STATUSES: MotorcycleStatus[] = ['Endorsed - Incomplete', 'Endorsed - Ready', 'Processing', 'For Review'];
@@ -172,139 +173,202 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
 }
 
 function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
-  const [motorcycles, setMotorcycles] = useState<Motorcycle[] | null>(null);
-  const [endorsements, setEndorsements] = useState<Endorsement[] | null>(null);
-  const [statusFilter, setStatusFilter] = React.useState<string>('all');
-  const [endorsedByFilter, setEndorsedByFilter] = React.useState<string>('all');
-  const [dateRange, setDateRange] = React.useState<DateRange>('all');
-  
-  const { user } = useAuth();
+    const [motorcycles, setMotorcycles] = useState<Motorcycle[] | null>(null);
+    const [endorsements, setEndorsements] = useState<Endorsement[] | null>(null);
 
-  useEffect(() => {
-    if (user) {
-        Promise.all([
-            getMotorcycles(),
-            getEndorsements()
-        ]).then(([motorcycleData, endorsementData]) => {
-            const userEndorsements = endorsementData.filter(e => e.liaisonName === user.name);
-            setEndorsements(userEndorsements);
-            
-            // We need all motorcycles to resolve IDs in endorsements
-            setMotorcycles(motorcycleData);
-        });
-    }
-  }, [user]);
-
-  const userBranch = "Main Office"; 
-
-  if (!user || !motorcycles || !endorsements) {
-    return <AppLoader />;
-  }
-
-  const handleStateUpdate = (updatedMotorcycles: Motorcycle | Motorcycle[]) => {
-      setMotorcycles(currentMotorcycles => {
-          if (!currentMotorcycles) return [];
-          const motorcyclesMap = new Map(currentMotorcycles.map(m => [m.id, m]));
-
-          if (Array.isArray(updatedMotorcycles)) {
-              updatedMotorcycles.forEach(um => motorcyclesMap.set(um.id, um));
-          } else {
-              motorcyclesMap.set(updatedMotorcycles.id, updatedMotorcycles);
-          }
-          
-          return Array.from(motorcyclesMap.values());
-      });
-  };
-
-  const uniqueEndorsers = [...new Set(endorsements.map(e => e.createdBy))];
-
-  const filteredEndorsements = endorsements.filter(e => {
-    // Date Range Filter
-    if (dateRange !== 'all') {
-        const days = dateRange === '7d' ? 7 : 30;
-        const cutoff = new Date();
-        cutoff.setDate(cutoff.getDate() - days);
-        if (new Date(e.transactionDate) < cutoff) return false;
-    }
-
-    // Endorsed By Filter
-    if (endorsedByFilter !== 'all' && e.createdBy !== endorsedByFilter) {
-        return false;
-    }
-
-    // Status Filter
-    if (statusFilter !== 'all') {
-        const hasMatchingMotorcycle = e.motorcycleIds.some(mcId => {
-            const motorcycle = motorcycles.find(m => m.id === mcId);
-            return motorcycle && motorcycle.status === statusFilter;
-        });
-        if (!hasMatchingMotorcycle) return false;
-    }
+    const defaultStatuses = ['Endorsed - Ready', 'Endorsed - Incomplete'];
+    const [activeStatusFilters, setActiveStatusFilters] = useState<string[]>(defaultStatuses);
+    const [tempStatusFilters, setTempStatusFilters] = useState<string[]>(defaultStatuses);
     
-    return true;
-  });
+    const [activeEndorserFilters, setActiveEndorserFilters] = useState<string[]>([]);
+    const [tempEndorserFilters, setTempEndorserFilters] = useState<string[]>([]);
 
-  return (
-    <>
-      <div className="flex items-center justify-between">
-          <div>
-              <p className="text-lg text-muted-foreground">Welcome back,</p>
-              <h2 className="text-2xl font-bold leading-tight tracking-tighter">
-                  {user?.name}
-              </h2>
-              <p className="text-sm text-muted-foreground font-medium">
-                  {userBranch} - {user?.role}
-              </p>
-          </div>
-      </div>
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-4">
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-[240px]">
-                      <SelectValue placeholder="Filter by status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                      <SelectItem value="all">All Statuses</SelectItem>
-                      {ALL_LIAISON_STATUSES.map(status => (
-                          <SelectItem key={status} value={status}>{status}</SelectItem>
-                      ))}
-                  </SelectContent>
-              </Select>
-               <Select value={endorsedByFilter} onValueChange={setEndorsedByFilter}>
-                  <SelectTrigger className="w-[240px]">
-                      <SelectValue placeholder="Filter by endorser" />
-                  </SelectTrigger>
-                  <SelectContent>
-                      <SelectItem value="all">All Endorsers</SelectItem>
-                       {uniqueEndorsers.map(endorser => (
-                          <SelectItem key={endorser} value={endorser}>{endorser}</SelectItem>
-                      ))}
-                  </SelectContent>
-              </Select>
-              <Select value={dateRange} onValueChange={(value) => setDateRange(value as DateRange)}>
-                  <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Select date range" />
-                  </SelectTrigger>
-                  <SelectContent>
-                      <SelectItem value="7d">Last 7 days</SelectItem>
-                      <SelectItem value="30d">Last 30 days</SelectItem>
-                      <SelectItem value="all">All time</SelectItem>
-                  </SelectContent>
-              </Select>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <LiaisonEndorsementTable 
-            endorsements={filteredEndorsements}
-            motorcycles={motorcycles}
-            onStateChange={handleStateUpdate}
-            searchQuery={searchQuery}
-          />
-        </CardContent>
-      </Card>
-    </>
-  );
+    const [activeDateRange, setActiveDateRange] = useState<DateRange>('all');
+    const [tempDateRange, setTempDateRange] = useState<DateRange>('all');
+
+    const { user } = useAuth();
+
+    useEffect(() => {
+        if (user) {
+            Promise.all([
+                getMotorcycles(),
+                getEndorsements()
+            ]).then(([motorcycleData, endorsementData]) => {
+                const userEndorsements = endorsementData.filter(e => e.liaisonName === user.name);
+                setEndorsements(userEndorsements);
+                setMotorcycles(motorcycleData);
+            });
+        }
+    }, [user]);
+
+    const userBranch = "Main Office";
+
+    if (!user || !motorcycles || !endorsements) {
+        return <AppLoader />;
+    }
+
+    const handleStateUpdate = (updatedMotorcycles: Motorcycle | Motorcycle[]) => {
+        setMotorcycles(currentMotorcycles => {
+            if (!currentMotorcycles) return [];
+            const motorcyclesMap = new Map(currentMotorcycles.map(m => [m.id, m]));
+
+            if (Array.isArray(updatedMotorcycles)) {
+                updatedMotorcycles.forEach(um => motorcyclesMap.set(um.id, um));
+            } else {
+                motorcyclesMap.set(updatedMotorcycles.id, updatedMotorcycles);
+            }
+            
+            return Array.from(motorcyclesMap.values());
+        });
+    };
+
+    const uniqueEndorsers = [...new Set(endorsements.map(e => e.createdBy))];
+
+    const applyFilters = () => {
+        setActiveStatusFilters(tempStatusFilters);
+        setActiveEndorserFilters(tempEndorserFilters);
+        setActiveDateRange(tempDateRange);
+    };
+
+    const clearFilters = () => {
+        setTempStatusFilters([]);
+        setActiveStatusFilters([]);
+        setTempEndorserFilters([]);
+        setActiveEndorserFilters([]);
+        setTempDateRange('all');
+        setActiveDateRange('all');
+    };
+
+    const handleStatusCheckboxChange = (status: string, checked: boolean) => {
+        setTempStatusFilters(prev => checked ? [...prev, status] : prev.filter(s => s !== status));
+    };
+
+    const handleEndorserCheckboxChange = (endorser: string, checked: boolean) => {
+        setTempEndorserFilters(prev => checked ? [...prev, endorser] : prev.filter(e => e !== endorser));
+    };
+
+    const filteredEndorsements = endorsements.filter(e => {
+        if (activeDateRange !== 'all') {
+            const days = activeDateRange === '7d' ? 7 : 30;
+            const cutoff = new Date();
+            cutoff.setDate(cutoff.getDate() - days);
+            if (new Date(e.transactionDate) < cutoff) return false;
+        }
+
+        if (activeEndorserFilters.length > 0 && !activeEndorserFilters.includes(e.createdBy)) {
+            return false;
+        }
+
+        if (activeStatusFilters.length > 0) {
+            const hasMatchingMotorcycle = e.motorcycleIds.some(mcId => {
+                const motorcycle = motorcycles.find(m => m.id === mcId);
+                return motorcycle && activeStatusFilters.includes(motorcycle.status);
+            });
+            if (!hasMatchingMotorcycle) return false;
+        }
+        
+        return true;
+    });
+
+    return (
+        <>
+            <div className="flex items-center justify-between">
+                <div>
+                    <p className="text-lg text-muted-foreground">Welcome back,</p>
+                    <h2 className="text-2xl font-bold leading-tight tracking-tighter">
+                        {user?.name}
+                    </h2>
+                    <p className="text-sm text-muted-foreground font-medium">
+                        {userBranch} - {user?.role}
+                    </p>
+                </div>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
+                <div className="lg:col-span-3">
+                    <Card>
+                        <CardContent className="p-6">
+                            <LiaisonEndorsementTable 
+                                endorsements={filteredEndorsements}
+                                motorcycles={motorcycles}
+                                onStateChange={handleStateUpdate}
+                                searchQuery={searchQuery}
+                            />
+                        </CardContent>
+                    </Card>
+                </div>
+                <div className="lg:col-span-1 lg:sticky top-20">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Filters</CardTitle>
+                            <CardDescription>Refine endorsements</CardDescription>
+                        </CardHeader>
+                        <CardContent className="grid gap-6">
+                            <div>
+                                <Label className="font-semibold text-sm">Status</Label>
+                                <Separator className="my-2" />
+                                <div className="grid gap-2">
+                                    {ALL_LIAISON_STATUSES.map(status => (
+                                        <div key={status} className="flex items-center gap-2">
+                                            <Checkbox 
+                                                id={`filter-status-${status}`}
+                                                checked={tempStatusFilters.includes(status)}
+                                                onCheckedChange={(checked) => handleStatusCheckboxChange(status, !!checked)}
+                                            />
+                                            <Label htmlFor={`filter-status-${status}`} className="font-normal text-sm">{status}</Label>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                            <div>
+                                <Label className="font-semibold text-sm">Endorsed By</Label>
+                                <Separator className="my-2" />
+                                <div className="grid gap-2">
+                                    {uniqueEndorsers.map(endorser => (
+                                        <div key={endorser} className="flex items-center gap-2">
+                                            <Checkbox 
+                                                id={`filter-endorser-${endorser}`}
+                                                checked={tempEndorserFilters.includes(endorser)}
+                                                onCheckedChange={(checked) => handleEndorserCheckboxChange(endorser, !!checked)}
+                                            />
+                                            <Label htmlFor={`filter-endorser-${endorser}`} className="font-normal text-sm">{endorser}</Label>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                            <div>
+                                <Label className="font-semibold text-sm">Date Range</Label>
+                                <Separator className="my-2" />
+                                <RadioGroup value={tempDateRange} onValueChange={(v) => setTempDateRange(v as DateRange)}>
+                                    <div className="flex items-center space-x-2">
+                                        <RadioGroupItem value="7d" id="r-7d" />
+                                        <Label htmlFor="r-7d" className="font-normal text-sm">Last 7 days</Label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        <RadioGroupItem value="30d" id="r-30d" />
+                                        <Label htmlFor="r-30d" className="font-normal text-sm">Last 30 days</Label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        <RadioGroupItem value="all" id="r-all" />
+                                        <Label htmlFor="r-all" className="font-normal text-sm">All time</Label>
+                                    </div>
+                                </RadioGroup>
+                            </div>
+                        </CardContent>
+                        <CardFooter className="flex flex-col gap-2">
+                             <Button onClick={applyFilters} className="w-full">
+                                <Filter className="mr-2 h-4 w-4" />
+                                Apply Filters
+                            </Button>
+                            <Button onClick={clearFilters} variant="ghost" className="w-full">
+                                <RotateCcw className="mr-2 h-4 w-4" />
+                                Clear
+                            </Button>
+                        </CardFooter>
+                    </Card>
+                </div>
+            </div>
+        </>
+    );
 }
 
 function CashierDashboardContent({searchQuery}: {searchQuery: string}) {
@@ -371,3 +435,4 @@ export default function DashboardPage() {
     </ProtectedPage>
   );
 }
+
