@@ -14,7 +14,7 @@ import { SummaryCards } from "@/components/dashboard/summary-cards";
 import { OverdueAdvances } from "@/components/dashboard/overdue-advances";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Filter, PlusCircle, RotateCcw } from "lucide-react";
+import { ChevronDown, Filter, PlusCircle, RotateCcw, AlertCircle } from "lucide-react";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ReceiveLtoDocs } from "@/components/dashboard/receive-lto-docs";
 import { EndorsedIncompleteTable } from "@/components/dashboard/endorsed-incomplete-table";
@@ -28,6 +28,8 @@ import { LiaisonEndorsementTable } from "@/components/dashboard/liaison-endorsem
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+
 
 const ALL_SUPERVISOR_STATUSES: MotorcycleStatus[] = ['Incomplete', 'Ready to Register', 'Endorsed - Incomplete', 'Endorsed - Ready', 'Processing', 'For Review'];
 const ALL_LIAISON_STATUSES: MotorcycleStatus[] = ['Endorsed - Incomplete', 'Endorsed - Ready', 'Processing', 'For Review'];
@@ -335,6 +337,13 @@ function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
                 </div>
                 {isFilterPanelVisible && (
                     <div className="lg:col-span-1 lg:sticky top-20">
+                        <Alert variant="destructive" className="mb-4">
+                            <AlertCircle className="h-4 w-4" />
+                            <AlertTitle>Suggestion</AlertTitle>
+                            <AlertDescription className="text-xs">
+                                Gemini is faulty, during development, Pre-filter: Show only endorsements with at least 1 MC in Endorsed - Ready or Endorsed - Incomplete. Hide other MCs. Date = All time.
+                            </AlertDescription>
+                        </Alert>
                         <Card>
                             <CardHeader>
                                 <CardTitle>Filters</CardTitle>
