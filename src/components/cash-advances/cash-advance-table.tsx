@@ -72,7 +72,7 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
     }
     
     updateAdvanceState(releasingCvAdvance.cashAdvance.id, {
-        status: 'Check Voucher Released',
+        status: 'CV Released',
         checkVoucherNumber: cvNumber,
         checkVoucherReleaseDate: new Date(),
     });
@@ -107,7 +107,7 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
   const getStatusColor = (status: CashAdvance['status']): string => {
     switch (status) {
       case 'Processing for CV': return 'bg-amber-500';
-      case 'Check Voucher Released': return 'bg-purple-500';
+      case 'CV Released': return 'bg-purple-500';
       case 'CV Received': return 'bg-teal-500';
       case 'Liquidated': return 'bg-green-500';
       default: return 'bg-gray-500';
@@ -214,7 +214,7 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
                       )}
                       
                       {isCashierOrSupervisor && (
-                          <DropdownMenuItem disabled={advance.cashAdvance.status !== 'Check Voucher Released'} onClick={() => handleConfirmCvReceipt(advance.cashAdvance.id)}>
+                          <DropdownMenuItem disabled={advance.cashAdvance.status !== 'CV Released'} onClick={() => handleConfirmCvReceipt(advance.cashAdvance.id)}>
                               <FileCheck className="mr-2 h-4 w-4" />
                               <span>Confirm CV Receipt</span>
                           </DropdownMenuItem>
@@ -297,7 +297,7 @@ export function CashAdvanceTable({ advances: initialAdvances }: CashAdvanceTable
     <Dialog open={!!releasingCvAdvance} onOpenChange={(open) => !open && setReleasingCvAdvance(null)}>
         <DialogContent className="sm:max-w-md">
             <DialogHeader>
-                <DialogTitle>Release Check Voucher</DialogTitle>
+                <DialogTitle>Release CV</DialogTitle>
                 <DialogDescription>
                     Enter the CV number for CA# {releasingCvAdvance?.cashAdvance.id} to mark it as released.
                 </DialogDescription>

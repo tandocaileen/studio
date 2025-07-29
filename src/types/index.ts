@@ -62,7 +62,7 @@ export type CashAdvance = {
   purpose: string;
   amount: number;
   date: Date;
-  status: 'Processing for CV' | 'Check Voucher Released' | 'CV Received' | 'Liquidated';
+  status: 'Processing for CV' | 'CV Released' | 'CV Received' | 'Liquidated';
   receipts?: string[];
   motorcycleId?: string;
   motorcycleIds?: string[];

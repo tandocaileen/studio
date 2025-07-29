@@ -29,7 +29,7 @@ export type EnrichedCashAdvance = {
 
 type DateRange = '7d' | '30d' | 'all';
 type CashAdvanceStatus = CashAdvance['status'];
-const ALL_CA_STATUSES: CashAdvanceStatus[] = ['Processing for CV', 'Check Voucher Released', 'CV Received', 'Liquidated'];
+const ALL_CA_STATUSES: CashAdvanceStatus[] = ['Processing for CV', 'CV Released', 'CV Received', 'Liquidated'];
 
 
 function CashAdvancesContent({ searchQuery }: { searchQuery: string }) {

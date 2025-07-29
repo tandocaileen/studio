@@ -49,7 +49,7 @@ const GenerateCashAdvanceOutputSchema = z.object({
     purpose: z.string().describe('A summarized purpose for the cash advance, e.g., "Cash advance for registration of 3 units."'),
     amount: z.number().describe('The total combined amount for all motorcycles (processingFee + orFee).'),
     date: z.string().describe("The date of the cash advance request in ISO format."),
-    status: z.enum(['Processing for CV', 'Check Voucher Released', 'CV Received', 'Liquidated']),
+    status: z.enum(['Processing for CV', 'CV Released', 'CV Received', 'Liquidated']),
     motorcycleIds: z.array(z.string()).describe("An array of IDs of the motorcycles included in this cash advance."),
 });
 export type GenerateCashAdvanceOutput = z.infer<typeof GenerateCashAdvanceOutputSchema>;
