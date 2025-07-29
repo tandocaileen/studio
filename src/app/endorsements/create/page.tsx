@@ -22,6 +22,7 @@ import { FilePenLine } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useRouter } from 'next/navigation';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -36,6 +37,7 @@ function CreateEndorsementContent() {
     const [isLoading, setIsLoading] = React.useState(false);
     const { toast } = useToast();
     const [currentPage, setCurrentPage] = React.useState(1);
+    const router = useRouter();
 
     React.useEffect(() => {
         getMotorcycles().then(setMotorcycles);
@@ -74,15 +76,14 @@ function CreateEndorsementContent() {
                 }
                 return mc;
             });
-            setMotorcycles(updatedMotorcycles || []);
+            // This update is for demo purposes. In a real app, you'd invalidate a query cache.
+            // setMotorcycles(updatedMotorcycles || []);
             
             toast({ title: 'Endorsement Created!', description: `${selectedMotorcycles.length} unit(s) have been endorsed to ${selectedLiaison?.name}.` });
             
-            setSelectedMotorcycles([]);
-            setSelectedLiaison(null);
-            setRemarks('');
-            setIsSummaryOpen(false);
             setIsLoading(false);
+            setIsSummaryOpen(false);
+            router.push('/endorsements');
         }, 1000);
     }
 
