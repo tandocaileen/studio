@@ -242,8 +242,7 @@ function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
                 getMotorcycles(),
                 getEndorsements()
             ]).then(([motorcycleData, endorsementData]) => {
-                const userEndorsements = endorsementData.filter(e => e.liaisonName === user.name);
-                setEndorsements(userEndorsements);
+                setEndorsements(endorsementData);
                 setMotorcycles(motorcycleData);
             });
         }
