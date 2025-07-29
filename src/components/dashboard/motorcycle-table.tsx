@@ -610,7 +610,9 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                                     <Input id={`edit-doc-file-${index}`} type="file" className="flex-grow" onChange={(e) => handleFileChange(doc.id, e, false)} disabled={!canEditInsuranceAndControl} />
                                     <Button variant="outline" size="sm" asChild>
                                         <a href={doc.url} target="_blank" rel="noopener noreferrer">
-                                            View Current <ExternalLink className="ml-2 h-3 w-3" />
+                                          <span>
+                                            View Current <ExternalLink className="ml-2 h-3 w-3 inline-block" />
+                                          </span>
                                         </a>
                                     </Button>
                                 </div>
@@ -752,7 +754,9 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                         <TableCell>
                             <Button variant="outline" size="sm" asChild>
                                 <a href={doc.url} target="_blank" rel="noopener noreferrer">
-                                    View <ExternalLink className="ml-2 h-3 w-3" />
+                                  <span>
+                                    View <ExternalLink className="ml-2 h-3 w-3 inline-block" />
+                                  </span>
                                 </a>
                             </Button>
                         </TableCell>
@@ -788,3 +792,5 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
     </>
   );
 }
+
+    
