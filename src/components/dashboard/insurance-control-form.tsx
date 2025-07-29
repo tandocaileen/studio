@@ -27,11 +27,11 @@ export function InsuranceControlForm({ editedData, onDataChange, canEdit }: Insu
             <h3 className="font-semibold text-lg border-b pb-2 mt-4 mb-2">Insurance &amp; Control</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                    <Label htmlFor="edit-cocNumber">COC No. (Required)</Label>
+                    <Label htmlFor="edit-cocNumber">COC No. <span className="text-destructive">*</span></Label>
                     <Input id="edit-cocNumber" name="cocNumber" value={editedData.cocNumber || ''} onChange={(e) => onDataChange('cocNumber', e.target.value)} disabled={!canEdit} required className={cn(!editedData.cocNumber && 'border-destructive')} />
                 </div>
                 <div className="grid gap-2">
-                    <Label htmlFor="edit-policyNumber">Policy No. (Required)</Label>
+                    <Label htmlFor="edit-policyNumber">Policy No. <span className="text-destructive">*</span></Label>
                     <Input id="edit-policyNumber" name="policyNumber" value={editedData.policyNumber || ''} onChange={(e) => onDataChange('policyNumber', e.target.value)} disabled={!canEdit} required className={cn(!editedData.policyNumber && 'border-destructive')} />
                 </div>
                 <div className="grid gap-2">
@@ -52,7 +52,7 @@ export function InsuranceControlForm({ editedData, onDataChange, canEdit }: Insu
                     </Select>
                 </div>
                 <div className="grid gap-2">
-                    <Label>Effective Date (Required)</Label>
+                    <Label>Effective Date <span className="text-destructive">*</span></Label>
                     <Popover>
                         <PopoverTrigger asChild>
                         <Button
@@ -78,7 +78,7 @@ export function InsuranceControlForm({ editedData, onDataChange, canEdit }: Insu
                     </Popover>
                 </div>
                 <div className="grid gap-2">
-                    <Label>Expiration Date (Required)</Label>
+                    <Label>Expiration Date <span className="text-destructive">*</span></Label>
                     <Popover>
                         <PopoverTrigger asChild>
                         <Button

@@ -454,11 +454,11 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                           <Input id="edit-accountCode" value={editedData.accountCode || ''} disabled />
                       </div>
                        <div className="grid gap-2">
-                          <Label htmlFor="edit-csrNumber">CSR No. (Required)</Label>
+                          <Label htmlFor="edit-csrNumber">CSR No. <span className="text-destructive">*</span></Label>
                           <Input id="edit-csrNumber" name="csrNumber" value={editedData.csrNumber || ''} onChange={(e) => handleDataChange('csrNumber', e.target.value)} className={cn(!editedData.csrNumber && 'border-destructive')} />
                       </div>
                        <div className="grid gap-2">
-                          <Label htmlFor="edit-crNumber">CR No. (Required)</Label>
+                          <Label htmlFor="edit-crNumber">CR No. <span className="text-destructive">*</span></Label>
                           <Input id="edit-crNumber" name="crNumber" value={editedData.crNumber || ''} onChange={(e) => handleDataChange('crNumber', e.target.value)} className={cn(!editedData.crNumber && 'border-destructive')} />
                       </div>
                        <div className="grid gap-2 md:col-span-2">
@@ -503,4 +503,5 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
     </>
   );
 }
+
 
