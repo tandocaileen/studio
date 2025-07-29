@@ -329,6 +329,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                 <SortableHeader column="csrNumber">CSR No.</SortableHeader>
                 <SortableHeader column="crNumber">CR No.</SortableHeader>
                 <SortableHeader column="hpgControlNumber">HPG Control</SortableHeader>
+                <SortableHeader column="status">Status</SortableHeader>
                 <TableHead className="w-[100px]">
                   <span className="sr-only">Actions</span>
                 </TableHead>
@@ -356,6 +357,9 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                     <TableCell>{motorcycle.csrNumber || 'N/A'}</TableCell>
                     <TableCell>{motorcycle.crNumber || 'N/A'}</TableCell>
                     <TableCell>{motorcycle.hpgControlNumber || 'N/A'}</TableCell>
+                    <TableCell>
+                      <Badge variant={statusVariant(motorcycle.status)}>{motorcycle.status}</Badge>
+                    </TableCell>
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -453,6 +457,14 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                           <Label htmlFor="edit-accountCode">Account Code</Label>
                           <Input id="edit-accountCode" value={editedData.accountCode || ''} disabled />
                       </div>
+                      <div className="grid gap-2">
+                          <Label htmlFor="edit-status">Status</Label>
+                          <Input id="edit-status" value={editedData.status || ''} disabled />
+                      </div>
+                      <div className="grid gap-2">
+                          <Label htmlFor="edit-assignedLiaison">Assigned Liaison</Label>
+                          <Input id="edit-assignedLiaison" value={editedData.assignedLiaison || 'N/A'} disabled />
+                      </div>
                        <div className="grid gap-2">
                           <Label htmlFor="edit-csrNumber">CSR No. <span className="text-destructive">*</span></Label>
                           <Input id="edit-csrNumber" name="csrNumber" value={editedData.csrNumber || ''} onChange={(e) => handleDataChange('csrNumber', e.target.value)} className={cn(!editedData.csrNumber && 'border-destructive')} />
@@ -503,5 +515,3 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
     </>
   );
 }
-
-
