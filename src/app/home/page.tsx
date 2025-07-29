@@ -22,13 +22,11 @@ import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 type ViewFilter = 'unendorsed' | 'all';
-type DashboardTab = 'all-motorcycles' | 'pending-endorsements';
 
 function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
   const [motorcycles, setMotorcycles] = useState<Motorcycle[] | null>(null);
   const [endorsements, setEndorsements] = useState<Endorsement[] | null>(null);
   const [viewFilter, setViewFilter] = useState<ViewFilter>('unendorsed');
-  const [activeTab, setActiveTab] = useState<DashboardTab>('all-motorcycles');
 
   useEffect(() => {
     getMotorcycles().then(setMotorcycles);
@@ -78,14 +76,6 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
     return searchFilter;
   });
 
-  const endorsedIncompleteMotorcycles = motorcycles.filter(
-    m => m.status === 'Endorsed - Incomplete'
-  );
-
-  const motorcyclesPendingDocs = motorcycles.filter(
-      m => !m.hpgControlNumber || !m.salesInvoiceNo || !m.accountCode
-  );
-
   return (
     <>
       <div className="flex items-center justify-between">
@@ -101,68 +91,19 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
       </div>
 
        <div className="grid gap-4">
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as DashboardTab)} className="w-full">
-            <div className="flex justify-start border-b">
-                <TabsList className="bg-transparent p-0 gap-4">
-                    <TabsTrigger 
-                        value="all-motorcycles" 
-                        className="data-[state=active]:bg-card relative top-px data-[state=active]:border-t data-[state=active]:border-x data-[state=active]:shadow-none rounded-t-md text-base p-3"
-                    >
-                        Motorcycles List
-                    </TabsTrigger>
-                    <TabsTrigger 
-                        value="pending-endorsements"
-                        className={cn(
-                            'data-[state=active]:bg-card relative top-px data-[state=active]:border-t data-[state=active]:border-x data-[state=active]:shadow-none rounded-t-md text-base p-3',
-                            'data-[state=active]:text-destructive',
-                            endorsedIncompleteMotorcycles.length > 0 && 'text-destructive'
-                        )}
-                    >
-                        Endorsed Units with Incomplete Details ({endorsedIncompleteMotorcycles.length})
-                    </TabsTrigger>
-                </TabsList>
-            </div>
-            <Card className="rounded-t-none border-t-0">
-                <CardContent className="p-0">
-                    <TabsContent value="pending-endorsements" className="m-0">
-                        <EndorsedIncompleteTable 
-                            motorcycles={endorsedIncompleteMotorcycles}
-                            onUpdate={handleStateUpdate}
-                        />
-                    </TabsContent>
-                    <TabsContent value="all-motorcycles" className="m-0">
-                        <div className="p-6">
-                             <div className="flex items-center justify-between mb-4">
-                                <Tabs value={viewFilter} onValueChange={(value) => setViewFilter(value as ViewFilter)}>
-                                    <TabsList>
-                                        <TabsTrigger value="unendorsed">Unendorsed</TabsTrigger>
-                                        <TabsTrigger value="all">View All</TabsTrigger>
-                                    </TabsList>
-                                </Tabs>
-                                <Dialog>
-                                    <DialogTrigger asChild>
-                                        <Button size="sm" className="gap-1">
-                                            <PlusCircle className="h-4 w-4" />
-                                            <span className="hidden sm:inline">Receive MC Docs</span>
-                                        </Button>
-                                    </DialogTrigger>
-                                    <DialogContent className="max-w-4xl">
-                                         <DialogHeader>
-                                            <DialogTitle>Receive MC Docs & Details from NIVI</DialogTitle>
-                                            <DialogDescription>
-                                                Select the motorcycles for which you have received physical documents and details.
-                                            </DialogDescription>
-                                        </DialogHeader>
-                                        <ReceiveLtoDocs motorcycles={motorcyclesPendingDocs} onSave={handleStateUpdate} />
-                                    </DialogContent>
-                                </Dialog>
-                            </div>
-                            <MotorcycleTable motorcycles={filteredMotorcycles} onStateChange={handleStateUpdate} />
-                        </div>
-                    </TabsContent>
-                </CardContent>
-            </Card>
-        </Tabs>
+          <Card>
+              <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                      <Tabs value={viewFilter} onValueChange={(value) => setViewFilter(value as ViewFilter)}>
+                          <TabsList>
+                              <TabsTrigger value="unendorsed">Unendorsed</TabsTrigger>
+                              <TabsTrigger value="all">View All</TabsTrigger>
+                          </TabsList>
+                      </Tabs>
+                  </div>
+                  <MotorcycleTable motorcycles={filteredMotorcycles} onStateChange={handleStateUpdate} />
+              </CardContent>
+          </Card>
       </div>
     </>
   );
