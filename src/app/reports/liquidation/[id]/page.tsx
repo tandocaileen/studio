@@ -83,10 +83,15 @@ function CompletedReportContent() {
                         <CardTitle>Completed Report</CardTitle>
                         <CardDescription>Read-only view of verified details for CA #{cashAdvance.id}.</CardDescription>
                     </div>
-                    <Badge variant="default" className="bg-green-600 hover:bg-green-700">
-                        <Check className="mr-2 h-4 w-4"/>
-                        Verified
-                    </Badge>
+                    <div className='flex items-center gap-2'>
+                        <Badge variant="default" className="bg-green-600 hover:bg-green-700">
+                            <Check className="mr-2 h-4 w-4"/>
+                            Verified
+                        </Badge>
+                        <Button variant="secondary" onClick={() => setIsCaDialogOpen(true)}>
+                            <DollarSign className="mr-2 h-4 w-4" /> View Full Report
+                        </Button>
+                    </div>
                 </CardHeader>
                 <CardContent className="grid gap-6">
                     {/* CA Details */}
@@ -192,9 +197,6 @@ function CompletedReportContent() {
                 </Card>
             )}
 
-            <Button variant="secondary" onClick={() => setIsCaDialogOpen(true)}>
-                <DollarSign className="mr-2 h-4 w-4" /> View Cash Advance
-            </Button>
         </div>
     </div>
     
