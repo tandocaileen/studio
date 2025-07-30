@@ -19,11 +19,12 @@ import { Textarea } from '../ui/textarea';
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
-import { CalendarIcon, AlertCircle, Edit } from 'lucide-react';
+import { CalendarIcon, AlertCircle, Edit, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 import { Calendar } from '../ui/calendar';
 import { Checkbox } from '../ui/checkbox';
 import { Alert, AlertDescription } from '../ui/alert';
+import { useRouter } from 'next/navigation';
 
 type LiquidationFormDialogProps = {
   motorcycle: Motorcycle;
@@ -47,6 +48,7 @@ export function LiquidationFormDialog({
   
   const [editedData, setEditedData] = React.useState<Partial<Motorcycle>>(motorcycle);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const router = useRouter();
 
   React.useEffect(() => {
     if (isOpen) {
@@ -101,6 +103,8 @@ export function LiquidationFormDialog({
                        editedData.liquidationDetails?.ltoOrAmount > 0 &&
                        editedData.liquidationDetails?.ltoProcessFee > 0;
 
+  const isForReview = motorcycle.status === 'For Review';
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-4xl max-h-[90vh]">
@@ -108,22 +112,31 @@ export function LiquidationFormDialog({
             <div>
                 <DialogTitle>OR/CR Form - Update</DialogTitle>
                 <DialogDescription>
-                    Enter the official receipt and registration details for this motorcycle.
+                    {isForReview ? 'Viewing submitted liquidation details.' : 'Enter the official receipt and registration details for this motorcycle.'}
                 </DialogDescription>
             </div>
              <div className='flex items-center gap-4'>
-                 {!canLiquidate && (
-                    <Alert variant="destructive" className="py-2 px-3 text-xs border-dashed bg-destructive/10">
-                         <AlertCircle className="h-4 w-4" />
-                        <AlertDescription>
-                            Please fill in all required fields (*) to enable liquidation.
-                        </AlertDescription>
-                    </Alert>
-                )}
-                <Button onClick={handleLiquidate} loading={isSubmitting} disabled={!canLiquidate}>
-                    <Edit className="mr-2 h-4 w-4" />
-                    Liquidate
-                </Button>
+                 {isForReview ? (
+                    <Button onClick={() => router.push(`/reports/liquidation/${cashAdvance.id}`)}>
+                        <Eye className="mr-2 h-4 w-4" />
+                        View Full Report
+                    </Button>
+                 ) : (
+                    <>
+                        {!canLiquidate && (
+                            <Alert variant="destructive" className="py-2 px-3 text-xs border-dashed bg-destructive/10">
+                                <AlertCircle className="h-4 w-4" />
+                                <AlertDescription>
+                                    Please fill in all required fields (*) to enable liquidation.
+                                </AlertDescription>
+                            </Alert>
+                        )}
+                        <Button onClick={handleLiquidate} loading={isSubmitting} disabled={!canLiquidate}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Liquidate
+                        </Button>
+                    </>
+                 )}
             </div>
         </DialogHeader>
         <ScrollArea className="max-h-[70vh] -mx-6 px-6">
@@ -183,7 +196,7 @@ export function LiquidationFormDialog({
                     <div className="grid gap-y-4 text-sm">
                         <div className="flex items-center">
                             <Label className="w-1/3">OR Type</Label>
-                            <Select value={editedData.orType} onValueChange={(v) => handleDataChange('orType', v)}>
+                            <Select value={editedData.orType} onValueChange={(v) => handleDataChange('orType', v)} disabled={isForReview}>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Select OR Type" />
                                 </SelectTrigger>
@@ -199,13 +212,14 @@ export function LiquidationFormDialog({
                                 value={editedData.liquidationDetails?.ltoOrNumber || ''}
                                 onChange={(e) => handleLiquidationDetailsChange('ltoOrNumber', e.target.value)}
                                 className={cn(!editedData.liquidationDetails?.ltoOrNumber && 'border-destructive')}
+                                disabled={isForReview}
                              />
                         </div>
                         <div className="flex items-center">
                             <Label className="w-1/3">Date Issued</Label>
                              <Popover>
                                 <PopoverTrigger asChild>
-                                    <Button variant={"outline"} className={cn("w-full justify-start text-left font-normal", !editedData.orDateIssued && "text-muted-foreground")}>
+                                    <Button variant={"outline"} className={cn("w-full justify-start text-left font-normal", !editedData.orDateIssued && "text-muted-foreground")} disabled={isForReview}>
                                         <CalendarIcon className="mr-2 h-4 w-4" />
                                         {editedData.orDateIssued ? format(new Date(editedData.orDateIssued), "PPP") : <span>Pick a date</span>}
                                     </Button>
@@ -219,7 +233,7 @@ export function LiquidationFormDialog({
                             <Label className="w-1/3">Date Received</Label>
                              <Popover>
                                 <PopoverTrigger asChild>
-                                    <Button variant={"outline"} className={cn("w-full justify-start text-left font-normal", !editedData.orDateReceived && "text-muted-foreground")}>
+                                    <Button variant={"outline"} className={cn("w-full justify-start text-left font-normal", !editedData.orDateReceived && "text-muted-foreground")} disabled={isForReview}>
                                         <CalendarIcon className="mr-2 h-4 w-4" />
                                         {editedData.orDateReceived ? format(new Date(editedData.orDateReceived), "PPP") : <span>Pick a date</span>}
                                     </Button>
@@ -231,12 +245,12 @@ export function LiquidationFormDialog({
                         </div>
                         <div className="flex items-center">
                             <Label className="w-1/3">MV File No.</Label>
-                            <Input value={editedData.mvFileNo || ''} onChange={(e) => handleDataChange('mvFileNo', e.target.value)} />
+                            <Input value={editedData.mvFileNo || ''} onChange={(e) => handleDataChange('mvFileNo', e.target.value)} disabled={isForReview}/>
                         </div>
                          <div className="flex items-center gap-4">
-                            <Checkbox id="has-plate" checked={editedData.hasPhysicalPlate} onCheckedChange={(c) => handleDataChange('hasPhysicalPlate', !!c)}/>
+                            <Checkbox id="has-plate" checked={editedData.hasPhysicalPlate} onCheckedChange={(c) => handleDataChange('hasPhysicalPlate', !!c)} disabled={isForReview}/>
                             <Label htmlFor="has-plate">Has Physical Plate?</Label>
-                            <Input placeholder="Plate No." value={editedData.plateNumber || ''} onChange={(e) => handleDataChange('plateNumber', e.target.value)} disabled={!editedData.hasPhysicalPlate}/>
+                            <Input placeholder="Plate No." value={editedData.plateNumber || ''} onChange={(e) => handleDataChange('plateNumber', e.target.value)} disabled={!editedData.hasPhysicalPlate || isForReview}/>
                         </div>
                          <div className="flex items-center">
                             <Label className="w-1/3">OR Amt <span className="text-destructive">*</span></Label>
@@ -246,6 +260,7 @@ export function LiquidationFormDialog({
                                 value={editedData.liquidationDetails?.ltoOrAmount || ''}
                                 onChange={e => handleLiquidationDetailsChange('ltoOrAmount', parseFloat(e.target.value) || 0)}
                                 className={cn(!(editedData.liquidationDetails?.ltoOrAmount && editedData.liquidationDetails?.ltoOrAmount > 0) && 'border-destructive')}
+                                disabled={isForReview}
                             />
                         </div>
                         <div className="flex items-center">
@@ -256,6 +271,7 @@ export function LiquidationFormDialog({
                                 value={editedData.liquidationDetails?.ltoProcessFee || ''}
                                 onChange={e => handleLiquidationDetailsChange('ltoProcessFee', parseFloat(e.target.value) || 0)}
                                 className={cn(!(editedData.liquidationDetails?.ltoProcessFee && editedData.liquidationDetails?.ltoProcessFee > 0) && 'border-destructive')}
+                                disabled={isForReview}
                             />
                         </div>
                          <div className="flex items-center">
@@ -270,12 +286,12 @@ export function LiquidationFormDialog({
                      <h3 className="font-semibold text-lg border-b pb-2 mb-4">Certificate of Registration</h3>
                      <div className="grid gap-y-4 text-sm">
                         <div className="flex items-center gap-4">
-                            <Checkbox id="has-cr" checked={!!editedData.crNumber} onCheckedChange={(c) => handleDataChange('crNumber', c ? '' : undefined)}/>
+                            <Checkbox id="has-cr" checked={!!editedData.crNumber} onCheckedChange={(c) => handleDataChange('crNumber', c ? '' : undefined)} disabled={isForReview}/>
                             <Label htmlFor="has-cr">Has CR?</Label>
                         </div>
                          <div className="flex items-center">
                             <Label className="w-1/3">CR No.</Label>
-                            <Input value={editedData.crNumber || ''} onChange={(e) => handleDataChange('crNumber', e.target.value)} disabled={editedData.crNumber === undefined}/>
+                            <Input value={editedData.crNumber || ''} onChange={(e) => handleDataChange('crNumber', e.target.value)} disabled={editedData.crNumber === undefined || isForReview}/>
                         </div>
                      </div>
                 </section>
@@ -285,18 +301,18 @@ export function LiquidationFormDialog({
             <section className="mt-6">
                 <div className="grid gap-2">
                     <Label htmlFor="remarks">Remarks</Label>
-                    <Textarea id="remarks" placeholder="Add any remarks here..." value={editedData.liquidationDetails?.remarks || ''} onChange={e => handleLiquidationDetailsChange('remarks', e.target.value)} />
+                    <Textarea id="remarks" placeholder="Add any remarks here..." value={editedData.liquidationDetails?.remarks || ''} onChange={e => handleLiquidationDetailsChange('remarks', e.target.value)} disabled={isForReview}/>
                 </div>
                 <div className="grid gap-2 mt-4">
                     <Label htmlFor="receipt-upload">Upload Official Receipt</Label>
-                    <Input id="receipt-upload" type="file" />
+                    <Input id="receipt-upload" type="file" disabled={isForReview}/>
                 </div>
             </section>
           </div>
         </ScrollArea>
         <DialogFooter className="pt-4 justify-between">
             <div>
-                <Button variant="secondary" onClick={handleSaveDetails}>Save Details</Button>
+                 <Button variant="secondary" onClick={handleSaveDetails} disabled={isForReview}>Save Details</Button>
             </div>
             <Button variant="outline" onClick={onClose}>Close</Button>
         </DialogFooter>

@@ -288,21 +288,10 @@ function LiquidationsContent() {
                                                             </Badge>
                                                         </TableCell>
                                                         <TableCell>
-                                                            {isForReview ? (
-                                                                <Button 
-                                                                    size="sm" 
-                                                                    variant="outline"
-                                                                    onClick={() => router.push(`/reports/liquidation/${ca.id}`)}
-                                                                >
-                                                                    <Eye className="mr-2 h-4 w-4" />
-                                                                    View Report
-                                                                </Button>
-                                                            ) : (
-                                                                <Button size="sm" onClick={() => setSelectedMcForLiquidation(mc)}>
-                                                                    <Edit className="mr-2 h-4 w-4" />
-                                                                    Edit
-                                                                </Button>
-                                                            )}
+                                                            <Button size="sm" onClick={() => setSelectedMcForLiquidation(mc)}>
+                                                                <Edit className="mr-2 h-4 w-4" />
+                                                                Edit
+                                                            </Button>
                                                         </TableCell>
                                                     </TableRow>
                                                 )
@@ -372,6 +361,7 @@ function LiquidationsContent() {
                                     <SelectContent>
                                         <SelectItem value="all">All Statuses</SelectItem>
                                         <SelectItem value="pending">Pending</SelectItem>
+                                        <SelectItem value="partially">Partially Liquidated</SelectItem>
                                         <SelectItem value="fully">Fully Liquidated</SelectItem>
                                     </SelectContent>
                                 </Select>
