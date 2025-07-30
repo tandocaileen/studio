@@ -127,14 +127,15 @@ function ForLiquidationContent() {
         return <AppLoader />;
     }
     
-    const liaisonCAsWithCV = cashAdvances.filter(ca => 
-        ca.personnel === user.name && ca.checkVoucherNumber
+    // Get all CAs with a CV (checkVoucherNumber)
+    const CAsWithCV = cashAdvances.filter(ca => ca.checkVoucherNumber);
+
+    // Collect all motorcycles linked to those CAs
+    const motorcycleIdsForLiquidation = new Set(
+        CAsWithCV.flatMap(ca => ca.motorcycleIds || [])
     );
 
-    const motorcycleIdsForLiquidation = new Set(
-        liaisonCAsWithCV.flatMap(ca => ca.motorcycleIds || [])
-    );
-    
+    // Show only motorcycles linked to those CAs
     const motorcyclesToShow = motorcycles.filter(mc => 
         motorcycleIdsForLiquidation.has(mc.id)
     );
