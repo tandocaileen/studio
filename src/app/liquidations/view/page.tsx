@@ -3,18 +3,16 @@
 
 import * as React from 'react';
 import { Header } from "@/components/layout/header";
-import { AppSidebar } from "@/components/layout/sidebar";
 import { ProtectedPage } from "@/components/auth/protected-page";
 import { getCashAdvances, getMotorcycles } from '@/lib/data';
 import { CashAdvance, Motorcycle } from '@/types';
 import { AppLoader } from '@/components/layout/loader';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Eye } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 
 type CAViewFilter = 'all' | 'pending' | 'partially' | 'fully';
 
@@ -189,16 +187,12 @@ function LiquidationsContent() {
 export default function LiquidationsViewPage() {
     return (
         <ProtectedPage allowedRoles={['Store Supervisor', 'Liaison', 'Cashier']}>
-            <div className="flex min-h-screen w-full flex-col bg-muted/40">
-                <AppSidebar />
-                <div className="flex flex-col pt-14 sm:gap-4 sm:py-4 sm:pl-14">
-                    <Header title="Liquidations & Reports" />
-                    <main className="flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-                        <LiquidationsContent />
-                    </main>
-                </div>
+            <div className='w-full'>
+                <Header title="Liquidations & Reports" />
+                <main className="flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
+                    <LiquidationsContent />
+                </main>
             </div>
         </ProtectedPage>
     );
 }
-

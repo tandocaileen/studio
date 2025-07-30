@@ -4,6 +4,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
 import { ThemeProvider } from '@/components/theme-provider';
 import { AuthProvider } from '@/context/AuthContext';
+import { AppSidebar } from '@/components/layout/sidebar';
 
 export const metadata: Metadata = {
   title: 'LTO Portal',
@@ -41,7 +42,12 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-              {children}
+              <div className="flex min-h-screen w-full flex-col bg-muted/40">
+                <AppSidebar />
+                 <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
+                   {children}
+                 </div>
+              </div>
           </AuthProvider>
           <Toaster />
         </ThemeProvider>

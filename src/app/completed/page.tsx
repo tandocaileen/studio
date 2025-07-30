@@ -3,14 +3,12 @@
 
 import * as React from 'react';
 import { Header } from "@/components/layout/header";
-import { AppSidebar } from "@/components/layout/sidebar";
 import { ProtectedPage } from "@/components/auth/protected-page";
 import { getCashAdvances, getMotorcycles } from '@/lib/data';
 import { CashAdvance, Motorcycle } from '@/types';
 import { useAuth } from '@/context/AuthContext';
 import { AppLoader } from '@/components/layout/loader';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Eye } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -88,14 +86,11 @@ function CompletedContent() {
 export default function CompletedPage() {
     return (
         <ProtectedPage allowedRoles={['Liaison']}>
-            <div className="flex min-h-screen w-full flex-col bg-muted/40">
-                <AppSidebar />
-                <div className="flex flex-col pt-14 sm:gap-4 sm:py-4 sm:pl-14">
-                    <Header title="Completed Liquidations" />
-                    <main className="flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-                        <CompletedContent />
-                    </main>
-                </div>
+            <div className="w-full">
+                <Header title="Completed Liquidations" />
+                <main className="flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
+                    <CompletedContent />
+                </main>
             </div>
         </ProtectedPage>
     );

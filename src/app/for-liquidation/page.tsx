@@ -3,7 +3,6 @@
 
 import * as React from 'react';
 import { Header } from "@/components/layout/header";
-import { AppSidebar } from "@/components/layout/sidebar";
 import { ProtectedPage } from "@/components/auth/protected-page";
 import { useToast } from '@/hooks/use-toast';
 import { getCashAdvances, getMotorcycles, updateMotorcycles } from '@/lib/data';
@@ -11,7 +10,6 @@ import { CashAdvance, Motorcycle } from '@/types';
 import { useAuth } from '@/context/AuthContext';
 import { AppLoader } from '@/components/layout/loader';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Edit } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -197,14 +195,11 @@ export default function ForLiquidationPage() {
     const [searchQuery, setSearchQuery] = React.useState('');
     return (
         <ProtectedPage allowedRoles={['Liaison']}>
-            <div className="flex min-h-screen w-full flex-col bg-muted/40">
-                <AppSidebar />
-                <div className="flex flex-col pt-14 sm:gap-4 sm:py-4 sm:pl-14">
-                    <Header title="For Liquidation" onSearch={setSearchQuery} />
-                    <main className="flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-                        <ForLiquidationContent />
-                    </main>
-                </div>
+            <div className="w-full">
+                <Header title="For Liquidation" onSearch={setSearchQuery} />
+                <main className="flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
+                    <ForLiquidationContent />
+                </main>
             </div>
         </ProtectedPage>
     );
