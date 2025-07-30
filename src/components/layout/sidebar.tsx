@@ -47,13 +47,13 @@ type NavItem = {
 const navItems: NavItem[] = [
     // Cashier & Supervisor
     { href: '/pending', icon: Hourglass, label: 'Pending', allowedRoles: ['Store Supervisor', 'Cashier'], exact: true },
-    { href: '/endorsed', icon: FilePenLine, label: 'Endorsed', allowedRoles: ['Store Supervisor', 'Cashier'] },
+    { href: '/endorsements', icon: FilePenLine, label: 'Endorsed', allowedRoles: ['Store Supervisor', 'Cashier'] },
     { href: '/for-cv-issuance', icon: Banknote, label: 'For CV Issuance', allowedRoles: ['Store Supervisor', 'Cashier'] },
     { href: '/released-cv', icon: PackageCheck, label: 'Released CV', allowedRoles: ['Store Supervisor', 'Cashier'] },
-    { href: '/liquidations', icon: Receipt, label: 'Liquidations', allowedRoles: ['Store Supervisor', 'Cashier']},
+    { href: '/pending', icon: Receipt, label: 'Liquidations', allowedRoles: ['Store Supervisor', 'Cashier']},
 
     // Liaison
-    { href: '/endorsed', icon: SendToBack, label: 'Endorsed', allowedRoles: ['Liaison'], exact: true },
+    { href: '/endorsements', icon: SendToBack, label: 'Endorsed', allowedRoles: ['Liaison'], exact: true },
     { href: '/for-ca-approval', icon: FileClock, label: 'For CA Approval', allowedRoles: ['Liaison'] },
     { href: '/released-cv', icon: PackageCheck, label: 'Released CV', allowedRoles: ['Liaison'] },
     { href: '/for-liquidation', icon: FileDiff, label: 'For Liquidation', allowedRoles: ['Liaison'] },
@@ -73,8 +73,8 @@ const navItems: NavItem[] = [
 const homeRoutes: Partial<Record<UserRole, string>> = {
     'Store Supervisor': '/pending',
     'Cashier': '/pending',
-    'Liaison': '/endorsed',
-    'Accounting': '/released-cv',
+    'Liaison': '/endorsements',
+    'Accounting': '/for-ca-approval',
 };
 
 export function AppSidebar() {
