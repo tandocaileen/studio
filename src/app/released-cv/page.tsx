@@ -126,52 +126,56 @@ function ReleasedCvContentLiaison({ searchQuery }: { searchQuery: string }) {
                 </Alert>
             </CardHeader>
             <CardContent className="grid gap-4">
-                {paginatedGroups.map(group => (
-                    <Collapsible 
-                        key={group.cvNumber} 
-                        className="border rounded-lg"
-                        open={openCvGroups.includes(group.cvNumber)}
-                        onOpenChange={() => toggleOpenCvGroup(group.cvNumber)}
-                    >
-                        <CollapsibleTrigger asChild>
-                            <div className="flex items-center justify-between p-4 cursor-pointer bg-muted/50 rounded-t-lg">
-                            <div className="flex items-center gap-4">
-                                <ChevronDown className="h-5 w-5 transition-transform data-[state=open]:rotate-180" />
-                                <div>
-                                    <h3 className="font-semibold">CV #{group.cvNumber}</h3>
-                                    <p className="text-sm text-muted-foreground">{group.advances.length} Cash Advance(s) included</p>
+                {paginatedGroups.map(group => {
+                    const totalMotorcycles = group.advances.reduce((sum, item) => sum + item.motorcycles.length, 0);
+
+                    return (
+                        <Collapsible 
+                            key={group.cvNumber} 
+                            className="border rounded-lg"
+                            open={openCvGroups.includes(group.cvNumber)}
+                            onOpenChange={() => toggleOpenCvGroup(group.cvNumber)}
+                        >
+                            <CollapsibleTrigger asChild>
+                                <div className="flex items-center justify-between p-4 cursor-pointer bg-muted/50 rounded-t-lg">
+                                <div className="flex items-center gap-4">
+                                    <ChevronDown className="h-5 w-5 transition-transform data-[state=open]:rotate-180" />
+                                    <div>
+                                        <h3 className="font-semibold">CV #{group.cvNumber}</h3>
+                                        <p className="text-sm text-muted-foreground">{totalMotorcycles} Motorcycle(s) included</p>
+                                    </div>
                                 </div>
-                            </div>
-                                <Badge variant="default" className="bg-green-600 hover:bg-green-700">
-                                    <Check className="mr-2 h-4 w-4"/>
-                                    Released
-                                </Badge>
-                            </div>
-                        </CollapsibleTrigger>
-                        <CollapsibleContent>
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>CA Number</TableHead>
-                                        <TableHead>Purpose</TableHead>
-                                        <TableHead>Date</TableHead>
-                                        <TableHead className="text-right">Amount</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {group.advances.map(item => (
-                                        <TableRow key={item.cashAdvance.id}>
-                                            <TableCell>{item.cashAdvance.id}</TableCell>
-                                            <TableCell>{item.cashAdvance.purpose}</TableCell>
-                                            <TableCell>{format(new Date(item.cashAdvance.date), 'MMM dd, yyyy')}</TableCell>
-                                            <TableCell className="text-right">₱{item.cashAdvance.amount.toLocaleString()}</TableCell>
+                                    <Badge variant="default" className="bg-green-600 hover:bg-green-700">
+                                        <Check className="mr-2 h-4 w-4"/>
+                                        Released
+                                    </Badge>
+                                </div>
+                            </CollapsibleTrigger>
+                            <CollapsibleContent>
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>CA Number</TableHead>
+                                            <TableHead>Purpose</TableHead>
+                                            <TableHead>Date</TableHead>
+                                            <TableHead className="text-right">Amount</TableHead>
                                         </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </CollapsibleContent>
-                    </Collapsible>
-                ))}
+                                    </TableHeader>
+                                    <TableBody>
+                                        {group.advances.map(item => (
+                                            <TableRow key={item.cashAdvance.id}>
+                                                <TableCell>{item.cashAdvance.id}</TableCell>
+                                                <TableCell>{item.cashAdvance.purpose}</TableCell>
+                                                <TableCell>{format(new Date(item.cashAdvance.date), 'MMM dd, yyyy')}</TableCell>
+                                                <TableCell className="text-right">₱{item.cashAdvance.amount.toLocaleString()}</TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </CollapsibleContent>
+                        </Collapsible>
+                    );
+                })}
                 {groupedArray.length === 0 && (
                     <div className="text-center py-12 text-muted-foreground">
                         No released CVs found.
