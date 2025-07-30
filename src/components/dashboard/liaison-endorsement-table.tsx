@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -18,7 +17,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Motorcycle, Endorsement, MotorcycleStatus, LiaisonUser } from '@/types';
-import { ChevronDown, DollarSign, Eye, ChevronsRight, ChevronsLeft } from 'lucide-react';
+import { ChevronDown, DollarSign, Eye, ChevronsRight, ChevronsLeft, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Checkbox } from '../ui/checkbox';
 import { generateCashAdvance } from '@/ai/flows/cash-advance-flow';
@@ -32,6 +31,7 @@ import { MotorcycleDetailsDialog } from './motorcycle-details-dialog';
 import { Textarea } from '../ui/textarea';
 import { addCashAdvance, getLiaisons, updateMotorcycles } from '@/lib/data';
 import { CardFooter } from '../ui/card';
+import { Alert, AlertDescription } from '../ui/alert';
 
 type LiaisonEndorsementTableProps = {
   endorsements: Endorsement[];
@@ -230,7 +230,7 @@ export function LiaisonEndorsementTable({
 
   return (
     <>
-    <div className='flex items-center justify-between'>
+    <div className='flex items-center justify-between mb-4'>
         <div className='flex-1'>
           <h3 className='text-lg font-semibold'>My Endorsements</h3>
           <p className='text-sm text-muted-foreground'>
@@ -250,6 +250,13 @@ export function LiaisonEndorsementTable({
             </Button>
         </div>
       </div>
+      
+    <Alert className="bg-yellow-100 dark:bg-yellow-900/30 border-yellow-400 dark:border-yellow-700 text-yellow-800 dark:text-yellow-300 mb-4">
+        <AlertCircle className="h-4 w-4 !text-yellow-600 dark:!text-yellow-400" />
+        <AlertDescription className="text-sm">
+            All endorsed motorcycles can be selected for Cash Advance creation, as the automated endorsement is only triggered once all motorcycle details are complete.
+        </AlertDescription>
+    </Alert>
 
         <Table>
           <TableHeader>
@@ -313,7 +320,6 @@ export function LiaisonEndorsementTable({
                                             <TableHead>Customer Name</TableHead>
                                             <TableHead>Account Code</TableHead>
                                             <TableHead>Chassis No.</TableHead>
-                                            <TableHead>Status</TableHead>
                                             <TableHead>Action</TableHead>
                                         </TableRow>
                                     </TableHeader>
@@ -331,11 +337,6 @@ export function LiaisonEndorsementTable({
                                                 <TableCell>{mc.customerName}</TableCell>
                                                 <TableCell>{mc.accountCode}</TableCell>
                                                 <TableCell>{mc.chassisNumber}</TableCell>
-                                                <TableCell>
-                                                    <Badge variant={mc.status === 'Endorsed' ? 'default' : 'outline'}>
-                                                        {mc.status}
-                                                    </Badge>
-                                                </TableCell>
                                                 <TableCell>
                                                     <Button variant="ghost" size="icon" onClick={() => handleViewMotorcycle(mc)}>
                                                         <Eye className="h-4 w-4" />
