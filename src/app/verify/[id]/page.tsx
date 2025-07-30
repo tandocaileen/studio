@@ -22,6 +22,18 @@ import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+
 
 type ReportData = {
     cashAdvance: CashAdvance;
@@ -63,6 +75,46 @@ function VerificationContent() {
         }
     }, [id]);
 
+    const handleVerify = async () => {
+        if (!arNumber || !arDate || !arAmount) {
+            toast({
+                title: 'Missing Information',
+                description: 'Please fill in all AR (Acknowledgement Receipt) details.',
+                variant: 'destructive',
+            });
+            return;
+        }
+
+        setIsVerifying(true);
+
+        const updatedCA: CashAdvance = {
+            ...reportData!.cashAdvance,
+            status: 'Verified',
+            arNumber,
+            arDate,
+            arAmount: typeof arAmount === 'string' ? parseFloat(arAmount.replace(/,/g, '')) : arAmount,
+        };
+
+        const updatedMotorcycles = reportData!.motorcycles.map(mc => ({...mc, status: 'Registered' as const}));
+
+        try {
+            await updateCashAdvances(updatedCA);
+            await updateMotorcycles(updatedMotorcycles);
+            toast({
+                title: 'Verification Complete!',
+                description: `Cash Advance ${reportData!.cashAdvance.id} has been successfully verified.`,
+            });
+            router.push('/home');
+        } catch (error) {
+            toast({
+                title: 'Verification Failed',
+                description: 'An error occurred while saving the verification details.',
+                variant: 'destructive',
+            });
+            setIsVerifying(false);
+        }
+    };
+    
     if (loading) return <AppLoader />;
 
     if (!reportData) {
@@ -81,47 +133,6 @@ function VerificationContent() {
     const shortageOverage = cashAdvance.amount - totalLiquidation;
 
     const isVerified = cashAdvance.status === 'Verified';
-
-    const handleVerify = async () => {
-        if (!arNumber || !arDate || !arAmount) {
-            toast({
-                title: 'Missing Information',
-                description: 'Please fill in all AR (Acknowledgement Receipt) details.',
-                variant: 'destructive',
-            });
-            return;
-        }
-
-        setIsVerifying(true);
-
-        const updatedCA: CashAdvance = {
-            ...cashAdvance,
-            status: 'Verified',
-            arNumber,
-            arDate,
-            arAmount: typeof arAmount === 'string' ? parseFloat(arAmount.replace(/,/g, '')) : arAmount,
-        };
-
-        const updatedMotorcycles = motorcycles.map(mc => ({...mc, status: 'Registered' as const}));
-
-        try {
-            await updateCashAdvances(updatedCA);
-            await updateMotorcycles(updatedMotorcycles);
-            toast({
-                title: 'Verification Complete!',
-                description: `Cash Advance ${cashAdvance.id} has been successfully verified.`,
-            });
-            router.push('/home');
-        } catch (error) {
-            toast({
-                title: 'Verification Failed',
-                description: 'An error occurred while saving the verification details.',
-                variant: 'destructive',
-            });
-            setIsVerifying(false);
-        }
-    };
-
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
@@ -153,10 +164,26 @@ function VerificationContent() {
                                 <span className='font-semibold'>Transaction Verified</span>
                             </div>
                        ) : (
-                            <Button className="w-full" onClick={handleVerify} loading={isVerifying}>
-                                <ShieldCheck className="mr-2 h-4 w-4" />
-                                Verify Transaction
-                            </Button>
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button className="w-full" disabled={!arNumber || !arDate || !arAmount}>
+                                    <ShieldCheck className="mr-2 h-4 w-4" />
+                                    Verify Transaction
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This action will mark the cash advance as verified and update all associated motorcycles to 'Registered'. This cannot be undone.
+                                </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={handleVerify}>Yes, verify transaction</AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
                        )}
                     </CardFooter>
                 </Card>
@@ -246,4 +273,3 @@ export default function VerificationPage() {
         </ProtectedPage>
     );
 }
-

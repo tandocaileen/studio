@@ -9,7 +9,7 @@ export type Document = {
   expiresAt?: Date;
 };
 
-export type MotorcycleStatus = 'Incomplete' | 'Ready to Register' | 'Endorsed - Incomplete' | 'Endorsed - Ready' | 'Processing' | 'For Review' | 'Registered';
+export type MotorcycleStatus = 'Incomplete' | 'Endorsed - Ready' | 'Processing' | 'For Review' | 'Registered';
 
 
 export type Motorcycle = {
@@ -104,5 +104,6 @@ export type Endorsement = {
     motorcycleIds: string[];
     createdBy: string;
 }
+
 
 
