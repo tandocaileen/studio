@@ -13,7 +13,7 @@ import { useAuth } from "@/context/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, ChevronDown, Eye } from "lucide-react";
+import { AlertCircle, Check, ChevronDown, Eye } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
@@ -64,21 +64,15 @@ function ReleasedCvContentLiaison({ searchQuery }: { searchQuery: string }) {
         });
     };
     
-    const getDynamicCAStatus = (motorcycles: Motorcycle[]): string | 'N/A' => {
-        if (!motorcycles || motorcycles.length === 0) return 'N/A';
-        return motorcycles[0].status;
-    };
-    
     const relevantAdvances = allCAs;
     console.log('[Liaison View] Relevant Advances for Liaison:', relevantAdvances);
 
-    const filteredByStatus = enrichCashAdvances(relevantAdvances, allMotorcycles).filter(item => {
-        const dynamicStatus = getDynamicCAStatus(item.motorcycles);
-        return dynamicStatus === 'Released CVs';
+    const filteredByCvNumber = enrichCashAdvances(relevantAdvances, allMotorcycles).filter(item => {
+        return !!item.cashAdvance.checkVoucherNumber;
     });
-    console.log('[Liaison View] Filtered by Status (Released CVs):', filteredByStatus);
+    console.log('[Liaison View] Filtered by CV Number:', filteredByCvNumber);
 
-    const filteredBySearch = filteredByStatus.filter(item => {
+    const filteredBySearch = filteredByCvNumber.filter(item => {
         const { cashAdvance, motorcycles } = item;
         const query = searchQuery.toLowerCase();
 
@@ -135,7 +129,10 @@ function ReleasedCvContentLiaison({ searchQuery }: { searchQuery: string }) {
                                 <p className="text-sm text-muted-foreground">{group.advances.length} Cash Advance(s) included</p>
                             </div>
                            </div>
-                           <Button variant="outline" size="sm">View Details</Button>
+                            <Badge variant="default" className="bg-green-600 hover:bg-green-700">
+                                <Check className="mr-2 h-4 w-4"/>
+                                Released
+                            </Badge>
                         </div>
                     </CollapsibleTrigger>
                     <CollapsibleContent>
