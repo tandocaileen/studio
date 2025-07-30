@@ -9,7 +9,7 @@ export type Document = {
   expiresAt?: Date;
 };
 
-export type MotorcycleStatus = 'Incomplete' | 'Ready to Register' | 'Endorsed - Incomplete' | 'Endorsed - Ready' | 'Processing' | 'For Review';
+export type MotorcycleStatus = 'Incomplete' | 'Ready to Register' | 'Endorsed - Incomplete' | 'Endorsed - Ready' | 'Processing' | 'For Review' | 'Registered';
 
 
 export type Motorcycle = {
@@ -67,7 +67,7 @@ export type CashAdvance = {
   purpose: string;
   amount: number;
   date: Date;
-  status: 'Processing for CV' | 'CV Released' | 'CV Received' | 'Liquidated';
+  status: 'Processing for CV' | 'CV Released' | 'CV Received' | 'Liquidated' | 'Verified';
   receipts?: string[];
   motorcycleId?: string;
   motorcycleIds?: string[];
@@ -79,7 +79,13 @@ export type CashAdvance = {
   totalLiquidation?: number;
   shortageOverage?: number;
   liquidationRemarks?: string;
+  arNumber?: string;
+  arDate?: Date;
+  arAmount?: number;
 };
+
+export type UserRole = 'Store Supervisor' | 'Liaison' | 'Cashier' | 'Accounting';
+
 
 export type LiaisonUser = {
     id: string;
@@ -98,4 +104,5 @@ export type Endorsement = {
     motorcycleIds: string[];
     createdBy: string;
 }
+
 
