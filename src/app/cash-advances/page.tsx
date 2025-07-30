@@ -62,16 +62,9 @@ function CashAdvancesContent({ searchQuery }: { searchQuery: string }) {
             setAllMotorcycles(motorcycles);
             setLiaisons(liaisonData);
 
-            if (user?.role === 'Cashier') {
-                setActiveStatusFilters(['For CV Issuance']);
-                setTempStatusFilters(['For CV Issuance']);
-            } else if (user?.role === 'Store Supervisor') {
-                setActiveStatusFilters(['Released CVs']);
-                setTempStatusFilters(['Released CVs']);
-            } else {
-                 setActiveStatusFilters([]);
-                 setTempStatusFilters([]);
-            }
+            // Removed role-based pre-filtering
+            setActiveStatusFilters([]);
+            setTempStatusFilters([]);
         };
 
         fetchData();
