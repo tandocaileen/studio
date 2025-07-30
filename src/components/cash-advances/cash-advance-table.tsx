@@ -43,6 +43,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { cn } from '@/lib/utils';
 
 
 type CashAdvanceTableProps = {
@@ -146,15 +147,15 @@ export function CashAdvanceTable({ advances, onBulkUpdate }: CashAdvanceTablePro
     toast({ title: 'Download Started', description: `Downloading PDF for CA #${previewingAdvance.cashAdvance.id}`});
   }
 
-  const getStatusVisuals = (status: CashAdvance['status']): { color: string; icon: React.ElementType } => {
+  const getStatusClass = (status: CashAdvance['status']): string => {
     switch (status) {
-      case 'For CA Approval': return { color: 'bg-yellow-500', icon: Hourglass };
-      case 'For CV Issuance': return { color: 'bg-blue-500', icon: Banknote };
-      case 'Received Budget': return { color: 'bg-teal-500', icon: PackageCheck };
-      case 'For Liquidation': return { color: 'bg-purple-500', icon: Hourglass };
-      case 'For Verification': return { color: 'bg-orange-500', icon: CircleDashed };
-      case 'Completed': return { color: 'bg-green-500', icon: CheckCircle };
-      default: return { color: 'bg-gray-500', icon: CircleDashed };
+      case 'For CA Approval': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+      case 'For CV Issuance': return 'bg-blue-100 text-blue-800 border-blue-300';
+      case 'Received Budget': return 'bg-teal-100 text-teal-800 border-teal-300';
+      case 'For Liquidation': return 'bg-purple-100 text-purple-800 border-purple-300';
+      case 'For Verification': return 'bg-orange-100 text-orange-800 border-orange-300';
+      case 'Completed': return 'bg-green-100 text-green-800 border-green-300';
+      default: return 'bg-gray-100 text-gray-800 border-gray-300';
     }
   };
 
@@ -275,7 +276,6 @@ export function CashAdvanceTable({ advances, onBulkUpdate }: CashAdvanceTablePro
           </TableHeader>
           <TableBody>
             {paginatedAdvances.map((advance) => {
-              const {color, icon: Icon} = getStatusVisuals(advance.cashAdvance.status);
               return (
                 <TableRow 
                   key={advance.cashAdvance.id}
@@ -299,8 +299,7 @@ export function CashAdvanceTable({ advances, onBulkUpdate }: CashAdvanceTablePro
                   <TableCell className="text-right">₱{advance.cashAdvance.amount.toLocaleString()}</TableCell>
                   <TableCell>{format(new Date(advance.cashAdvance.date), 'MMM dd, yyyy')}</TableCell>
                   <TableCell>
-                    <Badge variant="outline" className="capitalize">
-                      <Icon className={`mr-2 h-3 w-3 ${color}`} />
+                    <Badge variant="outline" className={cn("capitalize", getStatusClass(advance.cashAdvance.status))}>
                       {advance.cashAdvance.status}
                     </Badge>
                   </TableCell>

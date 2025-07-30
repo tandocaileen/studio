@@ -376,14 +376,14 @@ function LiquidationsContent() {
                                     const isPartiallyLiquidated = liquidatedCount > 0 && !isFullyLiquidated;
                                     
                                     let statusLabel = "Pending";
-                                    let statusIcon = <Circle className="mr-2 h-4 w-4 text-amber-500" />;
+                                    let statusClass = "bg-amber-100 text-amber-800 border-amber-300";
 
                                     if(isFullyLiquidated) {
                                         statusLabel = "Fully Liquidated";
-                                        statusIcon = <CheckCircle className="mr-2 h-4 w-4 text-green-500" />;
+                                        statusClass = "bg-green-100 text-green-800 border-green-300";
                                     } else if (isPartiallyLiquidated) {
                                         statusLabel = "Partially Liquidated";
-                                        statusIcon = <CheckCircle className="mr-2 h-4 w-4 text-blue-500" />;
+                                        statusClass = "bg-blue-100 text-blue-800 border-blue-300";
                                     }
 
                                     return (
@@ -396,8 +396,8 @@ function LiquidationsContent() {
                                                         <CardDescription>Liaison: {group.cashAdvance.personnel} | Date: {new Date(group.cashAdvance.date).toLocaleDateString()}</CardDescription>
                                                     </div>
                                                     <div className="flex flex-col items-end gap-2">
-                                                        <Badge variant={'outline'}>
-                                                            {statusIcon} {statusLabel} ({liquidatedCount}/{totalCount})
+                                                        <Badge variant={'outline'} className={statusClass}>
+                                                            {statusLabel} ({liquidatedCount}/{totalCount})
                                                         </Badge>
                                                     </div>
                                                 </div>
@@ -488,4 +488,5 @@ export default function LiquidationsPage() {
     
 
     
+
 
