@@ -173,8 +173,6 @@ function LiquidationsContent() {
     if (!user || !motorcycles || !cashAdvances) {
         return <AppLoader />;
     }
-
-    const isLiaison = user.role === 'Liaison';
     
     // MC Tab Filter Logic
     const motorcyclesToShow = allMotorcyclesForView.filter(mc => {
@@ -240,10 +238,12 @@ function LiquidationsContent() {
                         <TabsTrigger value="motorcycle">By Motorcycle</TabsTrigger>
                         <TabsTrigger value="ca">By Cash Advance</TabsTrigger>
                     </TabsList>
-                    <Button className="ml-auto" variant="outline" onClick={() => setIsFilterPanelVisible(!isFilterPanelVisible)}>
-                        <Filter className="mr-2 h-4 w-4" />
-                        Filters
-                    </Button>
+                    {viewMode === 'motorcycle' && (
+                        <Button className="ml-auto" variant="outline" onClick={() => setIsFilterPanelVisible(!isFilterPanelVisible)}>
+                            <Filter className="mr-2 h-4 w-4" />
+                            Filters
+                        </Button>
+                    )}
                </div>
                 <TabsContent value="motorcycle">
                     <div className="grid grid-cols-1 gap-6 items-start lg:grid-cols-4">
@@ -372,7 +372,6 @@ function LiquidationsContent() {
                                     <SelectContent>
                                         <SelectItem value="all">All Statuses</SelectItem>
                                         <SelectItem value="pending">Pending</SelectItem>
-                                        <SelectItem value="partially">Partially Liquidated</SelectItem>
                                         <SelectItem value="fully">Fully Liquidated</SelectItem>
                                     </SelectContent>
                                 </Select>
@@ -495,5 +494,7 @@ export default function LiquidationsPage() {
         </ProtectedPage>
     );
 }
+
+    
 
     
