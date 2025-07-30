@@ -290,7 +290,7 @@ function LiquidationsContent() {
                                                         <TableCell>
                                                             <Button size="sm" onClick={() => setSelectedMcForLiquidation(mc)}>
                                                                 <Edit className="mr-2 h-4 w-4" />
-                                                                Edit
+                                                                Edit/Liquidate
                                                             </Button>
                                                         </TableCell>
                                                     </TableRow>
@@ -488,3 +488,4 @@ export default function LiquidationsPage() {
     
 
     
+
