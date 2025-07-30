@@ -9,7 +9,6 @@ import {
   PanelLeft,
   LifeBuoy,
   Receipt,
-  LogOut,
   Users,
   FilePenLine,
   FileCheck,
@@ -71,10 +70,13 @@ const accountingNavItems: NavItem[] = [
 
 
 const commonNavItems: NavItem[] = [
-    { href: '/users', icon: Users, label: 'Users'},
     { href: '/settings', icon: Settings, label: 'Settings' },
     { href: '/support', icon: LifeBuoy, label: 'Support' },
 ];
+
+const supervisorAndCashierCommonItems: NavItem[] = [
+    { href: '/users', icon: Users, label: 'Users' },
+]
 
 const roleNavItems: Record<UserRole, NavItem[]> = {
     'Store Supervisor': cashierNavItems,
@@ -123,14 +125,14 @@ const NavLink = ({ item, isCollapsed }: { item: NavItem; isCollapsed: boolean })
         <TooltipProvider>
             <Tooltip>
                 <TooltipTrigger asChild>
-                    <Button asChild variant={isLinkActive ? "secondary" : "ghost"} className="w-full justify-start">
-                        <Link href={item.href}>
-                            <span className='flex items-center gap-2'>
-                                <item.icon className="h-5 w-5" />
-                                {!isCollapsed && <span>{item.label}</span>}
-                            </span>
-                        </Link>
-                    </Button>
+                    <Link href={item.href} className={cn(
+                        "flex items-center gap-2 w-full justify-start",
+                        "h-10 px-4 py-2 rounded-md text-sm font-medium",
+                        isLinkActive ? "bg-secondary" : "hover:bg-muted"
+                    )}>
+                        <item.icon className="h-5 w-5" />
+                        {!isCollapsed && <span>{item.label}</span>}
+                    </Link>
                 </TooltipTrigger>
                 {isCollapsed && <TooltipContent side="right">{item.label}</TooltipContent>}
             </Tooltip>
@@ -139,29 +141,29 @@ const NavLink = ({ item, isCollapsed }: { item: NavItem; isCollapsed: boolean })
 }
 
 export function AppSidebar() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const router = useRouter();
   
   if (!user) return null;
 
   const accessibleNavItems = roleNavItems[user.role] || [];
-  const accessibleCommonItems = commonNavItems.filter(item => {
-    if (user.role === 'Liaison' || user.role === 'Accounting') {
-        return !['/users'].includes(item.href);
-    }
-    return true;
-  });
+  let accessibleCommonItems = commonNavItems;
+  if(user.role === 'Store Supervisor' || user.role === 'Cashier') {
+      accessibleCommonItems = [...supervisorAndCashierCommonItems, ...commonNavItems];
+  }
 
   const homeRoute = homeRoutes[user.role] || '/';
   
   const mainNav = (
     <div className="flex flex-col h-full">
-        <div className="p-4 border-b">
+        <div className="p-4 border-b flex items-center justify-between">
             <Link href={homeRoute} className="flex items-center gap-2">
                 <Logo className="h-8 w-8 text-primary" />
                 {!isCollapsed && <span className="text-xl font-bold">LTO PORTAL</span>}
             </Link>
+            <Button variant="ghost" size="icon" onClick={() => setIsCollapsed(!isCollapsed)} className="hidden sm:flex">
+                <PanelLeft className="h-5 w-5" />
+            </Button>
         </div>
         <div className="flex-1 overflow-y-auto py-4">
             <nav className="grid gap-2 px-4">
@@ -208,12 +210,6 @@ export function AppSidebar() {
         )}>
         {mainNav}
       </aside>
-       <div className={cn("sm:hidden fixed top-3 left-3 z-50", isCollapsed && "hidden")}>
-         <Button size="icon" variant="outline" onClick={() => setIsCollapsed(true)}>
-            <PanelLeft className="h-5 w-5" />
-            <span className="sr-only">Toggle Menu</span>
-        </Button>
-      </div>
 
       <div className="sm:hidden fixed top-3 left-3 z-50">
         <Sheet>
