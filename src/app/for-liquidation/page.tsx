@@ -136,9 +136,7 @@ function ForLiquidationContent() {
     );
     
     const motorcyclesToShow = motorcycles.filter(mc => 
-        motorcycleIdsForLiquidation.has(mc.id) && 
-        mc.status !== 'For Verification' && 
-        mc.status !== 'Completed'
+        motorcycleIdsForLiquidation.has(mc.id)
     );
     
     console.log('[For Liquidation] Motorcycles to Show:', motorcyclesToShow);
