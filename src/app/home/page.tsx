@@ -32,7 +32,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AccountingDashboardContent } from "@/components/dashboard/accounting-dashboard";
 
 
-const ALL_SUPERVISOR_STATUSES: MotorcycleStatus[] = ['Incomplete', 'Endorsed', 'For CA Approval', 'For CV Issuance', 'Received Budget', 'For Liquidation', 'For Verification', 'Completed'];
+const ALL_SUPERVISOR_STATUSES: MotorcycleStatus[] = ['Lacking Requirements', 'Endorsed', 'For CA Approval', 'For CV Issuance', 'Released CVs', 'For Liquidation', 'For Verification', 'Completed'];
 
 type DateRange = '7d' | '30d' | 'all';
 
@@ -41,8 +41,8 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
   const [motorcycles, setMotorcycles] = useState<Motorcycle[] | null>(null);
   const [endorsements, setEndorsements] = useState<Endorsement[] | null>(null);
   
-  const [activeStatusFilters, setActiveStatusFilters] = useState<MotorcycleStatus[]>(['Incomplete']);
-  const [tempStatusFilters, setTempStatusFilters] = useState<MotorcycleStatus[]>(['Incomplete']);
+  const [activeStatusFilters, setActiveStatusFilters] = useState<MotorcycleStatus[]>(['Lacking Requirements']);
+  const [tempStatusFilters, setTempStatusFilters] = useState<MotorcycleStatus[]>(['Lacking Requirements']);
   
   const [activeDateRange, setActiveDateRange] = useState<DateRange>('all');
   const [tempDateRange, setTempDateRange] = useState<DateRange>('all');

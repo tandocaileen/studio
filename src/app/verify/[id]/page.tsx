@@ -74,16 +74,20 @@ function VerificationContent() {
 
         setIsVerifying(true);
 
-        const updatedCA: Partial<CashAdvance> = {
-            id: reportData.cashAdvance.id,
-            status: 'Completed',
-        };
-
         const updatedMotorcycles = reportData.motorcycles.map(mc => ({...mc, status: 'Completed' as const}));
 
         try {
-            await updateCashAdvances(updatedCA as CashAdvance);
             await updateMotorcycles(updatedMotorcycles);
+            
+            // We only need to update motorcycles, as CA status is derived.
+            // But we might want to save AR details to the CA itself in a real app.
+            const updatedCA: Partial<CashAdvance> = {
+                id: reportData.cashAdvance.id,
+                // No status field to update anymore.
+            };
+            await updateCashAdvances([updatedCA]);
+
+
             toast({
                 title: 'Verification Complete!',
                 description: `Cash Advance ${reportData.cashAdvance.id} has been successfully verified.`,
@@ -117,7 +121,7 @@ function VerificationContent() {
     const totalLiquidation = motorcycles.reduce((sum, mc) => sum + (mc.liquidationDetails?.totalLiquidation || 0), 0);
     const shortageOverage = cashAdvance.amount - totalLiquidation;
 
-    const isVerified = cashAdvance.status === 'Completed';
+    const isVerified = motorcycles.every(mc => mc.status === 'Completed');
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">

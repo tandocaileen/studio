@@ -65,7 +65,7 @@ const generateInitialData = () => {
             purchaseDate: purchaseDate,
             supplier: 'Prestige Honda',
             documents: [],
-            status: 'Incomplete', // Default status
+            status: 'Lacking Requirements', // Default status
             customerName: customers[i % customers.length],
             salesInvoiceNo: `SI-${Math.floor(Math.random() * 90000) + 10000}`,
             accountCode: `AC-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
@@ -86,12 +86,12 @@ const generateInitialData = () => {
         return mc;
     }
     
-    // Status: Incomplete (5 units) - N/A, they start this way
+    // Status: Lacking Requirements (5 units) - N/A, they start this way
     
     // Make 5 units complete and ready for endorsement, but not yet endorsed.
     motorcycles.slice(5, 10).forEach(mc => {
         fillOutDetails(mc);
-        mc.status = 'Incomplete'; // They are complete in data, but status is just before endorsement.
+        mc.status = 'Lacking Requirements'; // They are complete in data, but status is just before endorsement.
     });
 
     // Endorse 20 motorcycles to Bryle Hamili across 10 endorsements
@@ -129,7 +129,7 @@ const generateInitialData = () => {
 
     // -- Existing CAs with new status flow --
 
-    // CA for endorsement 1 -> Status: Received Budget -> For Liquidation
+    // CA for endorsement 1 -> Status: Released CVs -> For Liquidation
     const mcsForCA1 = endorsements[0].motorcycleIds.map(id => motorcycles.find(m => m.id === id)!);
     const ca1: CashAdvance = {
         id: 'ca-072024-001',
@@ -138,7 +138,6 @@ const generateInitialData = () => {
         purpose: `Cash advance for registration of ${mcsForCA1.length} unit(s).`,
         amount: mcsForCA1.reduce((sum) => sum + DEMO_LIAISON.processingFee + DEMO_LIAISON.orFee, 0),
         date: addDays(today, -4),
-        status: 'Received Budget',
         checkVoucherNumber: 'CV-2024-07-011',
         checkVoucherReleaseDate: addDays(today, -3),
         motorcycleIds: mcsForCA1.map(m => m.id),
@@ -155,7 +154,6 @@ const generateInitialData = () => {
         purpose: `Cash advance for registration of ${mcsForCA2.length} units.`,
         amount: mcsForCA2.reduce((sum) => sum + DEMO_LIAISON.processingFee + DEMO_LIAISON.orFee, 0),
         date: addDays(today, -15),
-        status: 'For Verification',
         checkVoucherNumber: 'CV-2024-07-005',
         checkVoucherReleaseDate: addDays(today, -14),
         motorcycleIds: mcsForCA2.map(m => m.id),
@@ -185,7 +183,6 @@ const generateInitialData = () => {
         purpose: 'CA from last week',
         amount: mcsForCA3.reduce((sum) => sum + DEMO_LIAISON.processingFee + DEMO_LIAISON.orFee, 0),
         date: addDays(today, -20),
-        status: 'Completed',
         checkVoucherNumber: 'CV-2024-07-001',
         checkVoucherReleaseDate: addDays(today, -19),
         motorcycleIds: mcsForCA3.map(m=>m.id),
@@ -218,7 +215,6 @@ const generateInitialData = () => {
         purpose: 'CA for new batch',
         amount: mcsForCA4.reduce((sum) => sum + DEMO_LIAISON.processingFee + DEMO_LIAISON.orFee, 0),
         date: addDays(today, -1),
-        status: 'For CA Approval',
         motorcycleIds: mcsForCA4.map(m => m.id),
     };
     cashAdvances.push(ca4);
@@ -233,7 +229,6 @@ const generateInitialData = () => {
         purpose: 'CA for Honda Click',
         amount: mcsForCA5.reduce((sum) => sum + DEMO_LIAISON.processingFee + DEMO_LIAISON.orFee, 0),
         date: addDays(today, -2),
-        status: 'For CV Issuance',
         motorcycleIds: mcsForCA5.map(m => m.id),
     };
     cashAdvances.push(ca5);
@@ -246,7 +241,7 @@ const generateInitialData = () => {
 const MC_KEY = 'lto_motorcycles';
 const CA_KEY = 'lto_cash_advances';
 const ENDO_KEY = 'lto_endorsements';
-const DATA_FLAG = 'data_generated_flag_v14'; // Increment version to force reset
+const DATA_FLAG = 'data_generated_flag_v15'; // Increment version to force reset
 
 const initializeData = () => {
     if (typeof window !== 'undefined') {
@@ -320,15 +315,22 @@ export async function addCashAdvance(newAdvance: CashAdvance) {
     setData(CA_KEY, [...allCAs, newAdvance]);
 }
 
-export async function updateCashAdvances(updatedCAs: CashAdvance | CashAdvance[]) {
+export async function updateCashAdvances(updatedCAs: Partial<CashAdvance> | Partial<CashAdvance>[]) {
     const allCAs = await getCashAdvances();
     const caMap = new Map(allCAs.map((ca: CashAdvance) => [ca.id, ca]));
 
     const toUpdate = Array.isArray(updatedCAs) ? updatedCAs : [updatedCAs];
-    toUpdate.forEach(uca => caMap.set(uca.id, uca));
+    
+    toUpdate.forEach(uca => {
+        const existingCA = caMap.get(uca.id!);
+        if (existingCA) {
+            caMap.set(uca.id!, { ...existingCA, ...uca });
+        }
+    });
 
     setData(CA_KEY, Array.from(caMap.values()));
 }
+
 
 // --- Liaisons ---
 export async function getLiaisons(): Promise<LiaisonUser[]> {

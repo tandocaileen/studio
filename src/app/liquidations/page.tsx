@@ -101,10 +101,9 @@ function LiquidationsContent() {
             return ca.amount / ca.motorcycleIds.length;
         };
 
-        const allMotorcyclesForView = motorcycles.filter(mc => {
-             const ca = caMapByMcId.get(mc.id);
-             return ca?.status === 'CV Received' || mc.status === 'Processing' || mc.status === 'For Review';
-        });
+        const allMotorcyclesForView = motorcycles.filter(mc => 
+            mc.status === 'For Liquidation' || mc.status === 'For Verification'
+        );
 
         return { caMapByMcId, getMcAdvanceAmount, allMotorcyclesForView };
 
@@ -126,7 +125,7 @@ function LiquidationsContent() {
         const updatedMotorcycle: Motorcycle = {
             ...mcToUpdate,
             ...updatedMotorcycleData,
-            status: 'For Review',
+            status: 'For Verification',
             liquidationDetails: {
                 ...mcToUpdate.liquidationDetails,
                 ...updatedMotorcycleData.liquidationDetails!,
@@ -178,8 +177,8 @@ function LiquidationsContent() {
     const motorcyclesToShow = allMotorcyclesForView.filter(mc => {
         if (activeMcStatusFilters.length === 0) return true;
         
-        const isPending = (mc.status === 'Processing' || caMapByMcId.get(mc.id)?.status === 'CV Received') && !mc.liquidationDetails;
-        const isForReview = mc.status === 'For Review';
+        const isPending = mc.status === 'For Liquidation';
+        const isForReview = mc.status === 'For Verification';
 
         if(activeMcStatusFilters.includes('pending') && isPending) return true;
         if(activeMcStatusFilters.includes('review') && isForReview) return true;
@@ -204,8 +203,10 @@ function LiquidationsContent() {
     const groupedItems: GroupedLiquidation[] = cashAdvances
         .filter(ca => {
             if (!ca.motorcycleIds || ca.motorcycleIds.length === 0) return false;
-            const hasRelevantStatus = ['CV Received', 'Liquidated', 'For Review', 'Processing'].some(status => ca.status === status || (motorcycles.find(m => m.id === ca.motorcycleIds![0])?.status === status));
-            return hasRelevantStatus;
+            const associatedMotorcycles = ca.motorcycleIds
+                .map(id => motorcycles.find(m => m.id === id))
+                .filter((m): m is Motorcycle => !!m);
+            return associatedMotorcycles.some(m => m.status === 'For Liquidation' || m.status === 'For Verification' || m.status === 'Completed');
         })
         .map(ca => {
             const associatedMotorcycles = ca.motorcycleIds!.map(id => motorcycles.find(m => m.id === id)).filter(Boolean) as Motorcycle[];
@@ -215,7 +216,7 @@ function LiquidationsContent() {
             if (caFilter === 'all') return true;
 
             const totalCount = group.motorcycles.length;
-            const liquidatedCount = group.motorcycles.filter(m => m.status === 'For Review' || !!m.liquidationDetails).length;
+            const liquidatedCount = group.motorcycles.filter(m => m.status === 'For Verification' || m.status === 'Completed').length;
 
             if (caFilter === 'fully') return liquidatedCount === totalCount;
             if (caFilter === 'partially') return liquidatedCount > 0 && liquidatedCount < totalCount;
@@ -273,7 +274,7 @@ function LiquidationsContent() {
                                                 const ca = caMapByMcId.get(mc.id);
                                                 if (!ca) return null;
                                                 
-                                                const isForReview = mc.status === 'For Review';
+                                                const isForReview = mc.status === 'For Verification';
 
                                                 return (
                                                     <TableRow key={mc.id}>
@@ -284,7 +285,7 @@ function LiquidationsContent() {
                                                         <TableCell className="text-right">₱{getMcAdvanceAmount(mc).toLocaleString()}</TableCell>
                                                         <TableCell>
                                                             <Badge variant={isForReview ? 'default' : 'outline'}>
-                                                                {isForReview ? "For Review" : "Pending Liquidation"}
+                                                                {isForReview ? "For Verification" : "For Liquidation"}
                                                             </Badge>
                                                         </TableCell>
                                                         <TableCell>
@@ -323,11 +324,11 @@ function LiquidationsContent() {
                                                 <div className="grid gap-2 pt-2">
                                                     <div className="flex items-center gap-2">
                                                         <Checkbox id="filter-mc-pending" checked={tempMcStatusFilters.includes('pending')} onCheckedChange={(c) => handleMcStatusCheckboxChange('pending', !!c)} />
-                                                        <Label htmlFor="filter-mc-pending" className="font-normal text-sm">Pending Liquidation</Label>
+                                                        <Label htmlFor="filter-mc-pending" className="font-normal text-sm">For Liquidation</Label>
                                                     </div>
                                                      <div className="flex items-center gap-2">
                                                         <Checkbox id="filter-mc-review" checked={tempMcStatusFilters.includes('review')} onCheckedChange={(c) => handleMcStatusCheckboxChange('review', !!c)} />
-                                                        <Label htmlFor="filter-mc-review" className="font-normal text-sm">For Review</Label>
+                                                        <Label htmlFor="filter-mc-review" className="font-normal text-sm">For Verification</Label>
                                                     </div>
                                                 </div>
                                             </CollapsibleContent>
@@ -371,7 +372,7 @@ function LiquidationsContent() {
                             <div className="grid gap-4">
                                 {paginatedCaItems.map((group) => {
                                     const totalCount = group.motorcycles.length;
-                                    const liquidatedCount = group.motorcycles.filter(m => m.status === 'For Review' || !!m.liquidationDetails).length;
+                                    const liquidatedCount = group.motorcycles.filter(m => m.status === 'For Verification' || m.status === 'Completed').length;
                                     const isFullyLiquidated = liquidatedCount === totalCount;
                                     const isPartiallyLiquidated = liquidatedCount > 0 && !isFullyLiquidated;
                                     
@@ -488,5 +489,6 @@ export default function LiquidationsPage() {
     
 
     
+
 
 

@@ -18,6 +18,7 @@ import { Wrench, ArrowUpDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import { MotorcycleDetailsDialog } from './motorcycle-details-dialog';
+import { cn } from '@/lib/utils';
 
 type MotorcycleTableProps = {
   motorcycles: Motorcycle[];
@@ -57,14 +58,14 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
 
   const statusVariant = (status: Motorcycle['status']): 'default' | 'secondary' | 'destructive' | 'outline' => {
     switch (status) {
-      case 'Endorsed': return 'default';
-      case 'For CA Approval': return 'secondary';
-      case 'For CV Issuance': return 'secondary';
-      case 'Received Budget': return 'default';
+      case 'Lacking Requirements': return 'destructive';
+      case 'Endorsed': return 'secondary';
+      case 'For CA Approval': return 'default';
+      case 'For CV Issuance': return 'default';
+      case 'Released CVs': return 'default';
       case 'For Liquidation': return 'secondary';
       case 'For Verification': return 'default';
       case 'Completed': return 'default';
-      case 'Incomplete': return 'outline';
       default: return 'outline';
     }
   };
@@ -178,7 +179,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                     <TableCell>{motorcycle.crNumber || 'N/A'}</TableCell>
                     <TableCell>{motorcycle.hpgControlNumber || 'N/A'}</TableCell>
                     <TableCell>
-                      <Badge variant={statusVariant(motorcycle.status)}>{motorcycle.status}</Badge>
+                      <Badge variant={statusVariant(motorcycle.status)} className={cn(motorcycle.status === 'Lacking Requirements' && 'bg-red-500/20 text-red-700 border-red-500/30')}>{motorcycle.status}</Badge>
                     </TableCell>
                     <TableCell className="text-center">
                       <Button variant="outline" size="sm" onClick={() => handleEditClick(motorcycle)}>
@@ -235,4 +236,3 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
     </>
   );
 }
-

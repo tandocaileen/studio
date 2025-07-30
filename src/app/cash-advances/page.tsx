@@ -4,11 +4,11 @@
 import { Header } from "@/components/layout/header";
 import { AppSidebar } from "@/components/layout/sidebar";
 import { CashAdvanceTable } from "@/components/cash-advances/cash-advance-table";
-import { getCashAdvances, getLiaisons, getMotorcycles, updateCashAdvances } from "@/lib/data";
+import { getCashAdvances, getLiaisons, getMotorcycles, updateCashAdvances, updateMotorcycles } from "@/lib/data";
 import React, { useState, useEffect } from "react";
 import { AppLoader } from "@/components/layout/loader";
 import { ProtectedPage } from "@/components/auth/protected-page";
-import { CashAdvance, LiaisonUser, Motorcycle, CashAdvanceStatus } from "@/types";
+import { CashAdvance, LiaisonUser, Motorcycle, MotorcycleStatus } from "@/types";
 import { useAuth } from "@/context/AuthContext";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -28,7 +28,7 @@ export type EnrichedCashAdvance = {
 }
 
 type DateRange = '7d' | '30d' | 'all';
-const ALL_CA_STATUSES: CashAdvanceStatus[] = ['For CA Approval', 'For CV Issuance', 'Received Budget', 'For Liquidation', 'For Verification', 'Completed'];
+const ALL_CA_STATUSES: MotorcycleStatus[] = ['For CA Approval', 'For CV Issuance', 'Released CVs', 'For Liquidation', 'For Verification', 'Completed'];
 
 
 function CashAdvancesContent({ searchQuery }: { searchQuery: string }) {
@@ -42,8 +42,8 @@ function CashAdvancesContent({ searchQuery }: { searchQuery: string }) {
     const [activeDateRange, setActiveDateRange] = useState<DateRange>('all');
     const [tempDateRange, setTempDateRange] = useState<DateRange>('all');
     
-    const [activeStatusFilters, setActiveStatusFilters] = useState<CashAdvanceStatus[]>([]);
-    const [tempStatusFilters, setTempStatusFilters] = useState<CashAdvanceStatus[]>([]);
+    const [activeStatusFilters, setActiveStatusFilters] = useState<MotorcycleStatus[]>([]);
+    const [tempStatusFilters, setTempStatusFilters] = useState<MotorcycleStatus[]>([]);
 
     const [activeLiaisonFilters, setActiveLiaisonFilters] = useState<string[]>([]);
     const [tempLiaisonFilters, setTempLiaisonFilters] = useState<string[]>([]);
@@ -66,8 +66,8 @@ function CashAdvancesContent({ searchQuery }: { searchQuery: string }) {
                 setActiveStatusFilters(['For CV Issuance']);
                 setTempStatusFilters(['For CV Issuance']);
             } else if (user?.role === 'Store Supervisor') {
-                setActiveStatusFilters(['Received Budget']);
-                setTempStatusFilters(['Received Budget']);
+                setActiveStatusFilters(['Released CVs']);
+                setTempStatusFilters(['Released CVs']);
             } else {
                  setActiveStatusFilters([]);
                  setTempStatusFilters([]);
@@ -111,7 +111,7 @@ function CashAdvancesContent({ searchQuery }: { searchQuery: string }) {
         setActiveLiaisonFilters([]);
     };
     
-    const handleStatusCheckboxChange = (status: CashAdvanceStatus, checked: boolean) => {
+    const handleStatusCheckboxChange = (status: MotorcycleStatus, checked: boolean) => {
         setTempStatusFilters(prev => checked ? [...prev, status] : prev.filter(s => s !== status));
     };
 
@@ -137,31 +137,37 @@ function CashAdvancesContent({ searchQuery }: { searchQuery: string }) {
         }
     };
 
-    const filteredByFilters = relevantAdvances.filter(item => {
+    const getDynamicCAStatus = (motorcycles: Motorcycle[]): MotorcycleStatus | 'N/A' => {
+        if (!motorcycles || motorcycles.length === 0) return 'N/A';
+        // The status is determined by the status of the first motorcycle.
+        // This is a simplification based on the logic that all MCs in a CA move together.
+        return motorcycles[0].status;
+    };
+
+    const filteredByFilters = enrichCashAdvances(relevantAdvances, allMotorcycles).filter(item => {
         // Date Range Filter
         if (activeDateRange !== 'all') {
             const days = activeDateRange === '7d' ? 7 : 30;
             const cutoff = new Date();
             cutoff.setDate(cutoff.getDate() - days);
-            if (new Date(item.date) < cutoff) return false;
+            if (new Date(item.cashAdvance.date) < cutoff) return false;
         }
 
         // Status Filter
-        if (activeStatusFilters.length > 0 && !activeStatusFilters.includes(item.status)) {
+        const dynamicStatus = getDynamicCAStatus(item.motorcycles);
+        if (activeStatusFilters.length > 0 && (dynamicStatus === 'N/A' || !activeStatusFilters.includes(dynamicStatus))) {
             return false;
         }
 
         // Liaison Filter
-        if (activeLiaisonFilters.length > 0 && !activeLiaisonFilters.includes(item.personnel)) {
+        if (activeLiaisonFilters.length > 0 && !activeLiaisonFilters.includes(item.cashAdvance.personnel)) {
             return false;
         }
 
         return true;
     });
 
-    const enrichedAdvances = enrichCashAdvances(filteredByFilters, allMotorcycles);
-
-    const filteredBySearch = enrichedAdvances.filter(item => {
+    const filteredBySearch = filteredByFilters.filter(item => {
         const { cashAdvance, motorcycles } = item;
         const query = searchQuery.toLowerCase();
 
@@ -178,10 +184,11 @@ function CashAdvancesContent({ searchQuery }: { searchQuery: string }) {
         return false;
     });
     
-    const handleUpdateAdvances = async (updatedItems: CashAdvance[]) => {
-        await updateCashAdvances(updatedItems);
-        const cashAdvances = await getCashAdvances();
+    const handleUpdateMotorcycles = async (updatedItems: Motorcycle[]) => {
+        await updateMotorcycles(updatedItems);
+        const [cashAdvances, motorcycles] = await Promise.all([getCashAdvances(), getMotorcycles()]);
         setAllCAs(cashAdvances);
+        setAllMotorcycles(motorcycles);
     };
 
     return (
@@ -196,7 +203,7 @@ function CashAdvancesContent({ searchQuery }: { searchQuery: string }) {
                 <div className={cn("lg:col-span-3", !isFilterPanelVisible && "lg:col-span-4")}>
                     <CashAdvanceTable 
                         advances={filteredBySearch} 
-                        onBulkUpdate={handleUpdateAdvances}
+                        onMotorcycleUpdate={handleUpdateMotorcycles}
                     />
                 </div>
                 {isFilterPanelVisible && (
