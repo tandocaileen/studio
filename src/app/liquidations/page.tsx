@@ -190,12 +190,6 @@ function LiquidationsContent() {
 
     // MC Tab Filter Logic
     const motorcyclesToShow = allMotorcyclesForView.filter(mc => {
-        const ca = caMapByMcId.get(mc.id);
-        
-        if (isLiaison) {
-             return ca?.personnel === user.name && (mc.status === 'Processing' || ca?.status === 'CV Received') && !mc.liquidationDetails;
-        }
-        
         if (activeMcStatusFilters.length === 0) return true;
         
         const isPending = (mc.status === 'Processing' || caMapByMcId.get(mc.id)?.status === 'CV Received') && !mc.liquidationDetails;
@@ -552,6 +546,8 @@ export default function LiquidationsPage() {
         </ProtectedPage>
     );
 }
+
+    
 
     
 
