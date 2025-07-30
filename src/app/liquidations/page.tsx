@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Eye, FileUp, Circle, FileDown } from 'lucide-react';
+import { CheckCircle, Eye, FileUp, Circle, FileDown, AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -23,6 +23,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 
 type ViewMode = 'motorcycle' | 'ca';
@@ -292,6 +293,13 @@ function LiquidationsContent() {
                    </Card>
                 </TabsContent>
                 <TabsContent value="ca">
+                    <Alert className="mb-4 bg-yellow-100 border-yellow-300 text-yellow-800 dark:bg-yellow-900/30 dark:border-yellow-700 dark:text-yellow-300 [&>svg]:text-yellow-600 dark:[&>svg]:text-yellow-400">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertTitle className="text-yellow-900 dark:text-yellow-200">Developer's Note</AlertTitle>
+                        <AlertDescription className="text-xs text-yellow-700 dark:text-yellow-400">
+                            Add filter to show by status (either pending or fully liquidated) since filtering is faulty.
+                        </AlertDescription>
+                    </Alert>
                      <div className="grid gap-4">
                         {groupedItems.map((group) => {
                             const liquidatedCount = group.motorcycles.filter(m => m.status === 'For Review').length;
