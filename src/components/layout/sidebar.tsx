@@ -56,7 +56,7 @@ const cashierNavItems: NavItem[] = [
 ];
 
 const liaisonNavItems: NavItem[] = [
-    { href: '/endorsements', icon: SendToBack, label: 'Endorsed', exact: true },
+    { href: '/endorsed-to-liaison', icon: SendToBack, label: 'Endorsed', exact: true },
     { href: '/for-ca-approval', icon: FileClock, label: 'For CA Approval' },
     { href: '/released-cv', icon: PackageCheck, label: 'Released CV' },
     { href: '/for-liquidation', icon: FileDiff, label: 'For Liquidation' },
@@ -89,7 +89,7 @@ const roleNavItems: Record<UserRole, NavItem[]> = {
 const homeRoutes: Partial<Record<UserRole, string>> = {
     'Store Supervisor': '/pending',
     'Cashier': '/pending',
-    'Liaison': '/endorsements',
+    'Liaison': '/endorsed-to-liaison',
     'Accounting': '/released-cv',
 };
 
