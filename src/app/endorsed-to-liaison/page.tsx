@@ -21,6 +21,9 @@ function EndorsedContent({ searchQuery }: { searchQuery: string }) {
                 getMotorcycles(),
                 getEndorsements()
             ]).then(([motorcycleData, endorsementData]) => {
+                console.log("Fetched motorcycles:", motorcycleData);
+                console.log("Fetched endorsements:", endorsementData);
+                console.log("User:", user);
                 setEndorsements(endorsementData.filter(e => e.liaisonName === user.name));
                 setMotorcycles(motorcycleData);
             });
