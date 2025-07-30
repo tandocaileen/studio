@@ -282,6 +282,10 @@ export function CashAdvanceTable({ advances, onMotorcycleUpdate }: CashAdvanceTa
           <TableBody>
             {paginatedAdvances.map((advance) => {
               const status = getDynamicCAStatus(advance.motorcycles);
+              const approveActionAvailable = isCashier && status === 'For CA Approval';
+              const confirmActionAvailable = isSupervisor && status === 'For CV Issuance';
+              const totalActions = 1 + (approveActionAvailable ? 1 : 0) + (confirmActionAvailable ? 1 : 0);
+
               return (
                 <TableRow 
                   key={advance.cashAdvance.id}
@@ -310,39 +314,49 @@ export function CashAdvanceTable({ advances, onMotorcycleUpdate }: CashAdvanceTa
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button aria-haspopup="true" size="icon" variant="ghost">
-                          <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">Toggle menu</span>
+                    {totalActions === 1 ? (
+                        <Button
+                            aria-haspopup="false"
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => setPreviewingAdvance(advance)}
+                        >
+                            <Eye className="h-4 w-4" />
+                            <span className="sr-only">Preview</span>
                         </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem onClick={() => setPreviewingAdvance(advance)}>
-                              <Eye className="mr-2 h-4 w-4" />
-                              <span>Preview/Print</span>
-                          </DropdownMenuItem>
-                          {isCashier && (
-                              <DropdownMenuItem 
-                                  disabled={status !== 'For CA Approval'}
-                                  onSelect={() => handleUpdate(advance.motorcycles.map(m => ({ ...m, status: 'For CV Issuance' as const })))}
-                              >
-                                  <Banknote className="mr-2 h-4 w-4" />
-                                  Approve for CV Issuance
-                              </DropdownMenuItem>
-                          )}
-                          {isSupervisor && (
-                              <DropdownMenuItem
-                                  disabled={status !== 'For CV Issuance'}
-                                  onSelect={() => setConfirmingCvReceiptAdvance(advance)}
-                              >
-                                  <PackageCheck className="mr-2 h-4 w-4" />
-                                  Confirm Budget Received
-                              </DropdownMenuItem>
-                          )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    ) : (
+                        <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button aria-haspopup="true" size="icon" variant="ghost">
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Toggle menu</span>
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuItem onClick={() => setPreviewingAdvance(advance)}>
+                                <Eye className="mr-2 h-4 w-4" />
+                                <span>Preview/Print</span>
+                            </DropdownMenuItem>
+                            {approveActionAvailable && (
+                                <DropdownMenuItem 
+                                    onSelect={() => handleUpdate(advance.motorcycles.map(m => ({ ...m, status: 'For CV Issuance' as const })))}
+                                >
+                                    <Banknote className="mr-2 h-4 w-4" />
+                                    Approve for CV Issuance
+                                </DropdownMenuItem>
+                            )}
+                            {confirmActionAvailable && (
+                                <DropdownMenuItem
+                                    onSelect={() => setConfirmingCvReceiptAdvance(advance)}
+                                >
+                                    <PackageCheck className="mr-2 h-4 w-4" />
+                                    Confirm Budget Received
+                                </DropdownMenuItem>
+                            )}
+                        </DropdownMenuContent>
+                        </DropdownMenu>
+                    )}
                   </TableCell>
                 </TableRow>
               )})}
