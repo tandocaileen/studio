@@ -19,7 +19,7 @@ import { Textarea } from '../ui/textarea';
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
-import { CalendarIcon, AlertCircle } from 'lucide-react';
+import { CalendarIcon, AlertCircle, Edit } from 'lucide-react';
 import { format } from 'date-fns';
 import { Calendar } from '../ui/calendar';
 import { Checkbox } from '../ui/checkbox';
@@ -104,11 +104,27 @@ export function LiquidationFormDialog({
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-4xl max-h-[90vh]">
-        <DialogHeader>
-          <DialogTitle>OR/CR Form - Update</DialogTitle>
-          <DialogDescription>
-            Enter the official receipt and registration details for this motorcycle.
-          </DialogDescription>
+        <DialogHeader className="flex-row justify-between items-start">
+            <div>
+                <DialogTitle>OR/CR Form - Update</DialogTitle>
+                <DialogDescription>
+                    Enter the official receipt and registration details for this motorcycle.
+                </DialogDescription>
+            </div>
+             <div className='flex items-center gap-4'>
+                 {!canLiquidate && (
+                    <Alert variant="destructive" className="py-2 px-3 text-xs border-dashed bg-destructive/10">
+                         <AlertCircle className="h-4 w-4" />
+                        <AlertDescription>
+                            Please fill in all required fields (*) to enable liquidation.
+                        </AlertDescription>
+                    </Alert>
+                )}
+                <Button onClick={handleLiquidate} loading={isSubmitting} disabled={!canLiquidate}>
+                    <Edit className="mr-2 h-4 w-4" />
+                    Liquidate
+                </Button>
+            </div>
         </DialogHeader>
         <ScrollArea className="max-h-[70vh] -mx-6 px-6">
           <div className="py-4 pr-2 grid gap-6">
@@ -279,19 +295,10 @@ export function LiquidationFormDialog({
           </div>
         </ScrollArea>
         <DialogFooter className="pt-4 justify-between">
-            <Button variant="outline" onClick={onClose}>Close</Button>
-            <div className='flex items-center gap-4'>
-                 {!canLiquidate && (
-                    <Alert variant="destructive" className="py-2 px-3 text-xs border-dashed bg-destructive/10">
-                         <AlertCircle className="h-4 w-4" />
-                        <AlertDescription>
-                            Please fill in all required fields (*) to enable liquidation.
-                        </AlertDescription>
-                    </Alert>
-                )}
+            <div>
                 <Button variant="secondary" onClick={handleSaveDetails}>Save Details</Button>
-                <Button onClick={handleLiquidate} loading={isSubmitting} disabled={!canLiquidate}>Liquidate</Button>
             </div>
+            <Button variant="outline" onClick={onClose}>Close</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
