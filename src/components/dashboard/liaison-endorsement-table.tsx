@@ -18,7 +18,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Motorcycle, Endorsement, MotorcycleStatus, LiaisonUser } from '@/types';
-import { ChevronDown, DollarSign, Eye } from 'lucide-react';
+import { ChevronDown, DollarSign, Eye, ChevronsRight, ChevronsLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Checkbox } from '../ui/checkbox';
 import { generateCashAdvance } from '@/ai/flows/cash-advance-flow';
@@ -31,6 +31,7 @@ import { Label } from '../ui/label';
 import { MotorcycleDetailsDialog } from './motorcycle-details-dialog';
 import { Textarea } from '../ui/textarea';
 import { addCashAdvance, getLiaisons, updateMotorcycles } from '@/lib/data';
+import { CardFooter } from '../ui/card';
 
 type LiaisonEndorsementTableProps = {
   endorsements: Endorsement[];
@@ -44,6 +45,8 @@ type EnrichedEndorsement = {
     motorcycles: Motorcycle[];
 };
 
+const ITEMS_PER_PAGE = 5;
+
 export function LiaisonEndorsementTable({
   endorsements,
   motorcycles,
@@ -56,9 +59,31 @@ export function LiaisonEndorsementTable({
   const [viewingEndorsement, setViewingEndorsement] = React.useState<EnrichedEndorsement | null>(null);
   const [editingMotorcycle, setEditingMotorcycle] = React.useState<Motorcycle | null>(null);
   const [remarks, setRemarks] = React.useState('');
+  const [openEndorsements, setOpenEndorsements] = React.useState<string[]>([]);
+  const [currentPage, setCurrentPage] = React.useState(1);
   
   const { toast } = useToast();
   const { user } = useAuth();
+  
+  const filteredEndorsements = React.useMemo(() => {
+    return endorsements.filter(e => {
+        if (!searchQuery) return true;
+        const query = searchQuery.toLowerCase();
+        if (e.id.toLowerCase().includes(query)) return true;
+        if (e.createdBy.toLowerCase().includes(query)) return true;
+        
+        const associatedMotorcycles = motorcycles.filter(m => e.motorcycleIds.includes(m.id));
+        if (associatedMotorcycles.some(m => m.customerName?.toLowerCase().includes(query))) return true;
+        if (associatedMotorcycles.some(m => m.plateNumber?.toLowerCase().includes(query))) return true;
+        
+        return false;
+    });
+  }, [endorsements, motorcycles, searchQuery]);
+  
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, endorsements]);
+
 
   const handleSelectMotorcycle = (motorcycle: Motorcycle, checked: boolean) => {
     setSelectedMotorcycles(prev =>
@@ -170,25 +195,37 @@ export function LiaisonEndorsementTable({
     if (onStateChange) onStateChange(updatedMC);
     setEditingMotorcycle(null);
   };
+  
+  const toggleOpenEndorsement = (id: string) => {
+    setOpenEndorsements(prev => 
+        prev.includes(id) ? prev.filter(eId => eId !== id) : [...prev, id]
+    );
+  };
 
-  const filteredEndorsements = endorsements.filter(e => {
-    if (!searchQuery) return true;
-    const query = searchQuery.toLowerCase();
-    if (e.id.toLowerCase().includes(query)) return true;
-    if (e.createdBy.toLowerCase().includes(query)) return true;
-    
-    const associatedMotorcycles = motorcycles.filter(m => e.motorcycleIds.includes(m.id));
-    if (associatedMotorcycles.some(m => m.customerName?.toLowerCase().includes(query))) return true;
-    if (associatedMotorcycles.some(m => m.plateNumber?.toLowerCase().includes(query))) return true;
-    
-    return false;
-  });
+  const expandAll = () => {
+    setOpenEndorsements(paginatedEndorsements.map(e => e.endorsement.id));
+  };
+
+  const collapseAll = () => {
+    setOpenEndorsements([]);
+  };
 
   const motorcyclesForPreview = selectedMotorcycles.map(mc => ({
     ...mc,
     processingFee: 300,
     orFee: 1796.43
   }));
+
+  const totalPages = Math.ceil(filteredEndorsements.length / ITEMS_PER_PAGE);
+  const paginatedEndorsements = filteredEndorsements
+    .map(endorsement => ({
+        endorsement,
+        motorcycles: motorcycles.filter(m => endorsement.motorcycleIds.includes(m.id))
+    }))
+    .slice(
+        (currentPage - 1) * ITEMS_PER_PAGE,
+        currentPage * ITEMS_PER_PAGE
+    );
 
 
   return (
@@ -200,10 +237,18 @@ export function LiaisonEndorsementTable({
             Select units from your endorsements to generate a cash advance.
           </p>
         </div>
-        <Button size="sm" className="gap-1" onClick={handleOpenCaPreview} loading={isGeneratingCa} disabled={selectedMotorcycles.length === 0}>
-            <DollarSign className="h-4 w-4" />
-            <span>Generate CA ({selectedMotorcycles.length})</span>
-        </Button>
+        <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={expandAll}>
+                <ChevronsRight className="mr-2 h-4 w-4"/> Expand All
+            </Button>
+             <Button variant="outline" size="sm" onClick={collapseAll}>
+                <ChevronsLeft className="mr-2 h-4 w-4"/> Collapse All
+            </Button>
+            <Button size="sm" className="gap-1" onClick={handleOpenCaPreview} loading={isGeneratingCa} disabled={selectedMotorcycles.length === 0}>
+                <DollarSign className="h-4 w-4" />
+                <span>Generate CA ({selectedMotorcycles.length})</span>
+            </Button>
+        </div>
       </div>
 
         <Table>
@@ -218,8 +263,7 @@ export function LiaisonEndorsementTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredEndorsements.map(endorsement => {
-              const associatedMotorcycles = motorcycles.filter(m => endorsement.motorcycleIds.includes(m.id));
+            {paginatedEndorsements.map(({ endorsement, motorcycles: associatedMotorcycles }) => {
               const eligibleMotorcyclesInGroup = associatedMotorcycles.filter(m => m.status === 'Endorsed - Ready');
               const selectedEligibleInGroupCount = selectedMotorcycles.filter(m => eligibleMotorcyclesInGroup.some(em => em.id === m.id)).length;
               const endorsementBranch = associatedMotorcycles.length > 0 ? associatedMotorcycles[0].assignedBranch : 'N/A';
@@ -229,9 +273,8 @@ export function LiaisonEndorsementTable({
 
 
               return (
-                <React.Fragment key={endorsement.id}>
-                  <Collapsible asChild>
-                    <>
+                <Collapsible asChild key={endorsement.id} open={openEndorsements.includes(endorsement.id)} onOpenChange={() => toggleOpenEndorsement(endorsement.id)}>
+                    <React.Fragment>
                       <TableRow className="hover:bg-muted/50">
                         <TableCell>
                           <CollapsibleTrigger asChild>
@@ -306,9 +349,8 @@ export function LiaisonEndorsementTable({
                           </TableCell>
                         </tr>
                       </CollapsibleContent>
-                    </>
-                  </Collapsible>
-                </React.Fragment>
+                    </React.Fragment>
+                </Collapsible>
               );
             })}
           </TableBody>
@@ -318,6 +360,34 @@ export function LiaisonEndorsementTable({
               <p>You have no endorsements matching the current filters.</p>
           </div>
         )}
+        <CardFooter className="pt-4">
+            <div className="flex items-center justify-between w-full">
+                <div className="text-xs text-muted-foreground">
+                    Showing {paginatedEndorsements.length} of {filteredEndorsements.length} endorsements.
+                </div>
+                <div className="flex items-center gap-2">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}
+                    >
+                        Previous
+                    </Button>
+                    <span className="text-sm font-medium">
+                        Page {currentPage} of {totalPages}
+                    </span>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                        disabled={currentPage === totalPages}
+                    >
+                        Next
+                    </Button>
+                </div>
+            </div>
+        </CardFooter>
 
     <Dialog open={isPreviewingCa} onOpenChange={setIsPreviewingCa}>
       <DialogContent className="max-w-4xl">
