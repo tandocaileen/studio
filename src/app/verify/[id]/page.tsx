@@ -67,7 +67,14 @@ function VerificationContent() {
                         cashAdvance: mainCA,
                         motorcycles: associatedMotorcycles,
                     });
-                    setArAmount(mainCA.amount.toLocaleString());
+                    
+                    if (mainCA.status === 'Verified') {
+                        setArNumber(mainCA.arNumber || '');
+                        setArDate(mainCA.arDate ? new Date(mainCA.arDate) : undefined);
+                        setArAmount(mainCA.arAmount || '');
+                    } else {
+                        setArAmount(mainCA.amount.toLocaleString());
+                    }
 
                 }
                 setLoading(false);
@@ -180,7 +187,9 @@ function VerificationContent() {
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={handleVerify}>Yes, verify transaction</AlertDialogAction>
+                                <AlertDialogAction onClick={handleVerify} disabled={isVerifying}>
+                                    {isVerifying ? 'Verifying...' : 'Yes, verify transaction'}
+                                </AlertDialogAction>
                                 </AlertDialogFooter>
                             </AlertDialogContent>
                         </AlertDialog>
@@ -273,3 +282,5 @@ export default function VerificationPage() {
         </ProtectedPage>
     );
 }
+
+    
