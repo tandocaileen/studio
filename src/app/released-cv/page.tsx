@@ -13,10 +13,11 @@ import { useAuth } from "@/context/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Eye } from "lucide-react";
+import { AlertCircle, ChevronDown, Eye } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 type GroupedByCV = {
     cvNumber: string;
@@ -68,7 +69,7 @@ function ReleasedCvContentLiaison({ searchQuery }: { searchQuery: string }) {
         return motorcycles[0].status;
     };
     
-    const relevantAdvances = allCAs.filter(ca => ca.personnel === user.name);
+    const relevantAdvances = allCAs;
     console.log('[Liaison View] Relevant Advances for Liaison:', relevantAdvances);
 
     const filteredByStatus = enrichCashAdvances(relevantAdvances, allMotorcycles).filter(item => {
@@ -112,6 +113,12 @@ function ReleasedCvContentLiaison({ searchQuery }: { searchQuery: string }) {
 
     return (
         <div className="grid gap-4">
+            <Alert className="bg-yellow-100 dark:bg-yellow-900/30 border-yellow-400 dark:border-yellow-700 text-yellow-800 dark:text-yellow-300">
+                <AlertCircle className="h-4 w-4 !text-yellow-600 dark:!text-yellow-400" />
+                <AlertDescription className="text-sm">
+                    Only Check Vouchers that have been released to you as the logged-in Liaison will be displayed here.
+                </AlertDescription>
+            </Alert>
             {groupedArray.map(group => (
                 <Collapsible 
                     key={group.cvNumber} 
