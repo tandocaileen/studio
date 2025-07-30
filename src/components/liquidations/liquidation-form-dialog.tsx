@@ -29,7 +29,8 @@ type LiquidationFormDialogProps = {
   cashAdvance: CashAdvance;
   isOpen: boolean;
   onClose: () => void;
-  onSave: (updatedData: Partial<Motorcycle>) => void;
+  onLiquidate: (updatedData: Partial<Motorcycle>) => void;
+  onSaveDetails: (updatedData: Partial<Motorcycle>) => void;
   getMcAdvanceAmount: (mc: Motorcycle) => number;
 };
 
@@ -38,7 +39,8 @@ export function LiquidationFormDialog({
   cashAdvance,
   isOpen,
   onClose,
-  onSave,
+  onLiquidate,
+  onSaveDetails,
   getMcAdvanceAmount
 }: LiquidationFormDialogProps) {
   
@@ -76,18 +78,27 @@ export function LiquidationFormDialog({
     }));
   };
 
-  const handleSave = () => {
+  const handleLiquidate = async () => {
     setIsSubmitting(true);
-    onSave(editedData);
+    await onLiquidate(editedData);
     setIsSubmitting(false);
     onClose();
   };
+
+  const handleSaveDetails = async () => {
+    await onSaveDetails(editedData);
+  }
 
   if (!motorcycle) return null;
   
   const advanceAmount = getMcAdvanceAmount(motorcycle);
   const totalLiquidation = (editedData.liquidationDetails?.ltoOrAmount || 0) + (editedData.liquidationDetails?.ltoProcessFee || 0);
   const shortageOverage = advanceAmount - totalLiquidation;
+
+  const canLiquidate = (motorcycle.status === 'Processing' || cashAdvance.status === 'CV Received') &&
+                       editedData.liquidationDetails?.ltoOrNumber &&
+                       editedData.liquidationDetails?.ltoOrAmount > 0 &&
+                       editedData.liquidationDetails?.ltoProcessFee > 0;
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -166,7 +177,7 @@ export function LiquidationFormDialog({
                             </Select>
                         </div>
                         <div className="flex items-center">
-                            <Label className="w-1/3">OR No.</Label>
+                            <Label className="w-1/3">OR No. <span className="text-destructive">*</span></Label>
                             <Input value={editedData.liquidationDetails?.ltoOrNumber || ''} onChange={(e) => handleLiquidationDetailsChange('ltoOrNumber', e.target.value)} />
                         </div>
                         <div className="flex items-center">
@@ -207,11 +218,11 @@ export function LiquidationFormDialog({
                             <Input placeholder="Plate No." value={editedData.plateNumber || ''} onChange={(e) => handleDataChange('plateNumber', e.target.value)} disabled={!editedData.hasPhysicalPlate}/>
                         </div>
                          <div className="flex items-center">
-                            <Label className="w-1/3">OR Amt</Label>
+                            <Label className="w-1/3">OR Amt <span className="text-destructive">*</span></Label>
                             <Input type="number" placeholder="0.00" value={editedData.liquidationDetails?.ltoOrAmount || ''} onChange={e => handleLiquidationDetailsChange('ltoOrAmount', parseFloat(e.target.value) || 0)} />
                         </div>
                         <div className="flex items-center">
-                            <Label className="w-1/3">Processing Fee</Label>
+                            <Label className="w-1/3">Processing Fee <span className="text-destructive">*</span></Label>
                             <Input type="number" placeholder="0.00" value={editedData.liquidationDetails?.ltoProcessFee || ''} onChange={e => handleLiquidationDetailsChange('ltoProcessFee', parseFloat(e.target.value) || 0)} />
                         </div>
                          <div className="flex items-center">
@@ -250,11 +261,16 @@ export function LiquidationFormDialog({
             </section>
           </div>
         </ScrollArea>
-        <DialogFooter className="pt-4">
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleSave} loading={isSubmitting}>Submit Liquidation</Button>
+        <DialogFooter className="pt-4 justify-between">
+            <Button variant="outline" onClick={onClose}>Close</Button>
+            <div className='flex gap-2'>
+                <Button variant="secondary" onClick={handleSaveDetails}>Save Details</Button>
+                <Button onClick={handleLiquidate} loading={isSubmitting} disabled={!canLiquidate}>Liquidate</Button>
+            </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
+
+    

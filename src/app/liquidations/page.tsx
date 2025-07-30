@@ -128,6 +128,7 @@ function LiquidationsContent() {
             ...updatedMotorcycleData,
             status: 'For Review',
             liquidationDetails: {
+                ...mcToUpdate.liquidationDetails,
                 ...updatedMotorcycleData.liquidationDetails!,
                 totalLiquidation: totalLiquidation,
                 shortageOverage: mcAdvance - totalLiquidation,
@@ -146,6 +147,27 @@ function LiquidationsContent() {
             description: `Liquidation for selected motorcycle has been submitted for review.`
         });
         setSelectedMcForLiquidation(null);
+    }
+
+    const handleSaveDetails = async (updatedMotorcycleData: Partial<Motorcycle>) => {
+        if (!selectedMcForLiquidation || !motorcycles) return;
+
+        const mcToUpdate = motorcycles.find(m => m.id === selectedMcForLiquidation.id);
+        if (!mcToUpdate) return;
+        
+        const updatedMotorcycle: Motorcycle = { ...mcToUpdate, ...updatedMotorcycleData };
+
+        await updateMotorcycles(updatedMotorcycle);
+        const updatedMotorcyclesData = await getMotorcycles();
+        setMotorcycles(updatedMotorcyclesData);
+        
+        // Update the selected motorcycle in state to reflect changes in the dialog
+        setSelectedMcForLiquidation(updatedMotorcycle);
+
+        toast({
+            title: 'Details Saved',
+            description: 'Your changes have been saved successfully.'
+        });
     }
     
     if (!user || !motorcycles || !cashAdvances) {
@@ -268,7 +290,7 @@ function LiquidationsContent() {
                                                         </TableCell>
                                                         <TableCell>
                                                             {isLiaison ? (
-                                                                <Button size="sm" disabled={!canLiquidate} onClick={() => setSelectedMcForLiquidation(mc)}>
+                                                                <Button size="sm" onClick={() => setSelectedMcForLiquidation(mc)}>
                                                                     <Edit className="mr-2 h-4 w-4" />
                                                                     Edit
                                                                 </Button>
@@ -445,7 +467,8 @@ function LiquidationsContent() {
                 cashAdvance={caMapByMcId.get(selectedMcForLiquidation.id)!}
                 isOpen={!!selectedMcForLiquidation}
                 onClose={() => setSelectedMcForLiquidation(null)}
-                onSave={handleFinalSubmit}
+                onLiquidate={handleFinalSubmit}
+                onSaveDetails={handleSaveDetails}
                 getMcAdvanceAmount={getMcAdvanceAmount}
              />
            )}
@@ -468,3 +491,5 @@ export default function LiquidationsPage() {
         </ProtectedPage>
     );
 }
+
+    
