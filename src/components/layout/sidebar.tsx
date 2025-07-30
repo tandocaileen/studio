@@ -52,7 +52,7 @@ const cashierNavItems: NavItem[] = [
     { href: '/endorsements', icon: FilePenLine, label: 'Endorsed' },
     { href: '/for-cv-issuance', icon: Banknote, label: 'For CV Issuance' },
     { href: '/released-cv', icon: PackageCheck, label: 'Released CV' },
-    { href: '/liquidations/view', icon: Receipt, label: 'Liquidations'},
+    { href: '/completed', icon: CheckCircle2, label: 'Completed'},
 ];
 
 const liaisonNavItems: NavItem[] = [
