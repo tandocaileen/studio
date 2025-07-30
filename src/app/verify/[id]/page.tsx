@@ -247,7 +247,7 @@ function VerificationContent() {
                         <Separator />
                         <div className={cn("flex justify-between font-bold", shortageOverage < 0 ? 'text-destructive' : 'text-green-600')}>
                             <span>{shortageOverage < 0 ? 'Shortage' : 'Overage'}</span>
-                            <span>₱{Math.abs(shortageOverage).toLocaleString('en-US', { minimumFraction Digits: 2 })}</span>
+                            <span>₱{Math.abs(shortageOverage).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
                         </div>
                     </CardContent>
                 </Card>

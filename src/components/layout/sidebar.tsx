@@ -107,7 +107,7 @@ const NavLink = ({ item }: { item: NavItem; }) => {
                         variant={isChildActive ? 'secondary' : 'ghost'}
                         className="w-full justify-start gap-2"
                     >
-                        <span className="flex items-center gap-2 w-full">
+                        <span className="flex items-center gap-2 w-full text-foreground">
                           <item.icon className="h-5 w-5" />
                           {isCollapsed !== 'collapsed' && <span className="flex-1 text-left">{item.label}</span>}
                           {isCollapsed !== 'collapsed' && <ChevronDown className="h-4 w-4 transition-transform data-[state=open]:rotate-180" />}
@@ -135,12 +135,12 @@ const NavLink = ({ item }: { item: NavItem; }) => {
                         )}
                     >
                          <span className='flex items-center gap-2'>
-                            <item.icon className="h-5 w-5" />
-                            {!isCollapsed && <span>{item.label}</span>}
+                            <item.icon className="h-5 w-5 text-foreground" />
+                            {!isCollapsed && <span className="text-foreground">{item.label}</span>}
                         </span>
                     </Link>
                 </TooltipTrigger>
-                {isCollapsed === 'collapsed' && <TooltipContent side="right">{item.label}</TooltipContent>}
+                {isCollapsed && <TooltipContent side="right">{item.label}</TooltipContent>}
             </Tooltip>
         </TooltipProvider>
     )
