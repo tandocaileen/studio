@@ -74,7 +74,7 @@ const homeRoutes: Partial<Record<UserRole, string>> = {
     'Store Supervisor': '/pending',
     'Cashier': '/pending',
     'Liaison': '/endorsements',
-    'Accounting': '/for-ca-approval',
+    'Accounting': '/released-cv',
 };
 
 export function AppSidebar() {
