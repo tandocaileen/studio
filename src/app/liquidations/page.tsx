@@ -87,8 +87,6 @@ function LiquidationsContent() {
             };
         }
 
-        const isLiaison = user.role === 'Liaison';
-
         const caMapByMcId = new Map<string, CashAdvance>();
         cashAdvances.forEach(ca => {
             if (ca.motorcycleIds) {
@@ -110,8 +108,6 @@ function LiquidationsContent() {
             
             const isRelevantCAStatus = ['CV Received', 'Liquidated', 'Processing', 'For Review'].includes(ca.status);
             if (!isRelevantCAStatus && mc.status !== 'Processing') return false;
-            
-            if (isLiaison && ca.personnel !== user.name) return false;
             
             return true;
         });
@@ -194,8 +190,9 @@ function LiquidationsContent() {
 
     // MC Tab Filter Logic
     const motorcyclesToShow = allMotorcyclesForView.filter(mc => {
+        const ca = caMapByMcId.get(mc.id);
+        
         if (isLiaison) {
-             const ca = caMapByMcId.get(mc.id);
              return ca?.personnel === user.name && (mc.status === 'Processing' || ca?.status === 'CV Received') && !mc.liquidationDetails;
         }
         
@@ -228,7 +225,6 @@ function LiquidationsContent() {
         .filter(ca => {
             if (!ca.motorcycleIds || ca.motorcycleIds.length === 0) return false;
             const hasRelevantStatus = ['CV Received', 'Liquidated', 'For Review', 'Processing'].some(status => ca.status === status || (motorcycles.find(m => m.id === ca.motorcycleIds![0])?.status === status));
-             if (isLiaison && ca.personnel !== user.name) return false;
             return hasRelevantStatus;
         })
         .map(ca => {
