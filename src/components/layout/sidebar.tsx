@@ -121,10 +121,10 @@ const NavLink = ({ item, isCollapsed }: { item: NavItem; isCollapsed: boolean })
         <TooltipProvider>
             <Tooltip>
                 <TooltipTrigger asChild>
-                    <Button asChild variant={isLinkActive ? "secondary" : "ghost"} className="w-full justify-start gap-2">
-                        <Link href={item.href}>
+                    <Button asChild variant={isLinkActive ? "secondary" : "ghost"} className="w-full justify-start">
+                        <Link href={item.href} className="flex gap-2 items-center">
                             <item.icon className="h-5 w-5" />
-                           {!isCollapsed && <span>{item.label}</span>}
+                            {!isCollapsed && <span>{item.label}</span>}
                         </Link>
                     </Button>
                 </TooltipTrigger>
@@ -232,46 +232,14 @@ export function AppSidebar() {
           </SheetContent>
         </Sheet>
       </div>
-
-       <div className={cn("sm:pl-64 transition-all duration-300", isCollapsed && "sm:pl-20")}>
-             <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
-                 <Button size="icon" variant="outline" className="hidden sm:inline-flex" onClick={() => setIsCollapsed(!isCollapsed)}>
-                    <PanelLeft className="h-5 w-5" />
-                    <span className="sr-only">Toggle Menu</span>
-                 </Button>
-                {/* The rest of the header is now part of the main layout, not sidebar */}
-            </header>
-            <main className="p-4">
-                 {/* This is a placeholder for where the page content will go */}
-            </main>
+      
+       <div className={cn(
+        "sm:pl-64 transition-all duration-300", 
+        isCollapsed && "sm:pl-20"
+      )}>
+        {/* Page content goes here, wrapped with the dynamic paddingLeft */}
       </div>
+
     </>
   );
-}
-
-// THIS IS A TEMPORARY FIX to make the rest of the app work with the new layout
-// We will replace this with the actual Header component logic later.
-export function Header({ title }: { title: string }) {
-    const { user, logout } = useAuth();
-    const router = useRouter();
-    const userPosition = user?.role;
-  return (
-     <div className="flex justify-between items-center w-full">
-        <h1 className="text-2xl font-bold">{title}</h1>
-        <div className="flex items-center gap-4">
-            <div className="text-right hidden sm:block">
-                <p className="text-sm font-medium">{user?.name}</p>
-                <p className="text-xs text-muted-foreground">{userPosition}</p>
-            </div>
-            <Button
-                variant="outline"
-                size="icon"
-                className="overflow-hidden rounded-full"
-                onClick={logout}
-            >
-                <LogOut className="h-5 w-5" />
-            </Button>
-        </div>
-     </div>
-  )
 }
