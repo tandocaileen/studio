@@ -16,9 +16,9 @@ export default function RootPage() {
         if(user.role === 'Store Supervisor' || user.role === 'Cashier') {
             router.replace('/pending');
         } else if (user.role === 'Liaison') {
-            router.replace('/endorsed');
+            router.replace('/endorsements');
         } else if (user.role === 'Accounting') {
-            router.replace('/released-cv');
+            router.replace('/for-verification');
         } else {
             router.replace('/login');
         }
