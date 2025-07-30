@@ -100,7 +100,7 @@ function LiquidationsContent() {
             if (!ca) return false;
             
             const isRelevantCAStatus = ['CV Received', 'Liquidated', 'Processing', 'For Review'].includes(ca.status);
-            if (!isRelevantCAStatus) return false;
+            if (!isRelevantCAStatus && mc.status !== 'Processing') return false;
             
             if (isLiaison && ca.personnel !== user.name) return false;
             
@@ -108,10 +108,14 @@ function LiquidationsContent() {
         });
 
         const pendingLiquidationMotorcycles = allMotorcyclesForView.filter(mc => {
-            const ca = caMapByMcId.get(mc.id);
-            if (!ca) return false;
-            const isReadyForLiq = ['CV Received'].includes(ca.status);
-            return isReadyForLiq && mc.status !== 'For Review' && mc.status !== 'Liquidated';
+             const ca = caMapByMcId.get(mc.id);
+             if (!ca) return false;
+
+             const isReadyForLiq = ca.status === 'CV Received';
+             const isLiquidated = mc.status === 'For Review' || mc.status === 'Liquidated';
+             
+             // A motorcycle is pending liquidation if its status is 'Processing' OR its CA is 'CV Received' and it hasn't been liquidated yet.
+             return mc.status === 'Processing' || (isReadyForLiq && !isLiquidated);
         });
 
         return { caMapByMcId, getMcAdvanceAmount, allMotorcyclesForView, pendingLiquidationMotorcycles };
@@ -252,8 +256,8 @@ function LiquidationsContent() {
                                         const ca = caMapByMcId.get(mc.id);
                                         if (!ca) return null;
                                         
-                                        const isLiquidated = mc.status === 'For Review';
-                                        const canLiquidate = ca.status === 'CV Received' && !isLiquidated;
+                                        const isForReview = mc.status === 'For Review';
+                                        const canLiquidate = ca.status === 'CV Received' && !isForReview;
 
                                         return (
                                             <TableRow key={mc.id}>
@@ -263,8 +267,8 @@ function LiquidationsContent() {
                                                 <TableCell>{ca.personnel}</TableCell>
                                                 <TableCell className="text-right">₱{getMcAdvanceAmount(mc).toLocaleString()}</TableCell>
                                                 <TableCell>
-                                                    <Badge variant={isLiquidated ? 'default' : 'outline'}>
-                                                        {isLiquidated ? "For Review" : "Processing"}
+                                                    <Badge variant={isForReview ? 'default' : 'outline'}>
+                                                        {isForReview ? "For Review" : mc.status}
                                                     </Badge>
                                                 </TableCell>
                                                 <TableCell>
