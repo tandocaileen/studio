@@ -82,10 +82,12 @@ function EndorsementsContent() {
                         Browse and manage all created endorsements.
                     </CardDescription>
                 </div>
+                {/* 
                  <Button onClick={() => router.push('/endorsements/create')}>
                     <PlusCircle className="mr-2 h-4 w-4" />
                     Create New Endorsement
-                </Button>
+                </Button> 
+                */}
             </CardHeader>
             <CardContent>
                  <div className="flex items-center gap-4 mb-4">

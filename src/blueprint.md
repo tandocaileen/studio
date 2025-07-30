@@ -14,15 +14,14 @@ LTO Portal is a specialized web application designed to streamline and manage th
 The application follows a strict, automated status progression for each motorcycle, ensuring data integrity and clear tracking at every stage:
 1.  **`Incomplete`**: The default status for a new motorcycle that requires more details (like insurance, COC, etc.).
 2.  **`Ready to Register`**: Automatically set when a Store Supervisor/Cashier saves all the required "Insurance & Control" information. These units are now ready for endorsement.
-3.  **`Endorsed - Incomplete`**: Automatically set when an `Incomplete` unit is endorsed to a liaison.
-4.  **`Endorsed - Ready`**: Automatically set when a `Ready to Register` unit is endorsed to a liaison. **Only units with this status are eligible for Cash Advance generation.**
-5.  **`Processing`**: Automatically set as soon as a Cash Advance (CA) is generated for the unit by a liaison.
-6.  **`For Review`**: Automatically set when the liaison submits the liquidation details for the unit. This signifies that the registration process is complete from the liaison's perspective and is pending final review.
+3.  **`Endorsed - Ready`**: Automatically set when a `Ready to Register` unit is endorsed to a liaison. **Only units with this status are eligible for Cash Advance generation.**
+4.  **`Processing`**: Automatically set as soon as a Cash Advance (CA) is generated for the unit by a liaison.
+5.  **`For Review`**: Automatically set when the liaison submits the liquidation details for the unit. This signifies that the registration process is complete from the liaison's perspective and is pending final review.
 
 ### Motorcycle, Document, and Financial Management
 - **Motorcycle Registry**: Add and store comprehensive motorcycle details (make, model, plate number, customer name, etc.).
 - **Document Management**: Upload and track essential documents (OR/CR, COC, Insurance, etc.) with the ability to set expiration dates.
-- **Endorsements**: A formal process to assign motorcycles to a specific liaison for handling.
+- **Automated Endorsements**: The system automatically endorses motorcycles with a `Ready to Register` status to their assigned liaison every end of day. This removes the need for manual endorsement creation.
 - **Cash Advance (CA) Generation**: Liaisons can request cash advances for one or more motorcycles that are `Endorsed - Ready`. The system uses Genkit AI to generate a consolidated CA request with a unique ID and summarized purpose. It is assumed that a single Check Voucher (CV) can cover multiple CA requests.
 - **Liquidation**: Liaisons can submit liquidation reports for their processed CAs by uploading receipts and detailing expenses.
 - **Reporting**: The system can generate detailed, printable PDF reports for Cash Advances and Liquidations.
@@ -37,10 +36,9 @@ This role is responsible for the initial data entry, financial oversight, and ap
   - View a high-level financial overview with key metrics.
   - **Motorcycle Fleet Tab**: A comprehensive table of all motorcycles in the system. The view defaults to "Unendorsed" units (`Incomplete` or `Ready to Register`) to help prioritize units for the next step. A filter panel allows for viewing units of any status.
 - **Motorcycle Management**:
-  - View and edit the "Insurance & Control" section for any motorcycle. Saving these details is the key step to change a unit's status from `Incomplete` to `Ready to Register` (or `Endorsed - Incomplete` to `Endorsed - Ready`).
+  - View and edit the "Insurance & Control" section for any motorcycle. Saving these details is the key step to change a unit's status from `Incomplete` to `Ready to Register`.
 - **Endorsements**:
-  - Create new endorsements, assigning one or more motorcycles to a specific liaison.
-  - View all past and present endorsements.
+  - View all past and present automated endorsements. Manual creation is disabled.
 - **Cash Advances**:
   - View all cash advance requests from all liaisons, with a powerful filter panel to narrow down results. The view is pre-filtered based on the next action required for their role (e.g., 'Processing for CV' for Cashiers).
   - **Cashier**: Can bulk-release Check Vouchers for multiple CA requests at once.
@@ -59,10 +57,10 @@ This role is the "on-the-ground" agent responsible for processing vehicle regist
 **Actions & Features:**
 - **Home Page**:
   - A personalized dashboard showing all endorsements assigned to them, grouped by endorsement code.
-  - Can expand each endorsement to see the individual motorcycle units.
+  - Can expand each endorsement to see the individual motorcycle units. Since only complete units are endorsed, they will all be in `Endorsed - Ready` status.
   - A filter panel allows them to narrow down endorsements by date or by the endorsing supervisor/cashier.
 - **Cash Advance Generation**:
-  - Select one or more motorcycles with the `Endorsed - Ready` status from their endorsements to request funds. The selection is restricted to only these units.
+  - Select one or more motorcycles with the `Endorsed - Ready` status from their endorsements to request funds.
   - The system uses AI to generate a consolidated cash advance request.
   - Submitting the request automatically changes the motorcycles' status to `Processing`.
 - **Cash Advances Page**:
@@ -87,15 +85,14 @@ Here is a step-by-step flow of a motorcycle through the system:
     - They fill in the required "Insurance & Control" details.
     - Upon clicking **"Save Changes"**, the motorcycle's status automatically changes to **`Ready to Register`**.
 
-2.  **Create Endorsement (Store Supervisor/Cashier)**
-    - The Supervisor goes to the **Endorsements** page and clicks **"Create New Endorsement"**.
-    - They see a list of all `Ready to Register` and `Incomplete` motorcycles.
-    - They select one or more units and choose a **Receiving Liaison**.
-    - If a `Ready to Register` unit is selected, its status becomes **`Endorsed - Ready`**. If an `Incomplete` unit is selected, its status becomes **`Endorsed - Incomplete`**.
+2.  **Automated Endorsement (System)**
+    - At the end of the day, the system automatically gathers all motorcycles with the `Ready to Register` status.
+    - It creates an endorsement for each respective liaison based on the motorcycle's branch.
+    - The status of the endorsed motorcycles automatically becomes **`Endorsed - Ready`**.
 
 3.  **Generate Cash Advance (Liaison)**
-    - The **Liaison** logs in and sees the newly assigned motorcycles on their **Home** page, grouped by endorsement.
-    - They can only select units that are `Endorsed - Ready`.
+    - The **Liaison** logs in and sees the newly assigned motorcycles on their **Home** page, grouped by the automated endorsement.
+    - They select one or more units that are `Endorsed - Ready`.
     - They click the **"Generate CA"** button. An AI-powered flow generates a single cash advance request.
     - The motorcycles' status automatically updates to **`Processing`**.
 
@@ -107,7 +104,7 @@ Here is a step-by-step flow of a motorcycle through the system:
 5.  **Liquidate Expenses (Liaison)**
     - After completing the registration, the Liaison navigates to the **Liquidations** page.
     - They see a list of their motorcycles that are linked to a received cash advance (`CV Received` status).
-    - They click **"Liquidate"** for a specific unit, fill in the LTO OR details, amounts, and upload the receipt.
+    - They click **"Edit/Liquidate"** for a specific unit, fill in the LTO OR details, amounts, and upload the receipt.
     - Upon submission, the motorcycle's status automatically changes to **`For Review`**.
 
 6.  **View Liquidation Report (All Roles)**

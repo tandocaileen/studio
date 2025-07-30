@@ -289,7 +289,7 @@ export function LiaisonEndorsementTable({
                                                 <TableCell>{mc.accountCode}</TableCell>
                                                 <TableCell>{mc.chassisNumber}</TableCell>
                                                 <TableCell>
-                                                    <Badge variant={mc.status === 'Endorsed - Incomplete' ? 'destructive' : mc.status === 'Endorsed - Ready' ? 'default' : 'outline'}>
+                                                    <Badge variant={mc.status === 'Endorsed - Ready' ? 'default' : 'outline'}>
                                                         {mc.status}
                                                     </Badge>
                                                 </TableCell>
