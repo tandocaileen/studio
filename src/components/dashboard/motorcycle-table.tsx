@@ -57,11 +57,13 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
 
   const statusVariant = (status: Motorcycle['status']): 'default' | 'secondary' | 'destructive' | 'outline' => {
     switch (status) {
-      case 'Ready to Register': return 'default';
-      case 'Endorsed - Ready': return 'secondary';
-      case 'Endorsed - Incomplete': return 'destructive';
-      case 'Processing': return 'default';
-      case 'For Review': return 'secondary';
+      case 'Endorsed': return 'default';
+      case 'For CA Approval': return 'secondary';
+      case 'For CV Issuance': return 'secondary';
+      case 'Received Budget': return 'default';
+      case 'For Liquidation': return 'secondary';
+      case 'For Verification': return 'default';
+      case 'Completed': return 'default';
       case 'Incomplete': return 'outline';
       default: return 'outline';
     }
@@ -79,27 +81,8 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
       ...updatedData,
     };
     
-    const requiredFields: (keyof Motorcycle)[] = [
-        'csrNumber', 'crNumber', 'hpgControlNumber', 
-        'cocNumber', 'policyNumber', 'insuranceType', 'insuranceEffectiveDate', 'insuranceExpirationDate', 'sarCode'
-    ];
-    const allFieldsFilled = requiredFields.every(field => !!updatedMotorcycle[field]);
-
-    if (allFieldsFilled) {
-        if (updatedMotorcycle.status === 'Incomplete') {
-            updatedMotorcycle.status = 'Ready to Register';
-            toast({
-                title: 'Status Updated',
-                description: `Motorcycle status automatically set to "Ready to Register".`,
-            });
-        } else if (updatedMotorcycle.status === 'Endorsed - Incomplete') {
-            updatedMotorcycle.status = 'Endorsed - Ready';
-            toast({
-                title: 'Status Updated',
-                description: `Motorcycle status automatically set to "Endorsed - Ready".`,
-            });
-        }
-    }
+    // Since details are assumed complete upon being pulled, there is no automatic status change here anymore.
+    // Status changes are driven by CA and Liquidation processes.
     
     if (onStateChange) onStateChange(updatedMotorcycle);
     handleAction(`Motorcycle details updated.`);
@@ -200,7 +183,7 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
                     <TableCell className="text-center">
                       <Button variant="outline" size="sm" onClick={() => handleEditClick(motorcycle)}>
                           <Wrench className="mr-2 h-4 w-4" />
-                          Edit
+                          View/Edit
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -252,3 +235,4 @@ export function MotorcycleTable({ motorcycles: initialMotorcycles, onStateChange
     </>
   );
 }
+

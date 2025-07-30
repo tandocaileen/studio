@@ -98,12 +98,12 @@ export function LiquidationFormDialog({
   const totalLiquidation = (editedData.liquidationDetails?.ltoOrAmount || 0) + (editedData.liquidationDetails?.ltoProcessFee || 0);
   const shortageOverage = advanceAmount - totalLiquidation;
 
-  const canLiquidate = (motorcycle.status === 'Processing' || cashAdvance.status === 'CV Received') &&
+  const canLiquidate = motorcycle.status === 'For Liquidation' &&
                        editedData.liquidationDetails?.ltoOrNumber &&
                        editedData.liquidationDetails?.ltoOrAmount > 0 &&
                        editedData.liquidationDetails?.ltoProcessFee > 0;
 
-  const isForReview = motorcycle.status === 'For Review';
+  const isForReview = motorcycle.status === 'For Verification' || motorcycle.status === 'Completed';
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -133,7 +133,7 @@ export function LiquidationFormDialog({
                         )}
                         <Button onClick={handleLiquidate} loading={isSubmitting} disabled={!canLiquidate}>
                             <Edit className="mr-2 h-4 w-4" />
-                            Liquidate
+                            Submit for Verification
                         </Button>
                     </>
                  )}

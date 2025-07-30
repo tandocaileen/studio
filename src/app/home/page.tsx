@@ -32,8 +32,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AccountingDashboardContent } from "@/components/dashboard/accounting-dashboard";
 
 
-const ALL_SUPERVISOR_STATUSES: MotorcycleStatus[] = ['Incomplete', 'Ready to Register', 'Endorsed - Incomplete', 'Endorsed - Ready', 'Processing', 'For Review'];
-const ALL_LIAISON_STATUSES: MotorcycleStatus[] = ['Endorsed - Incomplete', 'Endorsed - Ready', 'Processing', 'For Review'];
+const ALL_SUPERVISOR_STATUSES: MotorcycleStatus[] = ['Incomplete', 'Endorsed', 'For CA Approval', 'For CV Issuance', 'Received Budget', 'For Liquidation', 'For Verification', 'Completed'];
 
 type DateRange = '7d' | '30d' | 'all';
 
@@ -42,9 +41,8 @@ function SupervisorDashboardContent({ searchQuery }: { searchQuery: string }) {
   const [motorcycles, setMotorcycles] = useState<Motorcycle[] | null>(null);
   const [endorsements, setEndorsements] = useState<Endorsement[] | null>(null);
   
-  const UNENDORSED_STATUSES: MotorcycleStatus[] = ['Incomplete', 'Ready to Register'];
-  const [activeStatusFilters, setActiveStatusFilters] = useState<MotorcycleStatus[]>(UNENDORSED_STATUSES);
-  const [tempStatusFilters, setTempStatusFilters] = useState<MotorcycleStatus[]>(UNENDORSED_STATUSES);
+  const [activeStatusFilters, setActiveStatusFilters] = useState<MotorcycleStatus[]>(['Incomplete']);
+  const [tempStatusFilters, setTempStatusFilters] = useState<MotorcycleStatus[]>(['Incomplete']);
   
   const [activeDateRange, setActiveDateRange] = useState<DateRange>('all');
   const [tempDateRange, setTempDateRange] = useState<DateRange>('all');
@@ -489,9 +487,3 @@ export default function DashboardPage() {
     </ProtectedPage>
   );
 }
-
-    
-
-
-
-    

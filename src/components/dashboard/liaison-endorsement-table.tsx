@@ -92,7 +92,7 @@ export function LiaisonEndorsementTable({
   };
 
   const handleSelectAllInGroup = (groupMotorcycles: Motorcycle[], checked: boolean | 'indeterminate') => {
-    const eligibleMotorcycles = groupMotorcycles.filter(m => m.status === 'Endorsed - Ready');
+    const eligibleMotorcycles = groupMotorcycles.filter(m => m.status === 'Endorsed');
     if (checked === true) {
       setSelectedMotorcycles(prev => {
         const newSelection = [...prev];
@@ -119,10 +119,10 @@ export function LiaisonEndorsementTable({
      return;
    }
 
-   if (selectedMotorcycles.some(m => m.status !== 'Endorsed - Ready')) {
+   if (selectedMotorcycles.some(m => m.status !== 'Endorsed')) {
        toast({
            title: 'Cannot Generate Cash Advance',
-           description: 'Please only select motorcycles with an "Endorsed - Ready" status.',
+           description: 'Please only select motorcycles with an "Endorsed" status.',
            variant: 'destructive',
        });
        return;
@@ -154,9 +154,9 @@ export function LiaisonEndorsementTable({
 
       console.log('Cash advance generated: ', result);
       
-      const motorcyclesToUpdate = selectedMotorcycles.map(m => ({ ...m, status: 'Processing' as MotorcycleStatus }));
+      const motorcyclesToUpdate = selectedMotorcycles.map(m => ({ ...m, status: 'For CA Approval' as MotorcycleStatus }));
       
-      await addCashAdvance(result);
+      await addCashAdvance({ ...result, status: 'For CA Approval' });
       if (onStateChange) onStateChange(motorcyclesToUpdate);
       
       toast({
@@ -264,7 +264,7 @@ export function LiaisonEndorsementTable({
           </TableHeader>
           <TableBody>
             {paginatedEndorsements.map(({ endorsement, motorcycles: associatedMotorcycles }) => {
-              const eligibleMotorcyclesInGroup = associatedMotorcycles.filter(m => m.status === 'Endorsed - Ready');
+              const eligibleMotorcyclesInGroup = associatedMotorcycles.filter(m => m.status === 'Endorsed');
               const selectedEligibleInGroupCount = selectedMotorcycles.filter(m => eligibleMotorcyclesInGroup.some(em => em.id === m.id)).length;
               const endorsementBranch = associatedMotorcycles.length > 0 ? associatedMotorcycles[0].assignedBranch : 'N/A';
 
@@ -324,7 +324,7 @@ export function LiaisonEndorsementTable({
                                                     <Checkbox
                                                       checked={selectedMotorcycles.some(sm => sm.id === mc.id)}
                                                       onCheckedChange={(checked) => handleSelectMotorcycle(mc, !!checked)}
-                                                      disabled={mc.status !== 'Endorsed - Ready'}
+                                                      disabled={mc.status !== 'Endorsed'}
                                                     />
                                                 </TableCell>
                                                 <TableCell>{mc.salesInvoiceNo}</TableCell>
@@ -332,7 +332,7 @@ export function LiaisonEndorsementTable({
                                                 <TableCell>{mc.accountCode}</TableCell>
                                                 <TableCell>{mc.chassisNumber}</TableCell>
                                                 <TableCell>
-                                                    <Badge variant={mc.status === 'Endorsed - Ready' ? 'default' : 'outline'}>
+                                                    <Badge variant={mc.status === 'Endorsed' ? 'default' : 'outline'}>
                                                         {mc.status}
                                                     </Badge>
                                                 </TableCell>

@@ -8,7 +8,7 @@ import { getCashAdvances, getLiaisons, getMotorcycles, updateCashAdvances } from
 import React, { useState, useEffect } from "react";
 import { AppLoader } from "@/components/layout/loader";
 import { ProtectedPage } from "@/components/auth/protected-page";
-import { CashAdvance, LiaisonUser, Motorcycle } from "@/types";
+import { CashAdvance, LiaisonUser, Motorcycle, CashAdvanceStatus } from "@/types";
 import { useAuth } from "@/context/AuthContext";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -28,8 +28,7 @@ export type EnrichedCashAdvance = {
 }
 
 type DateRange = '7d' | '30d' | 'all';
-type CashAdvanceStatus = CashAdvance['status'];
-const ALL_CA_STATUSES: CashAdvanceStatus[] = ['Processing for CV', 'CV Released', 'CV Received', 'Liquidated'];
+const ALL_CA_STATUSES: CashAdvanceStatus[] = ['For CA Approval', 'For CV Issuance', 'Received Budget', 'For Liquidation', 'For Verification', 'Completed'];
 
 
 function CashAdvancesContent({ searchQuery }: { searchQuery: string }) {
@@ -64,11 +63,11 @@ function CashAdvancesContent({ searchQuery }: { searchQuery: string }) {
             setLiaisons(liaisonData);
 
             if (user?.role === 'Cashier') {
-                setActiveStatusFilters(['Processing for CV']);
-                setTempStatusFilters(['Processing for CV']);
+                setActiveStatusFilters(['For CV Issuance']);
+                setTempStatusFilters(['For CV Issuance']);
             } else if (user?.role === 'Store Supervisor') {
-                setActiveStatusFilters(['CV Released']);
-                setTempStatusFilters(['CV Released']);
+                setActiveStatusFilters(['Received Budget']);
+                setTempStatusFilters(['Received Budget']);
             } else {
                  setActiveStatusFilters([]);
                  setTempStatusFilters([]);
@@ -329,5 +328,3 @@ export default function CashAdvancesPage() {
         </ProtectedPage>
     );
 }
-
-    

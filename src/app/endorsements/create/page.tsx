@@ -90,8 +90,7 @@ function CreateEndorsementContent() {
         };
 
         const motorcyclesToUpdate = selectedMotorcycles.map(mc => {
-            const newStatus = mc.status === 'Ready to Register' ? 'Endorsed - Ready' : 'Endorsed - Incomplete';
-            return { ...mc, status: newStatus, assignedLiaison: selectedLiaison?.name };
+            return { ...mc, status: 'Endorsed' as const, assignedLiaison: selectedLiaison?.name };
         });
 
         try {
@@ -114,7 +113,7 @@ function CreateEndorsementContent() {
     }
 
     const availableMotorcycles = motorcycles.filter(
-        m => ['Ready to Register', 'Incomplete'].includes(m.status) &&
+        m => m.status === 'Incomplete' && // Only show incomplete, assuming details are complete enough for endorsement
         (m.plateNumber.toLowerCase().includes(searchQuery.toLowerCase()) || 
          (m.customerName && m.customerName.toLowerCase().includes(searchQuery.toLowerCase())) ||
          m.make.toLowerCase().includes(searchQuery.toLowerCase()) ||

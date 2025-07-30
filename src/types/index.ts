@@ -1,5 +1,6 @@
 
 
+
 export type DocumentType = 'OR/CR' | 'COC' | 'Insurance' | 'CSR' | 'HPG Control Form';
 
 export type Document = {
@@ -9,7 +10,15 @@ export type Document = {
   expiresAt?: Date;
 };
 
-export type MotorcycleStatus = 'Incomplete' | 'Endorsed - Ready' | 'Processing' | 'For Review' | 'Registered';
+export type MotorcycleStatus = 
+  | 'Incomplete'
+  | 'Endorsed'
+  | 'For CA Approval'
+  | 'For CV Issuance'
+  | 'Received Budget'
+  | 'For Liquidation'
+  | 'For Verification'
+  | 'Completed';
 
 
 export type Motorcycle = {
@@ -60,6 +69,15 @@ export type Motorcycle = {
   };
 };
 
+export type CashAdvanceStatus = 
+  | 'For CA Approval'
+  | 'For CV Issuance'
+  | 'Received Budget'
+  | 'For Liquidation'
+  | 'For Verification'
+  | 'Completed';
+
+
 export type CashAdvance = {
   id: string;
   personnel: string; 
@@ -67,7 +85,7 @@ export type CashAdvance = {
   purpose: string;
   amount: number;
   date: Date;
-  status: 'Processing for CV' | 'CV Released' | 'CV Received' | 'Liquidated' | 'Verified';
+  status: CashAdvanceStatus;
   receipts?: string[];
   motorcycleId?: string;
   motorcycleIds?: string[];
@@ -104,6 +122,7 @@ export type Endorsement = {
     motorcycleIds: string[];
     createdBy: string;
 }
+
 
 
 
