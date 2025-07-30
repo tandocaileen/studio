@@ -178,7 +178,11 @@ export function LiquidationFormDialog({
                         </div>
                         <div className="flex items-center">
                             <Label className="w-1/3">OR No. <span className="text-destructive">*</span></Label>
-                            <Input value={editedData.liquidationDetails?.ltoOrNumber || ''} onChange={(e) => handleLiquidationDetailsChange('ltoOrNumber', e.target.value)} />
+                            <Input
+                                value={editedData.liquidationDetails?.ltoOrNumber || ''}
+                                onChange={(e) => handleLiquidationDetailsChange('ltoOrNumber', e.target.value)}
+                                className={cn(!editedData.liquidationDetails?.ltoOrNumber && 'border-destructive')}
+                             />
                         </div>
                         <div className="flex items-center">
                             <Label className="w-1/3">Date Issued</Label>
@@ -219,11 +223,23 @@ export function LiquidationFormDialog({
                         </div>
                          <div className="flex items-center">
                             <Label className="w-1/3">OR Amt <span className="text-destructive">*</span></Label>
-                            <Input type="number" placeholder="0.00" value={editedData.liquidationDetails?.ltoOrAmount || ''} onChange={e => handleLiquidationDetailsChange('ltoOrAmount', parseFloat(e.target.value) || 0)} />
+                            <Input
+                                type="number"
+                                placeholder="0.00"
+                                value={editedData.liquidationDetails?.ltoOrAmount || ''}
+                                onChange={e => handleLiquidationDetailsChange('ltoOrAmount', parseFloat(e.target.value) || 0)}
+                                className={cn(!(editedData.liquidationDetails?.ltoOrAmount && editedData.liquidationDetails?.ltoOrAmount > 0) && 'border-destructive')}
+                            />
                         </div>
                         <div className="flex items-center">
                             <Label className="w-1/3">Processing Fee <span className="text-destructive">*</span></Label>
-                            <Input type="number" placeholder="0.00" value={editedData.liquidationDetails?.ltoProcessFee || ''} onChange={e => handleLiquidationDetailsChange('ltoProcessFee', parseFloat(e.target.value) || 0)} />
+                            <Input
+                                type="number"
+                                placeholder="0.00"
+                                value={editedData.liquidationDetails?.ltoProcessFee || ''}
+                                onChange={e => handleLiquidationDetailsChange('ltoProcessFee', parseFloat(e.target.value) || 0)}
+                                className={cn(!(editedData.liquidationDetails?.ltoProcessFee && editedData.liquidationDetails?.ltoProcessFee > 0) && 'border-destructive')}
+                            />
                         </div>
                          <div className="flex items-center">
                             <Label className="w-1/3">Shortage/Ovg</Label>
@@ -272,5 +288,3 @@ export function LiquidationFormDialog({
     </Dialog>
   );
 }
-
-    
