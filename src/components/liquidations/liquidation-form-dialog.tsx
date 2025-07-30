@@ -19,10 +19,11 @@ import { Textarea } from '../ui/textarea';
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { Calendar } from '../ui/calendar';
 import { Checkbox } from '../ui/checkbox';
+import { Alert, AlertDescription } from '../ui/alert';
 
 type LiquidationFormDialogProps = {
   motorcycle: Motorcycle;
@@ -279,7 +280,15 @@ export function LiquidationFormDialog({
         </ScrollArea>
         <DialogFooter className="pt-4 justify-between">
             <Button variant="outline" onClick={onClose}>Close</Button>
-            <div className='flex gap-2'>
+            <div className='flex items-center gap-4'>
+                 {!canLiquidate && (
+                    <Alert variant="destructive" className="py-2 px-3 text-xs border-dashed bg-destructive/10">
+                         <AlertCircle className="h-4 w-4" />
+                        <AlertDescription>
+                            Please fill in all required fields (*) to enable liquidation.
+                        </AlertDescription>
+                    </Alert>
+                )}
                 <Button variant="secondary" onClick={handleSaveDetails}>Save Details</Button>
                 <Button onClick={handleLiquidate} loading={isSubmitting} disabled={!canLiquidate}>Liquidate</Button>
             </div>

@@ -274,7 +274,6 @@ function LiquidationsContent() {
                                                 if (!ca) return null;
                                                 
                                                 const isForReview = mc.status === 'For Review';
-                                                const canLiquidate = (ca.status === 'CV Received' || mc.status === 'Processing') && !isForReview && !mc.liquidationDetails;
 
                                                 return (
                                                     <TableRow key={mc.id}>
@@ -289,14 +288,19 @@ function LiquidationsContent() {
                                                             </Badge>
                                                         </TableCell>
                                                         <TableCell>
-                                                            {isLiaison ? (
+                                                            {isForReview ? (
+                                                                <Button 
+                                                                    size="sm" 
+                                                                    variant="outline"
+                                                                    onClick={() => router.push(`/reports/liquidation/${ca.id}`)}
+                                                                >
+                                                                    <Eye className="mr-2 h-4 w-4" />
+                                                                    View Report
+                                                                </Button>
+                                                            ) : (
                                                                 <Button size="sm" onClick={() => setSelectedMcForLiquidation(mc)}>
                                                                     <Edit className="mr-2 h-4 w-4" />
                                                                     Edit
-                                                                </Button>
-                                                            ) : (
-                                                                <Button size="sm" variant="ghost" disabled>
-                                                                    -
                                                                 </Button>
                                                             )}
                                                         </TableCell>
