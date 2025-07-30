@@ -49,7 +49,7 @@ function MainLayout({ children }: { children: React.ReactNode }) {
             <AuthProvider>
                 <div className="flex min-h-screen w-full bg-muted/40">
                   {!isLoginPage && <AppSidebar />}
-                  <main className={cn("flex flex-1 flex-col sm:gap-4 sm:py-4", !isLoginPage && "sm:pl-14")}>
+                  <main className={cn("flex flex-1 flex-col", !isLoginPage && "sm:pl-14")}>
                      {children}
                   </main>
                 </div>
