@@ -123,12 +123,12 @@ const NavLink = ({ item, isCollapsed }: { item: NavItem; isCollapsed: boolean })
         <TooltipProvider>
             <Tooltip>
                 <TooltipTrigger asChild>
-                    <Button variant={isLinkActive ? "secondary" : "ghost"} className="w-full justify-start">
+                    <Button asChild variant={isLinkActive ? "secondary" : "ghost"} className="w-full justify-start">
                         <Link href={item.href}>
-                          <span className='flex items-center gap-2'>
-                            <item.icon className="h-5 w-5" />
-                            {!isCollapsed && <span>{item.label}</span>}
-                          </span>
+                            <span className='flex items-center gap-2'>
+                                <item.icon className="h-5 w-5" />
+                                {!isCollapsed && <span>{item.label}</span>}
+                            </span>
                         </Link>
                     </Button>
                 </TooltipTrigger>
@@ -171,10 +171,9 @@ export function AppSidebar() {
             </nav>
         </div>
         <div className="p-4 border-t mt-auto">
-            <Button variant="ghost" className="w-full justify-start gap-2" onClick={logout}>
-                <LogOut className="h-5 w-5" />
-                {!isCollapsed && <span>Logout</span>}
-            </Button>
+            <div className='text-xs text-muted-foreground text-center'>
+                 {!isCollapsed && <p>&copy; {new Date().getFullYear()} LTO Portal</p>}
+            </div>
         </div>
     </div>
   );
@@ -198,13 +197,6 @@ export function AppSidebar() {
               {item.label}
             </Link>
         ))}
-         <button
-            onClick={logout}
-            className='flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground'
-        >
-            <LogOut className="h-5 w-5" />
-            Logout
-        </button>
       </nav>
   )
 
@@ -236,14 +228,6 @@ export function AppSidebar() {
           </SheetContent>
         </Sheet>
       </div>
-      
-       <div className={cn(
-        "sm:pl-64 transition-all duration-300", 
-        isCollapsed && "sm:pl-20"
-      )}>
-        {/* Page content goes here, wrapped with the dynamic paddingLeft */}
-      </div>
-
     </>
   );
 }

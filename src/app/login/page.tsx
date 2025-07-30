@@ -19,7 +19,7 @@ export default function LoginPage() {
     const [email, setEmail] = useState('demo@ltoportal.com');
     const [password, setPassword] = useState('password');
     const [role, setRole] = useState<UserRole>('Store Supervisor');
-    const { user, login } = useAuth();
+    const { user, login }_ = useAuth();
     const router = useRouter();
     const { setTheme } = useTheme();
     const [isLoading, setIsLoading] = useState(false);
@@ -52,7 +52,7 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-muted/40 relative">
+        <div className="flex items-center justify-center min-h-screen w-full relative">
              <div className="absolute top-4 right-4 flex items-center gap-2">
                 <Button variant="outline" size="icon" onClick={() => setTheme('light')}>
                     <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
@@ -114,3 +114,4 @@ export default function LoginPage() {
         </div>
     )
 }
+
