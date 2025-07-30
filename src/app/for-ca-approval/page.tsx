@@ -22,12 +22,15 @@ function ForCaApprovalContent({ searchQuery }: { searchQuery: string }) {
                 getCashAdvances(), 
                 getMotorcycles(), 
             ]);
+            console.log("Fetched Cash Advances:", cashAdvances);
+            console.log("Fetched Motorcycles:", motorcycles);
+            console.log("Current User:", user);
             setAllCAs(cashAdvances);
             setAllMotorcycles(motorcycles);
         };
 
         fetchData();
-    }, []);
+    }, [user]);
     
     if (!allCAs || !allMotorcycles || !user) {
         return <AppLoader />;
@@ -83,6 +86,8 @@ function ForCaApprovalContent({ searchQuery }: { searchQuery: string }) {
         return false;
     });
 
+    console.log("Final Advances for Table:", filteredBySearch);
+
     return (
         <CashAdvanceTable 
             advances={filteredBySearch} 
@@ -98,7 +103,7 @@ export default function ForCaApprovalPage() {
         <ProtectedPage allowedRoles={['Liaison', 'Accounting']}>
              <div className="w-full">
                 <Header title="For CA Approval" onSearch={setSearchQuery} />
-                <main className="flex-1 items-start gap-4 p-4 sm:px-6 sm:py-6 md:gap-8">
+                <main className="flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
                     <ForCaApprovalContent searchQuery={searchQuery} />
                 </main>
             </div>
