@@ -127,8 +127,18 @@ function ForLiquidationContent() {
         return <AppLoader />;
     }
     
+    const liaisonCAsWithCV = cashAdvances.filter(ca => 
+        ca.personnel === user.name && ca.checkVoucherNumber
+    );
+
+    const motorcycleIdsForLiquidation = new Set(
+        liaisonCAsWithCV.flatMap(ca => ca.motorcycleIds || [])
+    );
+    
     const motorcyclesToShow = motorcycles.filter(mc => 
-        mc.status === 'For Liquidation' && mc.assignedLiaison === user.name
+        motorcycleIdsForLiquidation.has(mc.id) && 
+        mc.status !== 'For Verification' && 
+        mc.status !== 'Completed'
     );
     
     console.log('[For Liquidation] Motorcycles to Show:', motorcyclesToShow);
