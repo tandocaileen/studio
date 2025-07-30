@@ -98,7 +98,7 @@ export default function ForCaApprovalPage() {
         <ProtectedPage allowedRoles={['Liaison', 'Accounting']}>
              <div className="w-full">
                 <Header title="For CA Approval" onSearch={setSearchQuery} />
-                <main className="flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
+                <main className="flex-1 items-start gap-4 p-4 sm:px-6 sm:py-6 md:gap-8">
                     <ForCaApprovalContent searchQuery={searchQuery} />
                 </main>
             </div>

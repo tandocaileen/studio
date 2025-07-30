@@ -197,7 +197,7 @@ export default function ForLiquidationPage() {
         <ProtectedPage allowedRoles={['Liaison']}>
             <div className="w-full">
                 <Header title="For Liquidation" onSearch={setSearchQuery} />
-                <main className="flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
+                <main className="flex-1 items-start gap-4 p-4 sm:px-6 sm:py-6 md:gap-8">
                     <ForLiquidationContent />
                 </main>
             </div>
