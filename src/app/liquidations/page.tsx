@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Eye, FileUp, Circle, FileDown, AlertCircle, Filter, RotateCcw, ChevronDown } from 'lucide-react';
+import { CheckCircle, Eye, FileUp, Circle, FileDown, AlertCircle, Filter, RotateCcw, ChevronDown, Edit } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -27,6 +27,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { LiquidationFormDialog } from '@/components/liquidations/liquidation-form-dialog';
 
 const ITEMS_PER_PAGE = 5;
 
@@ -55,9 +56,7 @@ function LiquidationsContent() {
     const [cashAdvances, setCashAdvances] = React.useState<CashAdvance[] | null>(null);
     
     const [viewMode, setViewMode] = React.useState<ViewMode>('motorcycle');
-    const [selectedCA, setSelectedCA] = React.useState<GroupedLiquidation | null>(null);
-    const [formData, setFormData] = React.useState<LiquidationFormData>({});
-    const [isSubmitting, setIsSubmitting] = React.useState(false);
+    const [selectedMcForLiquidation, setSelectedMcForLiquidation] = React.useState<Motorcycle | null>(null);
     
     // Filters and Pagination
     const [isFilterPanelVisible, setIsFilterPanelVisible] = React.useState(true);
@@ -104,11 +103,7 @@ function LiquidationsContent() {
 
         const allMotorcyclesForView = motorcycles.filter(mc => {
              const ca = caMapByMcId.get(mc.id);
-            if (!ca) return false;
-            
-            const isRelevantForLiquidation = (mc.status === 'Processing' || ca.status === 'CV Received' || mc.status === 'For Review');
-            
-            return isRelevantForLiquidation;
+             return ca?.status === 'CV Received' || mc.status === 'Processing' || mc.status === 'For Review';
         });
 
         return { caMapByMcId, getMcAdvanceAmount, allMotorcyclesForView };
@@ -118,53 +113,27 @@ function LiquidationsContent() {
 
     const { caMapByMcId, getMcAdvanceAmount, allMotorcyclesForView } = precomputedData;
 
-    const handleLiquidateClick = (mc: Motorcycle, ca: CashAdvance) => {
-        const grouped: GroupedLiquidation = {
-            cashAdvance: ca,
-            motorcycles: [mc]
-        };
-        setSelectedCA(grouped);
+
+    const handleFinalSubmit = async (updatedMotorcycleData: Partial<Motorcycle>) => {
+        if (!selectedMcForLiquidation || !motorcycles || !user) return;
+
+        const mcToUpdate = motorcycles.find(m => m.id === selectedMcForLiquidation.id);
+        if (!mcToUpdate) return;
         
-        const initialFormData: LiquidationFormData = {};
-        initialFormData[mc.id] = {
-            ltoOrNumber: '',
-            ltoOrAmount: 0,
-            ltoProcessFee: 0,
-            remarks: ''
-        };
-        setFormData(initialFormData);
-    };
-
-    const handleFormChange = (mcId: string, field: keyof LiquidationFormData[string], value: any) => {
-        setFormData(prev => ({ ...prev, [mcId]: { ...prev[mcId], [field]: value } }));
-    }
-
-    const handleFinalSubmit = async () => {
-        if (!selectedCA || !motorcycles || !user) return;
-        setIsSubmitting(true);
-
-        const mcToUpdateId = selectedCA.motorcycles[0].id;
-        const formDetails = formData[mcToUpdateId];
-
-        const mcToUpdate = motorcycles.find(m => m.id === mcToUpdateId);
-        if (!mcToUpdate) {
-            setIsSubmitting(false);
-            return;
-        }
+        const mcAdvance = getMcAdvanceAmount(mcToUpdate);
+        const totalLiquidation = (updatedMotorcycleData.liquidationDetails?.ltoOrAmount || 0) + (updatedMotorcycleData.liquidationDetails?.ltoProcessFee || 0);
 
         const updatedMotorcycle: Motorcycle = {
             ...mcToUpdate,
+            ...updatedMotorcycleData,
             status: 'For Review',
             liquidationDetails: {
-                parentCaId: selectedCA.cashAdvance.id,
-                ltoOrNumber: formDetails.ltoOrNumber,
-                ltoOrAmount: formDetails.ltoOrAmount,
-                ltoProcessFee: formDetails.ltoProcessFee,
-                totalLiquidation: formDetails.ltoOrAmount + formDetails.ltoProcessFee,
-                shortageOverage: getMcAdvanceAmount(mcToUpdate) - (formDetails.ltoOrAmount + formDetails.ltoProcessFee),
-                remarks: formDetails.remarks,
+                ...updatedMotorcycleData.liquidationDetails!,
+                totalLiquidation: totalLiquidation,
+                shortageOverage: mcAdvance - totalLiquidation,
                 liquidatedBy: user.name,
-                liquidationDate: new Date()
+                liquidationDate: new Date(),
+                parentCaId: caMapByMcId.get(mcToUpdate.id)!.id,
             }
         };
         
@@ -176,8 +145,7 @@ function LiquidationsContent() {
             title: 'Liquidation Submitted',
             description: `Liquidation for selected motorcycle has been submitted for review.`
         });
-        setSelectedCA(null);
-        setIsSubmitting(false);
+        setSelectedMcForLiquidation(null);
     }
     
     if (!user || !motorcycles || !cashAdvances) {
@@ -242,11 +210,6 @@ function LiquidationsContent() {
         currentPageCA * ITEMS_PER_PAGE
     );
     
-    const singleMcFormData = selectedCA ? formData[selectedCA.motorcycles[0].id] : null;
-    const totalLiquidation = (singleMcFormData?.ltoOrAmount || 0) + (singleMcFormData?.ltoProcessFee || 0);
-    const singleMcAdvance = selectedCA ? getMcAdvanceAmount(selectedCA.motorcycles[0]) : 0;
-    const shortageOverage = singleMcAdvance - totalLiquidation;
-
     return (
         <main className="flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
            <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as ViewMode)} className="w-full">
@@ -255,12 +218,10 @@ function LiquidationsContent() {
                         <TabsTrigger value="motorcycle">By Motorcycle</TabsTrigger>
                         <TabsTrigger value="ca">By Cash Advance</TabsTrigger>
                     </TabsList>
-                    {viewMode === 'motorcycle' && (
-                        <Button className="ml-auto" variant="outline" onClick={() => setIsFilterPanelVisible(!isFilterPanelVisible)}>
-                            <Filter className="mr-2 h-4 w-4" />
-                            Filters
-                        </Button>
-                    )}
+                    <Button className="ml-auto" variant="outline" onClick={() => setIsFilterPanelVisible(!isFilterPanelVisible)}>
+                        <Filter className="mr-2 h-4 w-4" />
+                        Filters
+                    </Button>
                </div>
                 <TabsContent value="motorcycle">
                     <div className="grid grid-cols-1 gap-6 items-start lg:grid-cols-4">
@@ -306,10 +267,10 @@ function LiquidationsContent() {
                                                             </Badge>
                                                         </TableCell>
                                                         <TableCell>
-                                                            {isLiaison && canLiquidate ? (
-                                                                <Button size="sm" onClick={() => handleLiquidateClick(mc, ca)}>
-                                                                    <FileUp className="mr-2 h-4 w-4" />
-                                                                    Liquidate
+                                                            {isLiaison ? (
+                                                                <Button size="sm" disabled={!canLiquidate} onClick={() => setSelectedMcForLiquidation(mc)}>
+                                                                    <Edit className="mr-2 h-4 w-4" />
+                                                                    Edit
                                                                 </Button>
                                                             ) : (
                                                                 <Button size="sm" variant="ghost" disabled>
@@ -477,49 +438,17 @@ function LiquidationsContent() {
                      </Card>
                 </TabsContent>
            </Tabs>
-
-             <Dialog open={!!selectedCA} onOpenChange={(open) => !open && setSelectedCA(null)}>
-                <DialogContent className="sm:max-w-xl">
-                    <DialogHeader>
-                        <DialogTitle>Liquidate: {selectedCA?.motorcycles[0].customerName}</DialogTitle>
-                        <DialogDescription>
-                        CA: {selectedCA?.cashAdvance.id} | Plate: {selectedCA?.motorcycles[0].plateNumber}
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="py-4 grid gap-4">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="grid gap-2">
-                                <Label htmlFor="lto-or-number">LTO OR Number</Label>
-                                <Input id="lto-or-number" placeholder="Enter LTO OR number" value={singleMcFormData?.ltoOrNumber || ''} onChange={e => handleFormChange(selectedCA!.motorcycles[0].id, 'ltoOrNumber', e.target.value)} />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="lto-or-amount">LTO OR Amount</Label>
-                                <Input id="lto-or-amount" type="number" placeholder="0.00" value={singleMcFormData?.ltoOrAmount || ''} onChange={e => handleFormChange(selectedCA!.motorcycles[0].id, 'ltoOrAmount', parseFloat(e.target.value) || 0)} />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="lto-process-fee">LTO Process Fee</Label>
-                                <Input id="lto-process-fee" type="number" placeholder="0.00" value={singleMcFormData?.ltoProcessFee || ''} onChange={e => handleFormChange(selectedCA!.motorcycles[0].id, 'ltoProcessFee', parseFloat(e.target.value) || 0)} />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="shortage-overage">Shortage / Overage</Label>
-                                <Input id="shortage-overage" type="number" placeholder="0.00" disabled value={shortageOverage.toFixed(2)} className={cn('font-bold', shortageOverage < 0 ? 'text-destructive' : 'text-green-600')} />
-                            </div>
-                        </div>
-                         <div className="grid gap-2">
-                            <Label htmlFor="remarks">Remarks</Label>
-                            <Textarea id="remarks" placeholder="Add any remarks here..." value={singleMcFormData?.remarks || ''} onChange={e => handleFormChange(selectedCA!.motorcycles[0].id, 'remarks', e.target.value)} />
-                        </div>
-                        <div className="grid gap-2">
-                            <Label htmlFor="receipt-upload">Upload Official Receipt</Label>
-                            <Input id="receipt-upload" type="file" onChange={e => handleFormChange(selectedCA!.motorcycles[0].id, 'receiptFile', e.target.files ? e.target.files[0] : null)} />
-                        </div>
-                    </div>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setSelectedCA(null)}>Cancel</Button>
-                        <Button onClick={handleFinalSubmit} loading={isSubmitting}>Submit Liquidation</Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+           
+           {selectedMcForLiquidation && caMapByMcId.get(selectedMcForLiquidation.id) && (
+             <LiquidationFormDialog 
+                motorcycle={selectedMcForLiquidation}
+                cashAdvance={caMapByMcId.get(selectedMcForLiquidation.id)!}
+                isOpen={!!selectedMcForLiquidation}
+                onClose={() => setSelectedMcForLiquidation(null)}
+                onSave={handleFinalSubmit}
+                getMcAdvanceAmount={getMcAdvanceAmount}
+             />
+           )}
         </main>
     );
 }
@@ -539,13 +468,3 @@ export default function LiquidationsPage() {
         </ProtectedPage>
     );
 }
-
-    
-
-    
-
-    
-
-    
-
-    

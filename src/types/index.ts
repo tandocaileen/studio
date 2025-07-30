@@ -42,6 +42,11 @@ export type Motorcycle = {
   endorsementCode?: string;
   csrNumber?: string;
   crNumber?: string;
+  mvFileNo?: string;
+  orType?: 'Computerized' | 'Manual';
+  orDateIssued?: Date;
+  orDateReceived?: Date;
+  hasPhysicalPlate?: boolean;
   liquidationDetails?: {
     ltoOrNumber: string;
     ltoOrAmount: number;
