@@ -11,7 +11,6 @@ import { AppLoader } from '@/components/layout/loader';
 import { Card, CardContent } from '@/components/ui/card';
 import { LiquidationReport } from '@/components/reports/liquidation-report';
 import { Button } from '@/components/ui/button';
-import { Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { generatePdf } from '@/lib/pdf';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -49,15 +48,6 @@ function LiquidationReportContent() {
     }
   }, [id]);
 
-  const handleDownload = async () => {
-    if (!reportRef.current) {
-        toast({ title: 'Error', description: 'Cannot download PDF. No document to download.', variant: 'destructive' });
-        return;
-    };
-    await generatePdf(reportRef.current, `liquidation_report_${id}.pdf`);
-    toast({ title: 'Download Started', description: `Downloading PDF for Liquidation Report #${id}`});
-  }
-
   if (loading) {
     return <AppLoader />;
   }
@@ -74,12 +64,6 @@ function LiquidationReportContent() {
 
   return (
     <div className="grid gap-4">
-      <div className="flex justify-end">
-        <Button onClick={handleDownload}>
-          <Download className="mr-2 h-4 w-4" />
-          Download PDF
-        </Button>
-      </div>
       <Card className="p-4">
         <CardContent className="p-0">
           <LiquidationReport ref={reportRef} reportData={reportData} />

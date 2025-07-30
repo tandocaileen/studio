@@ -143,15 +143,6 @@ export function CashAdvanceTable({ advances, onMotorcycleUpdate }: CashAdvanceTa
   };
 
 
-  const handleDownload = async () => {
-    if (!previewingAdvance || !documentRef.current) {
-        toast({ title: 'Error', description: 'Cannot download PDF. No document to download.', variant: 'destructive' });
-        return;
-    };
-    await generatePdf(documentRef.current, `cash_advance_${previewingAdvance.cashAdvance.id}.pdf`);
-    toast({ title: 'Download Started', description: `Downloading PDF for CA #${previewingAdvance.cashAdvance.id}`});
-  }
-
   const getStatusClass = (status: MotorcycleStatus | 'N/A'): string => {
     switch (status) {
       case 'For CA Approval': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
@@ -336,7 +327,7 @@ export function CashAdvanceTable({ advances, onMotorcycleUpdate }: CashAdvanceTa
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
                             <DropdownMenuItem onClick={() => setPreviewingAdvance(advance)}>
                                 <Eye className="mr-2 h-4 w-4" />
-                                <span>Preview/Print</span>
+                                <span>Preview</span>
                             </DropdownMenuItem>
                             {approveActionAvailable && (
                                 <DropdownMenuItem 
@@ -401,7 +392,7 @@ export function CashAdvanceTable({ advances, onMotorcycleUpdate }: CashAdvanceTa
             <DialogHeader>
                 <DialogTitle>Cash Advance Preview</DialogTitle>
                 <DialogDescription>
-                    Review the details of the cash advance request. You can download it as a PDF.
+                    Review the details of the cash advance request.
                 </DialogDescription>
             </DialogHeader>
             <div className="mt-4 max-h-[70vh] overflow-y-auto p-2">
@@ -415,10 +406,6 @@ export function CashAdvanceTable({ advances, onMotorcycleUpdate }: CashAdvanceTa
             </div>
             <DialogFooter>
                 <Button variant="outline" onClick={() => setPreviewingAdvance(null)}>Close</Button>
-                <Button onClick={handleDownload}>
-                    <Download className="mr-2 h-4 w-4"/>
-                    Download PDF
-                </Button>
             </DialogFooter>
         </DialogContent>
     </Dialog>
