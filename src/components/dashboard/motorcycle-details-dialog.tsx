@@ -13,18 +13,75 @@ import {
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Motorcycle } from '@/types';
+import { Document as Doc, Motorcycle } from '@/types';
 import { useAuth } from '@/context/AuthContext';
 import { InsuranceControlForm } from './insurance-control-form';
 import { ScrollArea } from '../ui/scroll-area';
 import { cn } from '@/lib/utils';
+import { Upload, FileText } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { DocumentType } from '@/types';
+import { format } from 'date-fns';
 
-type MotorcycleDetailsDialogProps = {
-  motorcycle: Motorcycle;
-  isOpen: boolean;
-  onClose: () => void;
-  onSave: (updatedData: Partial<Motorcycle>) => void;
-};
+const documentTypes: DocumentType[] = ['OR/CR', 'COC', 'Insurance', 'CSR', 'HPG Control Form'];
+
+function DocumentManager({ documents, onDocumentsChange, canEdit }: { documents: Doc[], onDocumentsChange: (docs: Doc[]) => void, canEdit: boolean }) {
+    const [newDocType, setNewDocType] = React.useState<DocumentType | ''>('');
+
+    const handleAddDocument = () => {
+        if (!newDocType) return;
+        const newDocument: Doc = {
+            type: newDocType as DocumentType,
+            url: `/docs/placeholder-${newDocType.toLowerCase().replace(' ', '_')}.pdf`,
+            uploadedAt: new Date(),
+        };
+        onDocumentsChange([...documents, newDocument]);
+        setNewDocType('');
+    };
+    
+    return (
+        <div>
+            <h3 className="font-semibold text-lg border-b pb-2 mt-6 mb-4">Documents</h3>
+            <div className="grid gap-4">
+                {documents.map((doc, index) => (
+                    <div key={index} className="flex items-center justify-between p-2 border rounded-md">
+                        <div className="flex items-center gap-2">
+                           <FileText className="h-5 w-5 text-muted-foreground" />
+                           <div>
+                               <p className="font-medium">{doc.type}</p>
+                               <p className="text-xs text-muted-foreground">Uploaded: {format(new Date(doc.uploadedAt), 'PPP')}</p>
+                           </div>
+                        </div>
+                         <Button variant="outline" size="sm" onClick={() => window.open(doc.url, '_blank')}>View</Button>
+                    </div>
+                ))}
+                {documents.length === 0 && (
+                    <p className="text-sm text-muted-foreground text-center py-4">No documents uploaded.</p>
+                )}
+
+                {canEdit && (
+                    <div className="flex items-center gap-2 pt-4 border-t">
+                        <Select value={newDocType} onValueChange={(v) => setNewDocType(v as DocumentType)}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select document type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {documentTypes.map(type => (
+                                    <SelectItem key={type} value={type}>{type}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <Button onClick={handleAddDocument} disabled={!newDocType}>
+                            <Upload className="mr-2 h-4 w-4" />
+                            Add Document
+                        </Button>
+                    </div>
+                )}
+            </div>
+        </div>
+    )
+}
+
 
 export function MotorcycleDetailsDialog({ motorcycle, isOpen, onClose, onSave }: MotorcycleDetailsDialogProps) {
   const { user } = useAuth();
@@ -44,6 +101,10 @@ export function MotorcycleDetailsDialog({ motorcycle, isOpen, onClose, onSave }:
     setEditedData(prev => ({ ...prev, [fieldName]: value }));
   };
 
+  const handleDocumentsChange = (newDocs: Doc[]) => {
+      setEditedData(prev => ({...prev, documents: newDocs}));
+  };
+
   const handleSave = () => {
     onSave(editedData);
     onClose();
@@ -59,7 +120,7 @@ export function MotorcycleDetailsDialog({ motorcycle, isOpen, onClose, onSave }:
             {isLiaison ? 'View Details' : 'View / Edit Details'} - {motorcycle.customerName}
           </DialogTitle>
           <DialogDescription>
-            {isLiaison ? 'Read-only view of motorcycle details.' : 'Update details for this unit.'}
+            {isLiaison ? 'Read-only view of motorcycle details.' : 'Update details and documents for this unit.'}
           </DialogDescription>
         </DialogHeader>
         <ScrollArea className="max-h-[70vh]">
@@ -116,6 +177,12 @@ export function MotorcycleDetailsDialog({ motorcycle, isOpen, onClose, onSave }:
               editedData={editedData}
               onDataChange={handleDataChange}
               canEdit={canEditInsuranceAndControl}
+            />
+
+            <DocumentManager 
+                documents={editedData.documents || []} 
+                onDocumentsChange={handleDocumentsChange} 
+                canEdit={!isLiaison}
             />
           </div>
         </ScrollArea>
