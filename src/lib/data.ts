@@ -36,6 +36,7 @@ const generateInitialData = () => {
     const DEMO_LIAISON = initialLiaisonUsers.find(l => l.name === 'BRYLE NIKKO HAMILI')!;
     const SUPERVISOR_NAME = 'Naruto Uzumaki';
     const CASHIER_NAME = 'Sasuke Uchiha';
+    const ACCOUNTING_NAME = 'Sakura Haruno';
 
     const makes = ['Honda', 'Yamaha', 'Suzuki', 'Kawasaki'];
     const models = ['Click 125i', 'NMAX', 'Raider R150', 'Ninja 400', 'Mio Aerox', 'PCX 160'];
@@ -189,6 +190,8 @@ const generateInitialData = () => {
         arNumber: 'AR-12345',
         arDate: addDays(today, -10),
         arAmount: mcsForCA3.reduce((sum) => sum + DEMO_LIAISON.processingFee + DEMO_LIAISON.orFee, 0),
+        verifiedBy: ACCOUNTING_NAME,
+        verificationRemarks: 'All documents are in order. Shortage/Overage is within acceptable limits. Cleared for closing.',
     };
     cashAdvances.push(ca3);
     mcsForCA3.forEach(mc => {
@@ -241,7 +244,7 @@ const generateInitialData = () => {
 const MC_KEY = 'lto_motorcycles';
 const CA_KEY = 'lto_cash_advances';
 const ENDO_KEY = 'lto_endorsements';
-const DATA_FLAG = 'data_generated_flag_v15'; // Increment version to force reset
+const DATA_FLAG = 'data_generated_flag_v16'; // Increment version to force reset
 
 const initializeData = () => {
     if (typeof window !== 'undefined') {

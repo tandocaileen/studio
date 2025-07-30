@@ -192,7 +192,7 @@ function CompletedReportContent() {
                 </Card>
             )}
 
-            <Button onClick={() => setIsCaDialogOpen(true)}>
+            <Button variant="secondary" onClick={() => setIsCaDialogOpen(true)}>
                 <DollarSign className="mr-2 h-4 w-4" /> View Cash Advance
             </Button>
         </div>

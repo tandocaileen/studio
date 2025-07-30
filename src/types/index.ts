@@ -1,8 +1,4 @@
 
-
-
-
-
 export type DocumentType = 'OR/CR' | 'COC' | 'Insurance' | 'CSR' | 'HPG Control Form';
 
 export type Document = {
@@ -118,9 +114,3 @@ export type Endorsement = {
     motorcycleIds: string[];
     createdBy: string;
 }
-
-
-
-
-
-
