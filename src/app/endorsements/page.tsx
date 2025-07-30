@@ -19,6 +19,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
+import { useAuth } from '@/context/AuthContext';
+import { LiaisonEndorsementTable } from '@/components/dashboard/liaison-endorsement-table';
 
 type DateRange = '7d' | '30d' | 'all';
 type EnrichedEndorsement = {
@@ -82,12 +84,6 @@ function EndorsementsContent() {
                         Browse and manage all created endorsements.
                     </CardDescription>
                 </div>
-                {/* 
-                 <Button onClick={() => router.push('/endorsements/create')}>
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Create New Endorsement
-                </Button> 
-                */}
             </CardHeader>
             <CardContent>
                  <div className="flex items-center gap-4 mb-4">
@@ -210,15 +206,66 @@ function EndorsementsContent() {
     )
 }
 
-export default function EndorsementsPage() {
+function LiaisonDashboardContent({ searchQuery }: { searchQuery: string }) {
+    const [motorcycles, setMotorcycles] = React.useState<Motorcycle[] | null>(null);
+    const [endorsements, setEndorsements] = React.useState<Endorsement[] | null>(null);
+    
+    const { user } = useAuth();
+
+    React.useEffect(() => {
+        if (user) {
+            Promise.all([
+                getMotorcycles(),
+                getEndorsements()
+            ]).then(([motorcycleData, endorsementData]) => {
+                setEndorsements(endorsementData.filter(e => e.liaisonName === user.name));
+                setMotorcycles(motorcycleData);
+            });
+        }
+    }, [user]);
+
+    if (!user || !motorcycles || !endorsements) {
+        return <AppLoader />;
+    }
+
+    const handleStateUpdate = async (updatedOrNewMotorcycles: Motorcycle | Motorcycle[]) => {
+        // This is a placeholder for a real state update mechanism
+        console.log("State update requested for:", updatedOrNewMotorcycles);
+    };
+
     return (
-        <ProtectedPage allowedRoles={['Store Supervisor', 'Cashier']}>
+        <LiaisonEndorsementTable 
+            endorsements={endorsements}
+            motorcycles={motorcycles}
+            onStateChange={handleStateUpdate}
+            searchQuery={searchQuery}
+        />
+    );
+}
+
+export default function EndorsementsPage() {
+    const { user, loading } = useAuth();
+    const [searchQuery, setSearchQuery] = React.useState('');
+
+    if (loading || !user) {
+        return <AppLoader />;
+    }
+
+    const renderContent = () => {
+        if (user.role === 'Liaison') {
+            return <LiaisonDashboardContent searchQuery={searchQuery} />;
+        }
+        return <EndorsementsContent />;
+    };
+
+    return (
+        <ProtectedPage allowedRoles={['Store Supervisor', 'Cashier', 'Liaison']}>
             <div className="flex min-h-screen w-full flex-col bg-muted/40">
                 <AppSidebar />
                 <div className="flex flex-col pt-14 sm:gap-4 sm:py-4 sm:pl-14">
-                    <Header title="Endorsements" />
+                    <Header title="Endorsements" onSearch={setSearchQuery}/>
                     <main className="flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-                       <EndorsementsContent />
+                       {renderContent()}
                     </main>
                 </div>
             </div>

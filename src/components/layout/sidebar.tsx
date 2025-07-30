@@ -12,7 +12,15 @@ import {
   LogOut,
   Users,
   FilePenLine,
-  FileArchive,
+  FileCheck,
+  FileClock,
+  SendToBack,
+  FileSearch,
+  FileDiff,
+  CheckCircle2,
+  Hourglass,
+  PackageCheck,
+  Banknote
 } from 'lucide-react';
 import {
   Tooltip,
@@ -21,42 +29,74 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { Logo } from '@/components/icons';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Sheet, SheetContent, SheetTrigger } from '../ui/sheet';
 import { Button } from '../ui/button';
 import { useAuth, UserRole } from '@/context/AuthContext';
+import React from 'react';
 
 type NavItem = {
   href: string;
   icon: React.ElementType;
   label: string;
   allowedRoles: UserRole[];
+  exact?: boolean;
 }
 
 const navItems: NavItem[] = [
-  { href: '/home', icon: Home, label: 'Dashboard', allowedRoles: ['Store Supervisor', 'Cashier', 'Accounting'] },
-  { href: '/home', icon: Home, label: 'Home', allowedRoles: ['Liaison'] },
-  { href: '/endorsements', icon: FilePenLine, label: 'Endorsements', allowedRoles: ['Store Supervisor', 'Cashier'] },
-  { href: '/cash-advances', icon: DollarSign, label: 'Cash Advances', allowedRoles: ['Liaison', 'Cashier', 'Store Supervisor'] },
-  { href: '/liquidations', icon: Receipt, label: 'Liquidations', allowedRoles: ['Store Supervisor', 'Liaison', 'Cashier'] },
-  { href: '/users', icon: Users, label: 'Users', allowedRoles: ['Store Supervisor', 'Cashier'] },
-  { href: '/settings', icon: Settings, label: 'Settings', allowedRoles: ['Store Supervisor', 'Liaison', 'Cashier', 'Accounting'] },
-  { href: '/support', icon: LifeBuoy, label: 'Support', allowedRoles: ['Store Supervisor', 'Liaison', 'Cashier', 'Accounting'] },
+    // Cashier & Supervisor
+    { href: '/pending', icon: Hourglass, label: 'Pending', allowedRoles: ['Store Supervisor', 'Cashier'], exact: true },
+    { href: '/endorsed', icon: FilePenLine, label: 'Endorsed', allowedRoles: ['Store Supervisor', 'Cashier'] },
+    { href: '/for-cv-issuance', icon: Banknote, label: 'For CV Issuance', allowedRoles: ['Store Supervisor', 'Cashier'] },
+    { href: '/released-cv', icon: PackageCheck, label: 'Released CV', allowedRoles: ['Store Supervisor', 'Cashier'] },
+    { href: '/liquidations', icon: Receipt, label: 'Liquidations', allowedRoles: ['Store Supervisor', 'Cashier']},
+
+    // Liaison
+    { href: '/endorsed', icon: SendToBack, label: 'Endorsed', allowedRoles: ['Liaison'], exact: true },
+    { href: '/for-ca-approval', icon: FileClock, label: 'For CA Approval', allowedRoles: ['Liaison'] },
+    { href: '/released-cv', icon: PackageCheck, label: 'Released CV', allowedRoles: ['Liaison'] },
+    { href: '/for-liquidation', icon: FileDiff, label: 'For Liquidation', allowedRoles: ['Liaison'] },
+    { href: '/completed', icon: FileCheck, label: 'Completed', allowedRoles: ['Liaison'] },
+    
+    // Accounting
+    { href: '/for-ca-approval', icon: FileClock, label: 'For CA Approval', allowedRoles: ['Accounting'], exact: true },
+    { href: '/released-cv', icon: PackageCheck, label: 'Released CVs', allowedRoles: ['Accounting'] },
+    { href: '/for-verification', icon: FileSearch, label: 'For Verification', allowedRoles: ['Accounting'] },
+
+    // Common
+    { href: '/users', icon: Users, label: 'Users', allowedRoles: ['Store Supervisor', 'Cashier'] },
+    { href: '/settings', icon: Settings, label: 'Settings', allowedRoles: ['Store Supervisor', 'Liaison', 'Cashier', 'Accounting'] },
+    { href: '/support', icon: LifeBuoy, label: 'Support', allowedRoles: ['Store Supervisor', 'Liaison', 'Cashier', 'Accounting'] },
 ];
+
+const homeRoutes: Partial<Record<UserRole, string>> = {
+    'Store Supervisor': '/pending',
+    'Cashier': '/pending',
+    'Liaison': '/endorsed',
+    'Accounting': '/released-cv',
+};
 
 export function AppSidebar() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
-
+  
   if (!user) return null;
 
   const accessibleNavItems = navItems.filter(item => item.allowedRoles.includes(user.role));
+  const homeRoute = homeRoutes[user.role] || '/';
 
+  const isLinkActive = (item: NavItem) => {
+      if (item.exact) {
+          return pathname === item.href;
+      }
+      return pathname.startsWith(item.href);
+  };
+  
   const mainNav = (
     <nav className="flex flex-col items-center gap-4 px-2 sm:py-5">
       <Link
-        href="/home"
+        href={homeRoute}
         className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base"
       >
         <Logo className="h-5 w-5 transition-all group-hover:scale-110" />
@@ -64,13 +104,13 @@ export function AppSidebar() {
       </Link>
       <TooltipProvider>
         {accessibleNavItems.map((item) => (
-          <Tooltip key={item.label}>
+          <Tooltip key={`${item.label}-${item.href}`}>
             <TooltipTrigger asChild>
               <Link
                 href={item.href}
                 className={cn(
                   'flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8',
-                  pathname.startsWith(item.href) && 'bg-accent text-accent-foreground'
+                   isLinkActive(item) && 'bg-accent text-accent-foreground'
                 )}
               >
                 <item.icon className="h-5 w-5" />
@@ -87,7 +127,7 @@ export function AppSidebar() {
   const mobileNav = (
      <nav className="grid gap-6 text-lg font-medium">
         <Link
-          href="/home"
+          href={homeRoute}
           className="group flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:text-base"
         >
           <Logo className="h-5 w-5 transition-all group-hover:scale-110" />
@@ -95,11 +135,11 @@ export function AppSidebar() {
         </Link>
         {accessibleNavItems.map((item) => (
            <Link
-              key={item.label}
+              key={`${item.label}-${item.href}`}
               href={item.href}
               className={cn(
                 'flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground',
-                 pathname.startsWith(item.href) && 'text-foreground'
+                 isLinkActive(item) && 'text-foreground'
               )}
             >
               <item.icon className="h-5 w-5" />

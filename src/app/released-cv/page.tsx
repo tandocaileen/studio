@@ -1,0 +1,266 @@
+
+'use client';
+
+import { Header } from "@/components/layout/header";
+import { AppSidebar } from "@/components/layout/sidebar";
+import { CashAdvanceTable } from "@/components/cash-advances/cash-advance-table";
+import { getCashAdvances, getMotorcycles, updateMotorcycles } from "@/lib/data";
+import React, { useState, useEffect } from "react";
+import { AppLoader } from "@/components/layout/loader";
+import { ProtectedPage } from "@/components/auth/protected-page";
+import { CashAdvance, Motorcycle } from "@/types";
+import { EnrichedCashAdvance } from "../cash-advances/page";
+import { useAuth } from "@/context/AuthContext";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
+import { Button } from "@/components/ui/button";
+import { ChevronDown, Eye } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
+
+type GroupedByCV = {
+    cvNumber: string;
+    advances: EnrichedCashAdvance[];
+}
+
+function ReleasedCvContentLiaison({ searchQuery }: { searchQuery: string }) {
+    const [allCAs, setAllCAs] = useState<CashAdvance[] | null>(null);
+    const [allMotorcycles, setAllMotorcycles] = useState<Motorcycle[] | null>(null);
+    const [openCvGroups, setOpenCvGroups] = useState<string[]>([]);
+    
+    const { user } = useAuth();
+
+    useEffect(() => {
+        const fetchData = async () => {
+            const [cashAdvances, motorcycles] = await Promise.all([
+                getCashAdvances(), 
+                getMotorcycles(), 
+            ]);
+            setAllCAs(cashAdvances);
+            setAllMotorcycles(motorcycles);
+        };
+
+        fetchData();
+    }, []);
+    
+    if (!allCAs || !allMotorcycles || !user) {
+        return <AppLoader />;
+    }
+
+    const enrichCashAdvances = (cas: CashAdvance[], motorcycles: Motorcycle[]): EnrichedCashAdvance[] => {
+        return cas.map(ca => {
+            const associatedMotorcycles = (ca.motorcycleIds || [])
+                .map(id => motorcycles.find(m => m.id === id))
+                .filter((m): m is Motorcycle => !!m);
+            
+            return { 
+                cashAdvance: ca, 
+                motorcycles: associatedMotorcycles
+            };
+        });
+    };
+    
+    const getDynamicCAStatus = (motorcycles: Motorcycle[]): string | 'N/A' => {
+        if (!motorcycles || motorcycles.length === 0) return 'N/A';
+        return motorcycles[0].status;
+    };
+    
+    const relevantAdvances = allCAs.filter(ca => ca.personnel === user.name);
+
+    const filteredByStatus = enrichCashAdvances(relevantAdvances, allMotorcycles).filter(item => {
+        const dynamicStatus = getDynamicCAStatus(item.motorcycles);
+        return dynamicStatus === 'Released CVs';
+    });
+
+    const filteredBySearch = filteredByStatus.filter(item => {
+        const { cashAdvance, motorcycles } = item;
+        const query = searchQuery.toLowerCase();
+
+        if (motorcycles.some(m => m.customerName?.toLowerCase().includes(query))) return true;
+        if (motorcycles.some(m => m.model.toLowerCase().includes(query))) return true;
+        if (motorcycles.some(m => m.plateNumber?.toLowerCase().includes(query))) return true;
+        if (cashAdvance.purpose.toLowerCase().includes(query)) return true;
+        if (cashAdvance.id.toLowerCase().includes(query)) return true;
+        if (cashAdvance.checkVoucherNumber?.toLowerCase().includes(query)) return true;
+        
+        if (query === '') return true;
+
+        return false;
+    });
+
+    const groupedByCvNumber = filteredBySearch.reduce((acc, item) => {
+        const cv = item.cashAdvance.checkVoucherNumber || 'Unassigned';
+        if (!acc[cv]) {
+            acc[cv] = { cvNumber: cv, advances: [] };
+        }
+        acc[cv].advances.push(item);
+        return acc;
+    }, {} as Record<string, GroupedByCV>);
+
+    const groupedArray = Object.values(groupedByCvNumber);
+    
+    const toggleOpenCvGroup = (cvNumber: string) => {
+        setOpenCvGroups(prev => prev.includes(cvNumber) ? prev.filter(cv => cv !== cvNumber) : [...prev, cvNumber]);
+    };
+
+    return (
+        <div className="grid gap-4">
+            {groupedArray.map(group => (
+                <Collapsible 
+                    key={group.cvNumber} 
+                    className="border rounded-lg"
+                    open={openCvGroups.includes(group.cvNumber)}
+                    onOpenChange={() => toggleOpenCvGroup(group.cvNumber)}
+                >
+                    <CollapsibleTrigger asChild>
+                        <div className="flex items-center justify-between p-4 cursor-pointer bg-muted/50 rounded-t-lg">
+                           <div className="flex items-center gap-4">
+                             <ChevronDown className="h-5 w-5 transition-transform data-[state=open]:rotate-180" />
+                            <div>
+                                <h3 className="font-semibold">CV #{group.cvNumber}</h3>
+                                <p className="text-sm text-muted-foreground">{group.advances.length} Cash Advance(s) included</p>
+                            </div>
+                           </div>
+                           <Button variant="outline" size="sm">View Details</Button>
+                        </div>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>CA Number</TableHead>
+                                    <TableHead>Purpose</TableHead>
+                                    <TableHead>Date</TableHead>
+                                    <TableHead className="text-right">Amount</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {group.advances.map(item => (
+                                    <TableRow key={item.cashAdvance.id}>
+                                        <TableCell>{item.cashAdvance.id}</TableCell>
+                                        <TableCell>{item.cashAdvance.purpose}</TableCell>
+                                        <TableCell>{format(new Date(item.cashAdvance.date), 'MMM dd, yyyy')}</TableCell>
+                                        <TableCell className="text-right">₱{item.cashAdvance.amount.toLocaleString()}</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </CollapsibleContent>
+                </Collapsible>
+            ))}
+            {groupedArray.length === 0 && (
+                <Card>
+                    <CardContent className="py-12 text-center text-muted-foreground">
+                        No released CVs found.
+                    </CardContent>
+                </Card>
+            )}
+        </div>
+    );
+}
+
+
+function ReleasedCvContentSupervisor({ searchQuery }: { searchQuery: string }) {
+    const [allCAs, setAllCAs] = useState<CashAdvance[] | null>(null);
+    const [allMotorcycles, setAllMotorcycles] = useState<Motorcycle[] | null>(null);
+    
+    useEffect(() => {
+        const fetchData = async () => {
+            const [cashAdvances, motorcycles] = await Promise.all([
+                getCashAdvances(), 
+                getMotorcycles(), 
+            ]);
+            setAllCAs(cashAdvances);
+            setAllMotorcycles(motorcycles);
+        };
+        fetchData();
+    }, []);
+    
+    if (!allCAs || !allMotorcycles) {
+        return <AppLoader />;
+    }
+
+    const enrichCashAdvances = (cas: CashAdvance[], motorcycles: Motorcycle[]): EnrichedCashAdvance[] => {
+        return cas.map(ca => {
+            const associatedMotorcycles = (ca.motorcycleIds || [])
+                .map(id => motorcycles.find(m => m.id === id))
+                .filter((m): m is Motorcycle => !!m);
+            
+            return { 
+                cashAdvance: ca, 
+                motorcycles: associatedMotorcycles
+            };
+        });
+    };
+    
+    const handleUpdateMotorcycles = async (updatedItems: Motorcycle[]) => {
+        await updateMotorcycles(updatedItems);
+        const [cashAdvances, motorcycles] = await Promise.all([getCashAdvances(), getMotorcycles()]);
+        setAllCAs(cashAdvances);
+        setAllMotorcycles(motorcycles);
+    };
+
+    const getDynamicCAStatus = (motorcycles: Motorcycle[]): string | 'N/A' => {
+        if (!motorcycles || motorcycles.length === 0) return 'N/A';
+        return motorcycles[0].status;
+    };
+
+    const filteredByStatus = enrichCashAdvances(allCAs, allMotorcycles).filter(item => {
+        const dynamicStatus = getDynamicCAStatus(item.motorcycles);
+        return dynamicStatus === 'Released CVs';
+    });
+
+    const filteredBySearch = filteredByStatus.filter(item => {
+        const { cashAdvance, motorcycles } = item;
+        const query = searchQuery.toLowerCase();
+
+        if (motorcycles.some(m => m.customerName?.toLowerCase().includes(query))) return true;
+        if (motorcycles.some(m => m.model.toLowerCase().includes(query))) return true;
+        if (motorcycles.some(m => m.plateNumber?.toLowerCase().includes(query))) return true;
+        if (cashAdvance.purpose.toLowerCase().includes(query)) return true;
+        if (cashAdvance.personnel.toLowerCase().includes(query)) return true;
+        if (cashAdvance.checkVoucherNumber?.toLowerCase().includes(query)) return true;
+
+        
+        if (query === '') return true;
+
+        return false;
+    });
+
+    return (
+        <CashAdvanceTable 
+            advances={filteredBySearch} 
+            onMotorcycleUpdate={handleUpdateMotorcycles}
+        />
+    );
+}
+
+export default function ReleasedCvPage() {
+    const [searchQuery, setSearchQuery] = useState('');
+    const { user } = useAuth();
+
+    if (!user) return <AppLoader />;
+
+    const renderContent = () => {
+        if (user.role === 'Liaison') {
+            return <ReleasedCvContentLiaison searchQuery={searchQuery} />
+        }
+        return <ReleasedCvContentSupervisor searchQuery={searchQuery} />
+    }
+
+    return (
+        <ProtectedPage allowedRoles={['Cashier', 'Store Supervisor', 'Liaison', 'Accounting']}>
+            <div className="flex min-h-screen w-full flex-col bg-muted/40">
+                <AppSidebar />
+                <div className="flex flex-col pt-14 sm:gap-4 sm:py-4 sm:pl-14">
+                    <Header title="Released CVs" onSearch={setSearchQuery} />
+                    <main className="flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
+                        {renderContent()}
+                    </main>
+                </div>
+            </div>
+        </ProtectedPage>
+    );
+}
+
