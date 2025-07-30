@@ -32,7 +32,7 @@ import { Logo } from '@/components/icons';
 import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Sheet, SheetContent, SheetTrigger } from '../ui/sheet';
-import { Button } from '../ui/button';
+import { Button, buttonVariants } from '../ui/button';
 import { useAuth, UserRole } from '@/context/AuthContext';
 import React, { useState } from 'react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../ui/collapsible';
@@ -136,7 +136,7 @@ const NavLink = ({ item }: { item: NavItem; }) => {
                     >
                          <span className='flex items-center gap-2'>
                             <item.icon className="h-5 w-5" />
-                            {isCollapsed !== 'collapsed' && <span>{item.label}</span>}
+                            {!isCollapsed && <span>{item.label}</span>}
                         </span>
                     </Link>
                 </TooltipTrigger>
@@ -177,7 +177,7 @@ export function AppSidebar() {
             <nav className="grid gap-2 px-2">
                  {accessibleNavItems.map((item) => <NavLink key={item.href} item={item} />)}
                  <hr className="my-4"/>
-                 {[...supervisorAndCashierCommonItems, ...commonNavItems].map((item) => <NavLink key={item.href} item={item} />)}
+                 {accessibleCommonItems.map((item) => <NavLink key={item.href} item={item} />)}
             </nav>
         </SidebarContent>
         <SidebarFooter>
