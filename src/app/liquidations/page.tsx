@@ -103,13 +103,12 @@ function LiquidationsContent() {
         };
 
         const allMotorcyclesForView = motorcycles.filter(mc => {
-            const ca = caMapByMcId.get(mc.id);
+             const ca = caMapByMcId.get(mc.id);
             if (!ca) return false;
             
-            const isRelevantCAStatus = ['CV Received', 'Liquidated', 'Processing', 'For Review'].includes(ca.status);
-            if (!isRelevantCAStatus && mc.status !== 'Processing') return false;
+            const isRelevantForLiquidation = (mc.status === 'Processing' || ca.status === 'CV Received' || mc.status === 'For Review');
             
-            return true;
+            return isRelevantForLiquidation;
         });
 
         return { caMapByMcId, getMcAdvanceAmount, allMotorcyclesForView };
@@ -186,8 +185,7 @@ function LiquidationsContent() {
     }
 
     const isLiaison = user.role === 'Liaison';
-    const canSeeFilters = !isLiaison;
-
+    
     // MC Tab Filter Logic
     const motorcyclesToShow = allMotorcyclesForView.filter(mc => {
         if (activeMcStatusFilters.length === 0) return true;
@@ -226,7 +224,7 @@ function LiquidationsContent() {
             return { cashAdvance: ca, motorcycles: associatedMotorcycles };
         })
         .filter(group => {
-            if (!canSeeFilters || caFilter === 'all') return true;
+            if (caFilter === 'all') return true;
 
             const totalCount = group.motorcycles.length;
             const liquidatedCount = group.motorcycles.filter(m => m.status === 'For Review' || !!m.liquidationDetails).length;
@@ -257,7 +255,7 @@ function LiquidationsContent() {
                         <TabsTrigger value="motorcycle">By Motorcycle</TabsTrigger>
                         <TabsTrigger value="ca">By Cash Advance</TabsTrigger>
                     </TabsList>
-                    {canSeeFilters && viewMode === 'motorcycle' && (
+                    {viewMode === 'motorcycle' && (
                         <Button className="ml-auto" variant="outline" onClick={() => setIsFilterPanelVisible(!isFilterPanelVisible)}>
                             <Filter className="mr-2 h-4 w-4" />
                             Filters
@@ -265,16 +263,13 @@ function LiquidationsContent() {
                     )}
                </div>
                 <TabsContent value="motorcycle">
-                    <div className={cn("grid grid-cols-1 gap-6 items-start", canSeeFilters && "lg:grid-cols-4")}>
-                         <div className={cn("lg:col-span-4", canSeeFilters && isFilterPanelVisible && "lg:col-span-3")}>
+                    <div className="grid grid-cols-1 gap-6 items-start lg:grid-cols-4">
+                         <div className={cn("lg:col-span-4", isFilterPanelVisible && "lg:col-span-3")}>
                            <Card>
                                <CardHeader>
                                    <CardTitle>Motorcycles for Liquidation</CardTitle>
                                    <CardDescription>
-                                        {isLiaison 
-                                            ? "Motorcycles assigned to you that are ready for liquidation."
-                                            : "View all motorcycles pending or under review for liquidation."
-                                        }
+                                        View all motorcycles pending or under review for liquidation.
                                    </CardDescription>
                                </CardHeader>
                                <CardContent>
@@ -335,7 +330,7 @@ function LiquidationsContent() {
                                </CardContent>
                            </Card>
                         </div>
-                        {canSeeFilters && isFilterPanelVisible && (
+                        {isFilterPanelVisible && (
                              <div className="lg:col-span-1 lg:sticky top-20">
                                 <Card>
                                     <CardHeader>
@@ -382,21 +377,19 @@ function LiquidationsContent() {
                         <CardHeader>
                             <CardTitle>Cash Advance Liquidations</CardTitle>
                             <CardDescription>View liquidation status grouped by cash advance.</CardDescription>
-                             {canSeeFilters && (
-                                <div className="pt-2">
-                                    <Select value={caFilter} onValueChange={(v) => setCaFilter(v as CAViewFilter)}>
-                                        <SelectTrigger className="w-[240px]">
-                                            <SelectValue placeholder="Filter by status" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="all">All Statuses</SelectItem>
-                                            <SelectItem value="pending">Pending</SelectItem>
-                                            <SelectItem value="partially">Partially Liquidated</SelectItem>
-                                            <SelectItem value="fully">Fully Liquidated</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                             )}
+                            <div className="pt-2">
+                                <Select value={caFilter} onValueChange={(v) => setCaFilter(v as CAViewFilter)}>
+                                    <SelectTrigger className="w-[240px]">
+                                        <SelectValue placeholder="Filter by status" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All Statuses</SelectItem>
+                                        <SelectItem value="pending">Pending</SelectItem>
+                                        <SelectItem value="partially">Partially Liquidated</SelectItem>
+                                        <SelectItem value="fully">Fully Liquidated</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </CardHeader>
                         <CardContent>
                             <div className="grid gap-4">
@@ -546,6 +539,8 @@ export default function LiquidationsPage() {
         </ProtectedPage>
     );
 }
+
+    
 
     
 
