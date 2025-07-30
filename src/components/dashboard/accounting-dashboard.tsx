@@ -12,22 +12,22 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Badge } from '../ui/badge';
 import { format } from 'date-fns';
 import { useRouter } from 'next/navigation';
-import { Check, ChevronsUpDown, Filter, RotateCcw, Search, Sheet, ShieldCheck } from 'lucide-react';
+import { Check, ChevronsUpDown, Eye, Filter, RotateCcw, Search, Sheet, ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../ui/collapsible';
 import { Label } from '../ui/label';
 import { Separator } from '../ui/separator';
 import { Checkbox } from '../ui/checkbox';
 
-type LiquidationStatus = 'Fully Liquidated' | 'Partially Liquidated' | 'Pending Liquidation';
+type LiquidationStatus = 'Fully Liquidated' | 'Partially Liquidated';
 
 type GroupedCashAdvance = {
   cashAdvance: CashAdvance;
   motorcycles: Motorcycle[];
-  liquidationStatus: LiquidationStatus;
+  liquidationStatus: LiquidationStatus | 'Pending'; // 'Pending' is internal
 };
 
-const ALL_STATUSES: LiquidationStatus[] = ['Fully Liquidated', 'Partially Liquidated', 'Pending Liquidation'];
+const ALL_STATUSES: LiquidationStatus[] = ['Fully Liquidated', 'Partially Liquidated'];
 const ITEMS_PER_PAGE = 10;
 
 export function AccountingDashboardContent({ searchQuery }: { searchQuery: string }) {
@@ -65,19 +65,21 @@ export function AccountingDashboardContent({ searchQuery }: { searchQuery: strin
       const totalCount = motorcycles.length;
       const liquidatedCount = motorcycles.filter(m => m.status === 'For Review').length;
 
-      let liquidationStatus: LiquidationStatus;
+      let liquidationStatus: GroupedCashAdvance['liquidationStatus'];
       if (totalCount > 0 && liquidatedCount === totalCount) {
         liquidationStatus = 'Fully Liquidated';
       } else if (liquidatedCount > 0) {
         liquidationStatus = 'Partially Liquidated';
       } else {
-        liquidationStatus = 'Pending Liquidation';
+        liquidationStatus = 'Pending';
       }
 
       return { cashAdvance: ca, motorcycles, liquidationStatus };
     })
     .filter(group => {
-       if (activeStatusFilters.length > 0 && !activeStatusFilters.includes(group.liquidationStatus)) {
+       if (group.liquidationStatus === 'Pending') return false; // Exclude pending from view
+
+       if (activeStatusFilters.length > 0 && !activeStatusFilters.includes(group.liquidationStatus as LiquidationStatus)) {
             return false;
         }
 
@@ -98,8 +100,8 @@ export function AccountingDashboardContent({ searchQuery }: { searchQuery: strin
   };
 
   const clearFilters = () => {
-    setTempStatusFilters([]);
-    setActiveStatusFilters([]);
+    setTempStatusFilters(['Fully Liquidated']);
+    setActiveStatusFilters(['Fully Liquidated']);
     setCurrentPage(1);
   };
 
@@ -171,9 +173,17 @@ export function AccountingDashboardContent({ searchQuery }: { searchQuery: strin
                                             {liquidationStatus}
                                         </Badge>
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell className="flex items-center gap-2">
                                         <Button 
                                             size="sm"
+                                            onClick={() => router.push(`/reports/liquidation/${cashAdvance.id}`)}
+                                        >
+                                            <Eye className="mr-2 h-4 w-4" />
+                                            Report
+                                        </Button>
+                                        <Button 
+                                            size="sm"
+                                            variant="outline"
                                             onClick={() => router.push(`/verify/${cashAdvance.id}`)}
                                             disabled={liquidationStatus !== 'Fully Liquidated'}
                                         >
