@@ -50,7 +50,7 @@ const navItems: NavItem[] = [
     { href: '/endorsements', icon: FilePenLine, label: 'Endorsed', allowedRoles: ['Store Supervisor', 'Cashier'] },
     { href: '/for-cv-issuance', icon: Banknote, label: 'For CV Issuance', allowedRoles: ['Store Supervisor', 'Cashier'] },
     { href: '/released-cv', icon: PackageCheck, label: 'Released CV', allowedRoles: ['Store Supervisor', 'Cashier'] },
-    { href: '/pending', icon: Receipt, label: 'Liquidations', allowedRoles: ['Store Supervisor', 'Cashier']},
+    { href: '/liquidations/view', icon: Receipt, label: 'Liquidations', allowedRoles: ['Store Supervisor', 'Cashier']},
 
     // Liaison
     { href: '/endorsements', icon: SendToBack, label: 'Endorsed', allowedRoles: ['Liaison'], exact: true },
