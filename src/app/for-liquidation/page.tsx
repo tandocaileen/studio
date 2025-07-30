@@ -26,6 +26,8 @@ function ForLiquidationContent() {
     React.useEffect(() => {
         const fetchData = async () => {
             const [mcs, cas] = await Promise.all([getMotorcycles(), getCashAdvances()]);
+            console.log('[For Liquidation] Fetched Motorcycles:', mcs);
+            console.log('[For Liquidation] Fetched Cash Advances:', cas);
             setMotorcycles(mcs);
             setCashAdvances(cas);
         };
@@ -55,6 +57,7 @@ function ForLiquidationContent() {
             return ca.amount / ca.motorcycleIds.length;
         };
 
+        console.log('[For Liquidation] Precomputed Data:', { caMapByMcId });
         return { caMapByMcId, getMcAdvanceAmount };
 
     }, [motorcycles, cashAdvances, user]);
@@ -87,6 +90,7 @@ function ForLiquidationContent() {
             }
         };
         
+        console.log('[For Liquidation] Final Submit Data:', updatedMotorcycle);
         await updateMotorcycles(updatedMotorcycle);
         const updatedMotorcyclesData = await getMotorcycles();
         setMotorcycles(updatedMotorcyclesData);
@@ -105,7 +109,8 @@ function ForLiquidationContent() {
         if (!mcToUpdate) return;
         
         const updatedMotorcycle: Motorcycle = { ...mcToUpdate, ...updatedMotorcycleData };
-
+        
+        console.log('[For Liquidation] Save Details Data:', updatedMotorcycle);
         await updateMotorcycles(updatedMotorcycle);
         const updatedMotorcyclesData = await getMotorcycles();
         setMotorcycles(updatedMotorcyclesData);
@@ -125,6 +130,8 @@ function ForLiquidationContent() {
     const motorcyclesToShow = motorcycles.filter(mc => 
         mc.status === 'For Liquidation' && mc.assignedLiaison === user.name
     );
+    
+    console.log('[For Liquidation] Motorcycles to Show:', motorcyclesToShow);
 
     return (
         <>
