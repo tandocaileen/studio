@@ -225,8 +225,8 @@ const generateInitialData = () => {
     const liaisonJinky = otherLiaisons[0];
     cashAdvances.push({
         id: 'ca-072524-005',
-        personnel: liaisonJinky.name,
-        personnelBranch: liaisonJinky.assignedBranch,
+        personnel: DEMO_LIAISON.name,
+        personnelBranch: DEMO_LIAISON.assignedBranch,
         purpose: 'Registration for 2 units',
         amount: (liaisonJinky.processingFee + liaisonJinky.orFee) * 2,
         date: addDays(today, -3),
@@ -240,8 +240,8 @@ const generateInitialData = () => {
     const liaisonRodel = otherLiaisons[2];
     cashAdvances.push({
         id: 'ca-072424-006',
-        personnel: liaisonRodel.name,
-        personnelBranch: liaisonRodel.assignedBranch,
+        personnel: DEMO_LIAISON.name,
+        personnelBranch: DEMO_LIAISON.assignedBranch,
         purpose: 'CA for Suzuki Raider',
         amount: liaisonRodel.processingFee + liaisonRodel.orFee,
         date: addDays(today, -5),
@@ -254,8 +254,8 @@ const generateInitialData = () => {
     const liaisonBenjo = otherLiaisons[6];
     cashAdvances.push({
         id: 'ca-072324-007',
-        personnel: liaisonBenjo.name,
-        personnelBranch: liaisonBenjo.assignedBranch,
+        personnel: DEMO_LIAISON.name,
+        personnelBranch: DEMO_LIAISON.assignedBranch,
         purpose: 'Urgent Registration',
         amount: liaisonBenjo.processingFee + liaisonBenjo.orFee,
         date: addDays(today, -8),
@@ -271,8 +271,8 @@ const generateInitialData = () => {
     const liquidatedMC = extraMotorcycles[6];
     cashAdvances.push({
         id: 'ca-071024-008',
-        personnel: liaisonAllan.name,
-        personnelBranch: liaisonAllan.assignedBranch,
+        personnel: DEMO_LIAISON.name,
+        personnelBranch: DEMO_LIAISON.assignedBranch,
         purpose: 'CA from last week',
         amount: liaisonAllan.processingFee + liaisonAllan.orFee,
         date: addDays(today, -20),
@@ -290,7 +290,7 @@ const generateInitialData = () => {
         totalLiquidation: liaisonAllan.orFee + liaisonAllan.processingFee,
         shortageOverage: 0,
         remarks: 'Sample liquidation',
-        liquidatedBy: liaisonAllan.name,
+        liquidatedBy: DEMO_LIAISON.name,
         liquidationDate: addDays(today, -15)
     };
 
@@ -312,8 +312,8 @@ const generateInitialData = () => {
     const liaisonLynlyn = otherLiaisons[4];
     cashAdvances.push({
         id: 'ca-072224-010',
-        personnel: liaisonLynlyn.name,
-        personnelBranch: liaisonLynlyn.assignedBranch,
+        personnel: DEMO_LIAISON.name,
+        personnelBranch: DEMO_LIAISON.assignedBranch,
         purpose: 'Registration CA',
         amount: liaisonLynlyn.processingFee + liaisonLynlyn.orFee,
         date: addDays(today, -10),
@@ -326,8 +326,8 @@ const generateInitialData = () => {
     const liaisonRushel = otherLiaisons[5];
     cashAdvances.push({
         id: 'ca-071824-011',
-        personnel: liaisonRushel.name,
-        personnelBranch: liaisonRushel.assignedBranch,
+        personnel: DEMO_LIAISON.name,
+        personnelBranch: DEMO_LIAISON.assignedBranch,
         purpose: 'CA for Legazpi unit',
         amount: liaisonRushel.processingFee + liaisonRushel.orFee,
         date: addDays(today, -14),
@@ -342,8 +342,8 @@ const generateInitialData = () => {
     const liaisonJassray = otherLiaisons[10];
     cashAdvances.push({
         id: 'ca-072624-012',
-        personnel: liaisonJassray.name,
-        personnelBranch: liaisonJassray.assignedBranch,
+        personnel: DEMO_LIAISON.name,
+        personnelBranch: DEMO_LIAISON.assignedBranch,
         purpose: 'CDO Unit Registration',
         amount: liaisonJassray.processingFee + liaisonJassray.orFee,
         date: addDays(today, -1),
