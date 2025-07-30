@@ -18,6 +18,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { CashAdvanceRequestDocument } from "@/components/cash-advances/cash-advance-request-document";
 
 type GroupedByCV = {
     cvNumber: string;
@@ -31,6 +33,8 @@ function ReleasedCvContentLiaison({ searchQuery }: { searchQuery: string }) {
     const [allMotorcycles, setAllMotorcycles] = useState<Motorcycle[] | null>(null);
     const [openCvGroups, setOpenCvGroups] = useState<string[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
+    const [previewingAdvance, setPreviewingAdvance] = useState<EnrichedCashAdvance | null>(null);
+    const documentRef = React.useRef(null);
     
     const { user } = useAuth();
 
@@ -115,6 +119,7 @@ function ReleasedCvContentLiaison({ searchQuery }: { searchQuery: string }) {
     );
 
     return (
+        <>
         <Card>
             <CardHeader>
                 <CardTitle>My Released Check Vouchers</CardTitle>
@@ -159,6 +164,7 @@ function ReleasedCvContentLiaison({ searchQuery }: { searchQuery: string }) {
                                             <TableHead>Purpose</TableHead>
                                             <TableHead>Date</TableHead>
                                             <TableHead className="text-right">Amount</TableHead>
+                                            <TableHead>Action</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -168,6 +174,11 @@ function ReleasedCvContentLiaison({ searchQuery }: { searchQuery: string }) {
                                                 <TableCell>{item.cashAdvance.purpose}</TableCell>
                                                 <TableCell>{format(new Date(item.cashAdvance.date), 'MMM dd, yyyy')}</TableCell>
                                                 <TableCell className="text-right">₱{item.cashAdvance.amount.toLocaleString()}</TableCell>
+                                                <TableCell>
+                                                    <Button variant="ghost" size="icon" onClick={() => setPreviewingAdvance(item)}>
+                                                        <Eye className="h-4 w-4" />
+                                                    </Button>
+                                                </TableCell>
                                             </TableRow>
                                         ))}
                                     </TableBody>
@@ -213,6 +224,30 @@ function ReleasedCvContentLiaison({ searchQuery }: { searchQuery: string }) {
                 </CardFooter>
             )}
         </Card>
+        
+        <Dialog open={!!previewingAdvance} onOpenChange={(open) => !open && setPreviewingAdvance(null)}>
+            <DialogContent className="max-w-4xl">
+                <DialogHeader>
+                    <DialogTitle>Cash Advance Preview</DialogTitle>
+                    <DialogDescription>
+                        Review the details of the cash advance request.
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="mt-4 max-h-[70vh] overflow-y-auto p-2">
+                    {previewingAdvance && (
+                        <CashAdvanceRequestDocument 
+                            ref={documentRef} 
+                            advance={previewingAdvance.cashAdvance} 
+                            motorcycles={previewingAdvance.motorcycles} 
+                        />
+                    )}
+                </div>
+                <DialogFooter>
+                    <Button variant="outline" onClick={() => setPreviewingAdvance(null)}>Close</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+        </>
     );
 }
 
@@ -322,3 +357,4 @@ export default function ReleasedCvPage() {
     );
 
     
+
