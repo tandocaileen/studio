@@ -92,7 +92,7 @@ function LiquidationReportContent() {
 
 export default function LiquidationReportPage() {
   return (
-    <ProtectedPage allowedRoles={['Store Supervisor', 'Liaison', 'Cashier']}>
+    <ProtectedPage allowedRoles={['Store Supervisor', 'Liaison', 'Cashier', 'Accounting']}>
       <div className="flex min-h-screen w-full flex-col bg-muted/40">
         <AppSidebar />
         <div className="flex flex-col pt-14 sm:gap-4 sm:py-4 sm:pl-14">

@@ -160,16 +160,16 @@ export function MotorcycleDetailsDialog({ motorcycle, isOpen, onClose, onSave }:
                 <Input id="edit-assignedLiaison" value={editedData.assignedLiaison || 'N/A'} disabled />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="edit-csrNumber">CSR No. <span className="text-destructive">*</span></Label>
-                <Input id="edit-csrNumber" name="csrNumber" value={editedData.csrNumber || ''} onChange={(e) => handleDataChange('csrNumber', e.target.value)} className={cn(!editedData.csrNumber && 'border-destructive')} disabled={!canEditMainDetails} />
+                <Label htmlFor="edit-csrNumber">CSR No.</Label>
+                <Input id="edit-csrNumber" name="csrNumber" value={editedData.csrNumber || ''} disabled />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="edit-crNumber">CR No. <span className="text-destructive">*</span></Label>
-                <Input id="edit-crNumber" name="crNumber" value={editedData.crNumber || ''} onChange={(e) => handleDataChange('crNumber', e.target.value)} className={cn(!editedData.crNumber && 'border-destructive')} disabled={!canEditMainDetails} />
+                <Label htmlFor="edit-crNumber">CR No.</Label>
+                <Input id="edit-crNumber" name="crNumber" value={editedData.crNumber || ''} disabled />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="edit-hpgControlNumber">HPG Control No. <span className="text-destructive">*</span></Label>
-                <Input id="edit-hpgControlNumber" name="hpgControlNumber" value={editedData.hpgControlNumber || ''} onChange={(e) => handleDataChange('hpgControlNumber', e.target.value)} className={cn(!editedData.hpgControlNumber && 'border-destructive')} disabled={!canEditMainDetails} />
+                <Label htmlFor="edit-hpgControlNumber">HPG Control No.</Label>
+                <Input id="edit-hpgControlNumber" name="hpgControlNumber" value={editedData.hpgControlNumber || ''} disabled />
               </div>
             </div>
 
