@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -92,7 +93,7 @@ export function LiaisonEndorsementTable({
   };
 
   const handleSelectAllInGroup = (groupMotorcycles: Motorcycle[], checked: boolean | 'indeterminate') => {
-    const eligibleMotorcycles = groupMotorcycles.filter(m => m.status === 'Endorsed');
+    const eligibleMotorcycles = groupMotorcycles; // All are eligible now
     if (checked === true) {
       setSelectedMotorcycles(prev => {
         const newSelection = [...prev];
@@ -117,15 +118,6 @@ export function LiaisonEndorsementTable({
        variant: 'destructive',
      });
      return;
-   }
-
-   if (selectedMotorcycles.some(m => m.status !== 'Endorsed')) {
-       toast({
-           title: 'Cannot Generate Cash Advance',
-           description: 'Please only select motorcycles with an "Endorsed" status.',
-           variant: 'destructive',
-       });
-       return;
    }
    setIsPreviewingCa(true);
  };
@@ -271,7 +263,7 @@ export function LiaisonEndorsementTable({
           </TableHeader>
           <TableBody>
             {paginatedEndorsements.map(({ endorsement, motorcycles: associatedMotorcycles }) => {
-              const eligibleMotorcyclesInGroup = associatedMotorcycles.filter(m => m.status === 'Endorsed');
+              const eligibleMotorcyclesInGroup = associatedMotorcycles;
               const selectedEligibleInGroupCount = selectedMotorcycles.filter(m => eligibleMotorcyclesInGroup.some(em => em.id === m.id)).length;
               const endorsementBranch = associatedMotorcycles.length > 0 ? associatedMotorcycles[0].assignedBranch : 'N/A';
 
@@ -320,6 +312,7 @@ export function LiaisonEndorsementTable({
                                             <TableHead>Customer Name</TableHead>
                                             <TableHead>Account Code</TableHead>
                                             <TableHead>Chassis No.</TableHead>
+                                            <TableHead>Status</TableHead>
                                             <TableHead>Action</TableHead>
                                         </TableRow>
                                     </TableHeader>
@@ -330,13 +323,15 @@ export function LiaisonEndorsementTable({
                                                     <Checkbox
                                                       checked={selectedMotorcycles.some(sm => sm.id === mc.id)}
                                                       onCheckedChange={(checked) => handleSelectMotorcycle(mc, !!checked)}
-                                                      disabled={mc.status !== 'Endorsed'}
                                                     />
                                                 </TableCell>
                                                 <TableCell>{mc.salesInvoiceNo}</TableCell>
                                                 <TableCell>{mc.customerName}</TableCell>
                                                 <TableCell>{mc.accountCode}</TableCell>
                                                 <TableCell>{mc.chassisNumber}</TableCell>
+                                                <TableCell>
+                                                    <Badge variant="outline">{mc.status}</Badge>
+                                                </TableCell>
                                                 <TableCell>
                                                     <Button variant="ghost" size="icon" onClick={() => handleViewMotorcycle(mc)}>
                                                         <Eye className="h-4 w-4" />
@@ -489,3 +484,5 @@ export function LiaisonEndorsementTable({
   </>
   );
 }
+
+    
