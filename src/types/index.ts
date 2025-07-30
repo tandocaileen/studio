@@ -2,6 +2,7 @@
 
 
 
+
 export type DocumentType = 'OR/CR' | 'COC' | 'Insurance' | 'CSR' | 'HPG Control Form';
 
 export type Document = {
@@ -93,6 +94,8 @@ export type CashAdvance = {
   arNumber?: string;
   arDate?: Date;
   arAmount?: number;
+  verifiedBy?: string;
+  verificationRemarks?: string;
 };
 
 export type UserRole = 'Store Supervisor' | 'Liaison' | 'Cashier' | 'Accounting';
@@ -115,6 +118,7 @@ export type Endorsement = {
     motorcycleIds: string[];
     createdBy: string;
 }
+
 
 
 

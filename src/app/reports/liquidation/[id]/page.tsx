@@ -9,7 +9,7 @@ import { getCashAdvances, getMotorcycles } from '@/lib/data';
 import { CashAdvance, Motorcycle } from '@/types';
 import { AppLoader } from '@/components/layout/loader';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle, Check, Eye, FileText, ShieldCheck } from 'lucide-react';
+import { AlertCircle, Check, DollarSign, Eye, FileText, ShieldCheck, User } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -18,6 +18,8 @@ import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { CashAdvanceRequestDocument } from '@/components/cash-advances/cash-advance-request-document';
 
 type ReportDataType = {
   cashAdvance: CashAdvance;
@@ -29,6 +31,7 @@ function CompletedReportContent() {
   const id = params.id as string;
   const [reportData, setReportData] = React.useState<ReportDataType | null>(null);
   const [loading, setLoading] = React.useState(true);
+  const [isCaDialogOpen, setIsCaDialogOpen] = React.useState(false);
   const router = useRouter();
 
   React.useEffect(() => {
@@ -70,6 +73,7 @@ function CompletedReportContent() {
   const shortageOverage = cashAdvance.amount - totalLiquidation;
 
   return (
+    <>
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* Main Content */}
         <div className="lg:col-span-2">
@@ -165,8 +169,55 @@ function CompletedReportContent() {
                     </div>
                 </CardContent>
             </Card>
+
+            {cashAdvance.verifiedBy && (
+                 <Card>
+                    <CardHeader>
+                        <CardTitle className="text-base flex items-center gap-2">
+                           <User className="h-4 w-4" /> Verification Details
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="grid gap-3 text-sm">
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">Verified By:</span>
+                            <span className="font-semibold">{cashAdvance.verifiedBy}</span>
+                        </div>
+                        {cashAdvance.verificationRemarks && (
+                            <div className="flex flex-col gap-1.5">
+                                <span className="text-muted-foreground">Remarks:</span>
+                                <p className="font-semibold p-2 bg-muted/50 rounded-md border text-xs">{cashAdvance.verificationRemarks}</p>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            )}
+
+            <Button onClick={() => setIsCaDialogOpen(true)}>
+                <DollarSign className="mr-2 h-4 w-4" /> View Cash Advance
+            </Button>
         </div>
     </div>
+    
+    <Dialog open={isCaDialogOpen} onOpenChange={setIsCaDialogOpen}>
+        <DialogContent className="max-w-4xl">
+            <DialogHeader>
+                <DialogTitle>Cash Advance Request</DialogTitle>
+                <DialogDescription>
+                    Original cash advance request for CA #{cashAdvance.id}.
+                </DialogDescription>
+            </DialogHeader>
+            <div className="mt-4 max-h-[70vh] overflow-y-auto p-2">
+                <CashAdvanceRequestDocument 
+                    advance={cashAdvance} 
+                    motorcycles={motorcycles} 
+                />
+            </div>
+            <DialogFooter>
+                <Button variant="outline" onClick={() => setIsCaDialogOpen(false)}>Close</Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
+    </>
   );
 }
 

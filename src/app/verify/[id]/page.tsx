@@ -32,6 +32,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { useAuth } from '@/context/AuthContext';
+import { Textarea } from '@/components/ui/textarea';
 
 
 type ReportData = {
@@ -43,11 +45,13 @@ function VerificationContent() {
     const params = useParams();
     const router = useRouter();
     const { toast } = useToast();
+    const { user } = useAuth();
     const id = params.id as string;
     
     const [reportData, setReportData] = React.useState<ReportData | null>(null);
     const [loading, setLoading] = React.useState(true);
     const [isVerifying, setIsVerifying] = React.useState(false);
+    const [remarks, setRemarks] = React.useState('');
 
     React.useEffect(() => {
         if (id) {
@@ -69,7 +73,7 @@ function VerificationContent() {
     }, [id]);
 
     const handleVerify = async () => {
-        if (!reportData) return;
+        if (!reportData || !user) return;
 
         setIsVerifying(true);
 
@@ -78,11 +82,10 @@ function VerificationContent() {
         try {
             await updateMotorcycles(updatedMotorcycles);
             
-            // We only need to update motorcycles, as CA status is derived.
-            // But we might want to save AR details to the CA itself in a real app.
             const updatedCA: Partial<CashAdvance> = {
                 id: reportData.cashAdvance.id,
-                // No status field to update anymore.
+                verifiedBy: user.name,
+                verificationRemarks: remarks,
             };
             await updateCashAdvances([updatedCA]);
 
@@ -201,7 +204,16 @@ function VerificationContent() {
 
                     </CardContent>
                     {!isVerified && (
-                        <CardFooter>
+                        <CardFooter className="flex-col items-start gap-4">
+                            <div className="w-full grid gap-2">
+                                <Label htmlFor="verification-remarks">Verification Remarks (Optional)</Label>
+                                <Textarea 
+                                    id="verification-remarks" 
+                                    placeholder="Add any notes regarding this transaction..."
+                                    value={remarks}
+                                    onChange={(e) => setRemarks(e.target.value)}
+                                />
+                            </div>
                              <AlertDialog>
                                 <AlertDialogTrigger asChild>
                                     <Button className="w-full" loading={isVerifying}>
