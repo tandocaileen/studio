@@ -24,10 +24,13 @@ type GroupedByCV = {
     advances: EnrichedCashAdvance[];
 }
 
+const ITEMS_PER_PAGE_LIAISON = 5;
+
 function ReleasedCvContentLiaison({ searchQuery }: { searchQuery: string }) {
     const [allCAs, setAllCAs] = useState<CashAdvance[] | null>(null);
     const [allMotorcycles, setAllMotorcycles] = useState<Motorcycle[] | null>(null);
     const [openCvGroups, setOpenCvGroups] = useState<string[]>([]);
+    const [currentPage, setCurrentPage] = useState(1);
     
     const { user } = useAuth();
 
@@ -105,68 +108,107 @@ function ReleasedCvContentLiaison({ searchQuery }: { searchQuery: string }) {
         setOpenCvGroups(prev => prev.includes(cvNumber) ? prev.filter(cv => cv !== cvNumber) : [...prev, cvNumber]);
     };
 
+    const totalPages = Math.ceil(groupedArray.length / ITEMS_PER_PAGE_LIAISON);
+    const paginatedGroups = groupedArray.slice(
+        (currentPage - 1) * ITEMS_PER_PAGE_LIAISON,
+        currentPage * ITEMS_PER_PAGE_LIAISON
+    );
+
     return (
-        <div className="grid gap-4">
-            <Alert className="bg-yellow-100 dark:bg-yellow-900/30 border-yellow-400 dark:border-yellow-700 text-yellow-800 dark:text-yellow-300">
-                <AlertCircle className="h-4 w-4 !text-yellow-600 dark:!text-yellow-400" />
-                <AlertDescription className="text-sm">
-                    Only Check Vouchers that have been released to you as the logged-in Liaison will be displayed here.
-                </AlertDescription>
-            </Alert>
-            {groupedArray.map(group => (
-                <Collapsible 
-                    key={group.cvNumber} 
-                    className="border rounded-lg"
-                    open={openCvGroups.includes(group.cvNumber)}
-                    onOpenChange={() => toggleOpenCvGroup(group.cvNumber)}
-                >
-                    <CollapsibleTrigger asChild>
-                        <div className="flex items-center justify-between p-4 cursor-pointer bg-muted/50 rounded-t-lg">
-                           <div className="flex items-center gap-4">
-                             <ChevronDown className="h-5 w-5 transition-transform data-[state=open]:rotate-180" />
-                            <div>
-                                <h3 className="font-semibold">CV #{group.cvNumber}</h3>
-                                <p className="text-sm text-muted-foreground">{group.advances.length} Cash Advance(s) included</p>
+        <Card>
+            <CardHeader>
+                <CardTitle>My Released Check Vouchers</CardTitle>
+                 <Alert className="bg-yellow-100 dark:bg-yellow-900/30 border-yellow-400 dark:border-yellow-700 text-yellow-800 dark:text-yellow-300 mt-2">
+                    <AlertCircle className="h-4 w-4 !text-yellow-600 dark:!text-yellow-400" />
+                    <AlertDescription className="text-sm">
+                        Only Check Vouchers that have been released to you as the logged-in Liaison will be displayed here.
+                    </AlertDescription>
+                </Alert>
+            </CardHeader>
+            <CardContent className="grid gap-4">
+                {paginatedGroups.map(group => (
+                    <Collapsible 
+                        key={group.cvNumber} 
+                        className="border rounded-lg"
+                        open={openCvGroups.includes(group.cvNumber)}
+                        onOpenChange={() => toggleOpenCvGroup(group.cvNumber)}
+                    >
+                        <CollapsibleTrigger asChild>
+                            <div className="flex items-center justify-between p-4 cursor-pointer bg-muted/50 rounded-t-lg">
+                            <div className="flex items-center gap-4">
+                                <ChevronDown className="h-5 w-5 transition-transform data-[state=open]:rotate-180" />
+                                <div>
+                                    <h3 className="font-semibold">CV #{group.cvNumber}</h3>
+                                    <p className="text-sm text-muted-foreground">{group.advances.length} Cash Advance(s) included</p>
+                                </div>
                             </div>
-                           </div>
-                            <Badge variant="default" className="bg-green-600 hover:bg-green-700">
-                                <Check className="mr-2 h-4 w-4"/>
-                                Released
-                            </Badge>
-                        </div>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent>
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>CA Number</TableHead>
-                                    <TableHead>Purpose</TableHead>
-                                    <TableHead>Date</TableHead>
-                                    <TableHead className="text-right">Amount</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {group.advances.map(item => (
-                                    <TableRow key={item.cashAdvance.id}>
-                                        <TableCell>{item.cashAdvance.id}</TableCell>
-                                        <TableCell>{item.cashAdvance.purpose}</TableCell>
-                                        <TableCell>{format(new Date(item.cashAdvance.date), 'MMM dd, yyyy')}</TableCell>
-                                        <TableCell className="text-right">₱{item.cashAdvance.amount.toLocaleString()}</TableCell>
+                                <Badge variant="default" className="bg-green-600 hover:bg-green-700">
+                                    <Check className="mr-2 h-4 w-4"/>
+                                    Released
+                                </Badge>
+                            </div>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>CA Number</TableHead>
+                                        <TableHead>Purpose</TableHead>
+                                        <TableHead>Date</TableHead>
+                                        <TableHead className="text-right">Amount</TableHead>
                                     </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </CollapsibleContent>
-                </Collapsible>
-            ))}
-            {groupedArray.length === 0 && (
-                <Card>
-                    <CardContent className="py-12 text-center text-muted-foreground">
+                                </TableHeader>
+                                <TableBody>
+                                    {group.advances.map(item => (
+                                        <TableRow key={item.cashAdvance.id}>
+                                            <TableCell>{item.cashAdvance.id}</TableCell>
+                                            <TableCell>{item.cashAdvance.purpose}</TableCell>
+                                            <TableCell>{format(new Date(item.cashAdvance.date), 'MMM dd, yyyy')}</TableCell>
+                                            <TableCell className="text-right">₱{item.cashAdvance.amount.toLocaleString()}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </CollapsibleContent>
+                    </Collapsible>
+                ))}
+                {groupedArray.length === 0 && (
+                    <div className="text-center py-12 text-muted-foreground">
                         No released CVs found.
-                    </CardContent>
-                </Card>
+                    </div>
+                )}
+            </CardContent>
+            {totalPages > 1 && (
+                <CardFooter>
+                    <div className="flex items-center justify-between w-full">
+                        <div className="text-xs text-muted-foreground">
+                            Showing {paginatedGroups.length} of {groupedArray.length} check vouchers.
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                disabled={currentPage === 1}
+                            >
+                                Previous
+                            </Button>
+                            <span className="text-sm font-medium">
+                                Page {currentPage} of {totalPages}
+                            </span>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                disabled={currentPage === totalPages}
+                            >
+                                Next
+                            </Button>
+                        </div>
+                    </div>
+                </CardFooter>
             )}
-        </div>
+        </Card>
     );
 }
 
@@ -274,4 +316,5 @@ export default function ReleasedCvPage() {
             </div>
         </ProtectedPage>
     );
-}
+
+    
