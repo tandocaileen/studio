@@ -297,7 +297,7 @@ function LiquidationsContent() {
                         <AlertCircle className="h-4 w-4" />
                         <AlertTitle className="text-yellow-900 dark:text-yellow-200">Developer's Note</AlertTitle>
                         <AlertDescription className="text-xs text-yellow-700 dark:text-yellow-400">
-                            Add filter to show by status (either pending or fully liquidated) since filtering is faulty.
+                            Add filter to show by status (either pending or fully liquidated) and Pagination since Gemini is faulty.
                         </AlertDescription>
                     </Alert>
                      <div className="grid gap-4">
