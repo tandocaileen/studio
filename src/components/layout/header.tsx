@@ -51,7 +51,7 @@ export function Header({ title, onSearch, showBack = false }: HeaderProps) {
   const userPosition = user?.role;
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
+    <header className="sticky top-0 z-30 flex h-auto items-center gap-4 border-b bg-background px-4 py-4 sm:px-6">
        <div className="sm:hidden">
         {/* Mobile sidebar trigger is in the sidebar component */}
       </div>

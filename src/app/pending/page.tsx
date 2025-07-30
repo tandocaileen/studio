@@ -103,9 +103,9 @@ function PendingContent({ searchQuery, onSearchQueryChange }: { searchQuery: str
   });
 
   return (
-    <div className="w-full">
+    <>
         <Header title="Pending Motorcycles" onSearch={onSearchQueryChange} />
-        <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
+        <main className="flex-1 grid items-start gap-4 p-4 sm:px-6 sm:py-6 md:gap-8">
             <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
                 <div className={cn("grid grid-cols-1 lg:grid-cols-4 gap-6 items-start", !isFilterPanelVisible && "lg:grid-cols-1")}>
                     <div className={cn("lg:col-span-3", !isFilterPanelVisible && "lg:col-span-4")}>
@@ -193,7 +193,7 @@ function PendingContent({ searchQuery, onSearchQueryChange }: { searchQuery: str
                 </div>
             </div>
         </main>
-    </div>
+    </>
   );
 }
 
