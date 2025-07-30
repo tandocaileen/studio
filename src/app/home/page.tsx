@@ -29,6 +29,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AccountingDashboardContent } from "@/components/dashboard/accounting-dashboard";
 
 
 const ALL_SUPERVISOR_STATUSES: MotorcycleStatus[] = ['Incomplete', 'Ready to Register', 'Endorsed - Incomplete', 'Endorsed - Ready', 'Processing', 'For Review'];
@@ -465,13 +466,15 @@ export default function DashboardPage() {
               return <LiaisonDashboardContent searchQuery={searchQuery} />;
           case 'Cashier':
                 return <CashierDashboardContent searchQuery={searchQuery} />;
+          case 'Accounting':
+              return <AccountingDashboardContent searchQuery={searchQuery} />;
           default:
               return <AppLoader />;
       }
   }
 
   return (
-    <ProtectedPage allowedRoles={['Store Supervisor', 'Liaison', 'Cashier']}>
+    <ProtectedPage allowedRoles={['Store Supervisor', 'Liaison', 'Cashier', 'Accounting']}>
       <div className="flex min-h-screen w-full flex-col bg-muted/40">
         <AppSidebar />
         <div className="flex flex-col pt-14 sm:gap-4 sm:py-4 sm:pl-14">

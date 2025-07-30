@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useTheme } from "next-themes";
 import { Moon, Sun } from "lucide-react";
 
-const ALL_ROLES: UserRole[] = ['Store Supervisor', 'Liaison', 'Cashier'];
+const ALL_ROLES: UserRole[] = ['Store Supervisor', 'Liaison', 'Cashier', 'Accounting'];
 
 export default function LoginPage() {
     const [email, setEmail] = useState('demo@ltoportal.com');
@@ -42,6 +42,8 @@ export default function LoginPage() {
                 name = 'Naruto Uzumaki';
             } else if (role === 'Cashier') {
                 name = 'Sasuke Uchiha';
+            } else if (role === 'Accounting') {
+                name = 'Sakura Haruno';
             }
             login({ email, name, role });
             // The useEffect will handle the redirect

@@ -3,7 +3,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-export type UserRole = 'Store Supervisor' | 'Liaison' | 'Cashier';
+export type UserRole = 'Store Supervisor' | 'Liaison' | 'Cashier' | 'Accounting';
 
 export type User = {
     email: string;
@@ -68,6 +68,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             finalUserData.name = 'Naruto Uzumaki';
         } else if (userData.role === 'Cashier') {
             finalUserData.name = 'Sasuke Uchiha';
+        } else if (userData.role === 'Accounting') {
+            finalUserData.name = 'Sakura Haruno';
         } else if (userData.role === 'Liaison' && finalUserData.name.startsWith('Demo')) {
             finalUserData.name = 'Bryle Nikko Hamili';
         }

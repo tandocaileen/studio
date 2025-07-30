@@ -98,3 +98,4 @@ export type Endorsement = {
     motorcycleIds: string[];
     createdBy: string;
 }
+
