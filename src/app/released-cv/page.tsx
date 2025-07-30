@@ -36,12 +36,15 @@ function ReleasedCvContentLiaison({ searchQuery }: { searchQuery: string }) {
                 getCashAdvances(), 
                 getMotorcycles(), 
             ]);
+            console.log('[Liaison View] Fetched Cash Advances:', cashAdvances);
+            console.log('[Liaison View] Fetched Motorcycles:', motorcycles);
+            console.log('[Liaison View] Current User:', user);
             setAllCAs(cashAdvances);
             setAllMotorcycles(motorcycles);
         };
 
         fetchData();
-    }, []);
+    }, [user]);
     
     if (!allCAs || !allMotorcycles || !user) {
         return <AppLoader />;
@@ -66,11 +69,13 @@ function ReleasedCvContentLiaison({ searchQuery }: { searchQuery: string }) {
     };
     
     const relevantAdvances = allCAs.filter(ca => ca.personnel === user.name);
+    console.log('[Liaison View] Relevant Advances for Liaison:', relevantAdvances);
 
     const filteredByStatus = enrichCashAdvances(relevantAdvances, allMotorcycles).filter(item => {
         const dynamicStatus = getDynamicCAStatus(item.motorcycles);
         return dynamicStatus === 'Released CVs';
     });
+    console.log('[Liaison View] Filtered by Status (Released CVs):', filteredByStatus);
 
     const filteredBySearch = filteredByStatus.filter(item => {
         const { cashAdvance, motorcycles } = item;
@@ -87,6 +92,7 @@ function ReleasedCvContentLiaison({ searchQuery }: { searchQuery: string }) {
 
         return false;
     });
+    console.log('[Liaison View] Filtered by Search:', filteredBySearch);
 
     const groupedByCvNumber = filteredBySearch.reduce((acc, item) => {
         const cv = item.cashAdvance.checkVoucherNumber || 'Unassigned';
@@ -98,6 +104,7 @@ function ReleasedCvContentLiaison({ searchQuery }: { searchQuery: string }) {
     }, {} as Record<string, GroupedByCV>);
 
     const groupedArray = Object.values(groupedByCvNumber);
+    console.log('[Liaison View] Final Grouped Array for display:', groupedArray);
     
     const toggleOpenCvGroup = (cvNumber: string) => {
         setOpenCvGroups(prev => prev.includes(cvNumber) ? prev.filter(cv => cv !== cvNumber) : [...prev, cvNumber]);
@@ -170,6 +177,8 @@ function ReleasedCvContentSupervisor({ searchQuery }: { searchQuery: string }) {
                 getCashAdvances(), 
                 getMotorcycles(), 
             ]);
+            console.log('[Supervisor View] Fetched Cash Advances:', cashAdvances);
+            console.log('[Supervisor View] Fetched Motorcycles:', motorcycles);
             setAllCAs(cashAdvances);
             setAllMotorcycles(motorcycles);
         };
@@ -209,6 +218,8 @@ function ReleasedCvContentSupervisor({ searchQuery }: { searchQuery: string }) {
         const dynamicStatus = getDynamicCAStatus(item.motorcycles);
         return dynamicStatus === 'Released CVs';
     });
+     console.log('[Supervisor View] Filtered by Status (Released CVs):', filteredByStatus);
+
 
     const filteredBySearch = filteredByStatus.filter(item => {
         const { cashAdvance, motorcycles } = item;
@@ -226,6 +237,7 @@ function ReleasedCvContentSupervisor({ searchQuery }: { searchQuery: string }) {
 
         return false;
     });
+    console.log('[Supervisor View] Filtered by Search:', filteredBySearch);
 
     return (
         <CashAdvanceTable 
