@@ -156,7 +156,7 @@ export function CashAdvanceTable({ advances, onBulkUpdate }: CashAdvanceTablePro
       case 'Completed': return { color: 'bg-green-500', icon: CheckCircle };
       default: return { color: 'bg-gray-500', icon: CircleDashed };
     }
-  }
+  };
 
   const isCashier = user?.role === 'Cashier';
   const isSupervisor = user?.role === 'Store Supervisor';
@@ -417,7 +417,7 @@ export function CashAdvanceTable({ advances, onBulkUpdate }: CashAdvanceTablePro
             <AlertDialogAction onClick={handleReleaseCvSubmit}>Approve</AlertDialogAction>
             </AlertDialogFooter>
         </AlertDialogContent>
-    </Dialog>
+    </AlertDialog>
 
     <Dialog open={!!confirmingCvReceiptAdvance} onOpenChange={(open) => !open && setConfirmingCvReceiptAdvance(null)}>
         <DialogContent className="sm:max-w-md">
@@ -461,7 +461,7 @@ export function CashAdvanceTable({ advances, onBulkUpdate }: CashAdvanceTablePro
             <AlertDialogAction onClick={handleBulkReleaseCv}>Approve Selected</AlertDialogAction>
             </AlertDialogFooter>
         </AlertDialogContent>
-    </Dialog>
+    </AlertDialog>
 
     <Dialog open={isBulkReceiveCvDialogOpen} onOpenChange={setIsBulkReceiveCvDialogOpen}>
         <DialogContent className="sm:max-w-md">
