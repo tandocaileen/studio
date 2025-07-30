@@ -36,6 +36,7 @@ import { Button } from '../ui/button';
 import { useAuth, UserRole } from '@/context/AuthContext';
 import React, { useState } from 'react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../ui/collapsible';
+import { Sidebar, SidebarHeader, SidebarContent, SidebarFooter, useSidebar } from '../ui/sidebar';
 
 
 type NavItem = {
@@ -92,8 +93,9 @@ const homeRoutes: Partial<Record<UserRole, string>> = {
     'Accounting': '/released-cv',
 };
 
-const NavLink = ({ item, isCollapsed }: { item: NavItem; isCollapsed: boolean }) => {
+const NavLink = ({ item }: { item: NavItem; }) => {
     const pathname = usePathname();
+    const { state: isCollapsed } = useSidebar();
     const isLinkActive = item.exact ? pathname === item.href : pathname.startsWith(item.href);
 
     if (item.subItems && item.subItems.length > 0) {
@@ -107,14 +109,14 @@ const NavLink = ({ item, isCollapsed }: { item: NavItem; isCollapsed: boolean })
                     >
                         <span className="flex items-center gap-2 w-full">
                           <item.icon className="h-5 w-5" />
-                          {!isCollapsed && <span className="flex-1 text-left">{item.label}</span>}
-                          {!isCollapsed && <ChevronDown className="h-4 w-4 transition-transform data-[state=open]:rotate-180" />}
+                          {isCollapsed !== 'collapsed' && <span className="flex-1 text-left">{item.label}</span>}
+                          {isCollapsed !== 'collapsed' && <ChevronDown className="h-4 w-4 transition-transform data-[state=open]:rotate-180" />}
                         </span>
                     </Button>
                 </CollapsibleTrigger>
                 <CollapsibleContent className="pl-6 mt-1 space-y-1">
                     {item.subItems.map(subItem => (
-                        <NavLink key={subItem.href} item={subItem} isCollapsed={isCollapsed} />
+                        <NavLink key={subItem.href} item={subItem} />
                     ))}
                 </CollapsibleContent>
             </Collapsible>
@@ -125,16 +127,20 @@ const NavLink = ({ item, isCollapsed }: { item: NavItem; isCollapsed: boolean })
         <TooltipProvider>
             <Tooltip>
                 <TooltipTrigger asChild>
-                    <Link href={item.href} className={cn(
-                        "flex items-center gap-2 w-full justify-start",
-                        "h-10 px-4 py-2 rounded-md text-sm font-medium",
-                        isLinkActive ? "bg-secondary" : "hover:bg-muted"
-                    )}>
-                        <item.icon className="h-5 w-5" />
-                        {!isCollapsed && <span>{item.label}</span>}
+                    <Link
+                        href={item.href}
+                        className={cn(
+                            buttonVariants({ variant: isLinkActive ? "secondary" : "ghost", size: "default" }),
+                            "w-full justify-start"
+                        )}
+                    >
+                         <span className='flex items-center gap-2'>
+                            <item.icon className="h-5 w-5" />
+                            {isCollapsed !== 'collapsed' && <span>{item.label}</span>}
+                        </span>
                     </Link>
                 </TooltipTrigger>
-                {isCollapsed && <TooltipContent side="right">{item.label}</TooltipContent>}
+                {isCollapsed === 'collapsed' && <TooltipContent side="right">{item.label}</TooltipContent>}
             </Tooltip>
         </TooltipProvider>
     )
@@ -142,7 +148,7 @@ const NavLink = ({ item, isCollapsed }: { item: NavItem; isCollapsed: boolean })
 
 export function AppSidebar() {
   const { user } = useAuth();
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const { state: isCollapsed, toggleSidebar } = useSidebar();
   
   if (!user) return null;
 
@@ -155,29 +161,31 @@ export function AppSidebar() {
   const homeRoute = homeRoutes[user.role] || '/';
   
   const mainNav = (
-    <div className="flex flex-col h-full">
-        <div className="p-4 border-b flex items-center justify-between">
-            <Link href={homeRoute} className="flex items-center gap-2">
-                <Logo className="h-8 w-8 text-primary" />
-                {!isCollapsed && <span className="text-xl font-bold">LTO PORTAL</span>}
-            </Link>
-            <Button variant="ghost" size="icon" onClick={() => setIsCollapsed(!isCollapsed)} className="hidden sm:flex">
-                <PanelLeft className="h-5 w-5" />
-            </Button>
-        </div>
-        <div className="flex-1 overflow-y-auto py-4">
-            <nav className="grid gap-2 px-4">
-                 {accessibleNavItems.map((item) => <NavLink key={item.href} item={item} isCollapsed={isCollapsed} />)}
-                 <hr className="my-4"/>
-                 {accessibleCommonItems.map((item) => <NavLink key={item.href} item={item} isCollapsed={isCollapsed} />)}
-            </nav>
-        </div>
-        <div className="p-4 border-t mt-auto">
-            <div className='text-xs text-muted-foreground text-center'>
-                 {!isCollapsed && <p>&copy; {new Date().getFullYear()} LTO Portal</p>}
+    <Sidebar>
+        <SidebarHeader>
+            <div className="flex items-center justify-between">
+                <Link href={homeRoute} className="flex items-center gap-2">
+                    <Logo className="h-8 w-8 text-primary" />
+                    {isCollapsed !== 'collapsed' && <span className="text-xl font-bold">LTO PORTAL</span>}
+                </Link>
+                <Button variant="ghost" size="icon" onClick={toggleSidebar} className="hidden sm:flex">
+                    <PanelLeft className="h-5 w-5" />
+                </Button>
             </div>
-        </div>
-    </div>
+        </SidebarHeader>
+        <SidebarContent>
+            <nav className="grid gap-2 px-2">
+                 {accessibleNavItems.map((item) => <NavLink key={item.href} item={item} />)}
+                 <hr className="my-4"/>
+                 {[...supervisorAndCashierCommonItems, ...commonNavItems].map((item) => <NavLink key={item.href} item={item} />)}
+            </nav>
+        </SidebarContent>
+        <SidebarFooter>
+            <div className='text-xs text-muted-foreground text-center'>
+                 {isCollapsed !== 'collapsed' && <p>&copy; {new Date().getFullYear()} LTO Portal</p>}
+            </div>
+        </SidebarFooter>
+    </Sidebar>
   );
   
   const mobileNav = (
@@ -204,12 +212,9 @@ export function AppSidebar() {
 
   return (
     <>
-      <aside className={cn(
-            "fixed inset-y-0 left-0 z-20 hidden flex-col border-r bg-background sm:flex transition-all duration-300",
-            isCollapsed ? "w-20" : "w-64"
-        )}>
+      <div className="hidden sm:block">
         {mainNav}
-      </aside>
+      </div>
 
       <div className="sm:hidden fixed top-3 left-3 z-50">
         <Sheet>

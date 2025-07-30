@@ -9,6 +9,7 @@ import { AuthProvider } from '@/context/AuthContext';
 import { AppSidebar } from '@/components/layout/sidebar';
 import { usePathname } from 'next/navigation';
 import React from 'react';
+import { SidebarProvider } from '@/components/ui/sidebar';
 
 // export const metadata: Metadata = {
 //   title: 'LTO Portal',
@@ -47,12 +48,14 @@ function MainLayout({ children }: { children: React.ReactNode }) {
             disableTransitionOnChange
           >
             <AuthProvider>
-                <div className="flex min-h-screen w-full bg-muted/40">
-                  {!isLoginPage && <AppSidebar />}
-                  <main className={cn("flex flex-1 flex-col", !isLoginPage && "sm:pl-14")}>
-                     {children}
-                  </main>
-                </div>
+                <SidebarProvider>
+                    <div className="flex min-h-screen w-full bg-muted/40">
+                      {!isLoginPage && <AppSidebar />}
+                      <main className="flex flex-1 flex-col">
+                         {children}
+                      </main>
+                    </div>
+                </SidebarProvider>
             </AuthProvider>
             <Toaster />
           </ThemeProvider>
@@ -69,4 +72,3 @@ export default function RootLayout({
 }>) {
   return <MainLayout>{children}</MainLayout>
 }
-
