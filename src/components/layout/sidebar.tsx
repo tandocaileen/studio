@@ -123,7 +123,7 @@ const NavLink = ({ item, isCollapsed }: { item: NavItem; isCollapsed: boolean })
         <TooltipProvider>
             <Tooltip>
                 <TooltipTrigger asChild>
-                    <Button asChild variant={isLinkActive ? "secondary" : "ghost"} className="w-full justify-start">
+                    <Button variant={isLinkActive ? "secondary" : "ghost"} className="w-full justify-start">
                         <Link href={item.href}>
                           <span className='flex items-center gap-2'>
                             <item.icon className="h-5 w-5" />
