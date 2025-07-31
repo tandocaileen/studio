@@ -223,6 +223,12 @@ function ForLiquidationContent({ searchQuery }: { searchQuery: string }) {
                     </Button>
                 </CardHeader>
                 <CardContent>
+                    <Alert className="mb-4">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertDescription className="text-xs">
+                            You can only bulk-liquidate units where all required details (OR No., OR Amount, Processing Fee) have been filled in via the 'View/Edit' button.
+                        </AlertDescription>
+                    </Alert>
                     <Table>
                         <TableHeader>
                             <TableRow>
@@ -260,12 +266,6 @@ function ForLiquidationContent({ searchQuery }: { searchQuery: string }) {
                                             <tr className="bg-muted/50">
                                                 <TableCell colSpan={5} className="p-0">
                                                     <div className="p-4">
-                                                        <Alert className="mb-4">
-                                                            <AlertCircle className="h-4 w-4" />
-                                                            <AlertDescription className="text-xs">
-                                                                You can only bulk-liquidate units where all required details (OR No., OR Amount, Processing Fee) have been filled in via the 'View/Edit' button.
-                                                            </AlertDescription>
-                                                        </Alert>
                                                         <Table>
                                                             <TableHeader>
                                                                 <TableRow>
