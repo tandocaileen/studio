@@ -273,7 +273,7 @@ export function LiaisonEndorsementTable({
 
               return (
                 <Collapsible asChild key={endorsement.id} open={openEndorsements.includes(endorsement.id)} onOpenChange={() => toggleOpenEndorsement(endorsement.id)}>
-                    <React.Fragment>
+                    <>
                       <TableRow className="hover:bg-muted/50">
                         <TableCell>
                           <CollapsibleTrigger asChild>
@@ -345,7 +345,7 @@ export function LiaisonEndorsementTable({
                           </TableCell>
                         </tr>
                       </CollapsibleContent>
-                    </React.Fragment>
+                    </>
                 </Collapsible>
               );
             })}
@@ -484,5 +484,7 @@ export function LiaisonEndorsementTable({
   </>
   );
 }
+
+    
 
     
