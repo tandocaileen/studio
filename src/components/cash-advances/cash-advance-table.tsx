@@ -60,13 +60,13 @@ export function CashAdvanceTable({ advances, onMotorcycleUpdate, showStatusColum
   const [selectedAdvances, setSelectedAdvances] = React.useState<EnrichedCashAdvance[]>([]);
   const [previewingAdvance, setPreviewingAdvance] = React.useState<EnrichedCashAdvance | null>(null);
   const [confirmingCvReceiptAdvance, setConfirmingCvReceiptAdvance] = React.useState<EnrichedCashAdvance | null>(null);
-  const [isBulkReceiveCvDialogOpen, setIsBulkReceiveCvDialogOpen] = React.useState(false);
   const [cvNumber, setCvNumber] = React.useState('');
   
   const { toast } = useToast();
   const documentRef = React.useRef(null);
   const { user } = useAuth();
   const [currentPage, setCurrentPage] = React.useState(1);
+  const pathname = usePathname();
 
   React.useEffect(() => {
     setSelectedAdvances([]);
@@ -122,28 +122,6 @@ export function CashAdvanceTable({ advances, onMotorcycleUpdate, showStatusColum
     toast({ title: 'Success', description: `${selectedAdvances.length} cash advances moved to "For CV Issuance".` });
   };
   
-  const handleBulkConfirmCvReceipt = () => {
-    if (!cvNumber) {
-        toast({ title: 'CV Number Required', description: 'Please enter a Check Voucher number.', variant: 'destructive' });
-        return;
-    }
-    const updatedMotorcycles = selectedAdvances.flatMap(item => item.motorcycles.map(m => ({
-        ...m,
-        status: 'Released CVs' as const
-    })));
-
-    const updatedCas = selectedAdvances.map(item => ({
-        id: item.cashAdvance.id,
-        checkVoucherNumber: cvNumber,
-        checkVoucherReleaseDate: new Date(),
-    }));
-
-    handleBulkUpdate(updatedMotorcycles, updatedCas);
-    toast({ title: 'Success', description: `${selectedAdvances.length} cash advances marked as "Released CVs".` });
-    setIsBulkReceiveCvDialogOpen(false);
-    setCvNumber('');
-  };
-
 
   const getStatusClass = (status: MotorcycleStatus | 'N/A'): string => {
     switch (status) {
@@ -210,10 +188,8 @@ export function CashAdvanceTable({ advances, onMotorcycleUpdate, showStatusColum
   }
 
   const canBulkApprove = selectedAdvances.length > 0 && selectedAdvances.every(a => getDynamicCAStatus(a.motorcycles) === 'For CA Approval');
-  const canBulkReceive = selectedAdvances.length > 0 && selectedAdvances.every(a => getDynamicCAStatus(a.motorcycles) === 'For CV Issuance');
-
-  const page = usePathname();
-  const pageName = page.split('/').pop();
+  
+  const pageName = pathname.split('/').pop();
   
   const getCardTitle = () => {
     if (pageName === 'for-cv-issuance') {
@@ -259,12 +235,6 @@ export function CashAdvanceTable({ advances, onMotorcycleUpdate, showStatusColum
                         <DropdownMenuItem disabled={!canBulkApprove} onSelect={() => handleBulkApproveForCv()}>
                             <Banknote className="mr-2 h-4 w-4" />
                             Approve for CV Issuance
-                        </DropdownMenuItem>
-                    )}
-                    {(isSupervisor) && (
-                        <DropdownMenuItem disabled={!canBulkReceive} onSelect={() => setIsBulkReceiveCvDialogOpen(true)}>
-                            <PackageCheck className="mr-2 h-4 w-4" />
-                            Confirm Budget Received
                         </DropdownMenuItem>
                     )}
                 </DropdownMenuContent>
@@ -465,35 +435,6 @@ export function CashAdvanceTable({ advances, onMotorcycleUpdate, showStatusColum
         </DialogContent>
     </Dialog>
     
-    <Dialog open={isBulkReceiveCvDialogOpen} onOpenChange={setIsBulkReceiveCvDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-                <DialogTitle>Bulk Confirm Budget Receipt</DialogTitle>
-                <DialogDescription>
-                    Enter the CV number that applies to all {selectedAdvances.length} selected cash advances.
-                    <span className="font-semibold text-destructive block mt-2">Warning:</span> Please ensure all selected cash advances are covered by the same check voucher.
-                </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="bulk-cv-number" className="text-right">
-                        CV Number
-                    </Label>
-                    <Input 
-                        id="bulk-cv-number" 
-                        value={cvNumber}
-                        onChange={(e) => setCvNumber(e.target.value)}
-                        className="col-span-3"
-                        placeholder="e.g., CV-2024-08-001"
-                    />
-                </div>
-            </div>
-            <DialogFooter>
-                <Button variant="outline" onClick={() => setIsBulkReceiveCvDialogOpen(false)}>Cancel</Button>
-                <Button onClick={handleBulkConfirmCvReceipt}>Confirm Receipt for Selected</Button>
-            </DialogFooter>
-        </DialogContent>
-    </Dialog>
     </>
   );
 }
