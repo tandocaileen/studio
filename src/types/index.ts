@@ -81,6 +81,7 @@ export type CashAdvance = {
   motorcycleIds?: string[];
   checkVoucherNumber?: string;
   checkVoucherReleaseDate?: Date;
+  cvReceiptUrl?: string; // URL for the signed receipt from liaison
   ltoOrNumber?: string;
   ltoOrAmount?: number;
   ltoProcessFee?: number;

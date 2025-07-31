@@ -14,14 +14,13 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CashAdvance, Motorcycle, MotorcycleStatus } from '@/types';
-import { Download, Eye, Banknote, PackageCheck } from 'lucide-react';
+import { Eye, Check, UploadCloud } from 'lucide-react';
 import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Label } from '../ui/label';
 import { Input } from '../ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { CashAdvanceRequestDocument } from './cash-advance-request-document';
-import { generatePdf } from '@/lib/pdf';
 import type { EnrichedCashAdvance } from '@/app/cash-advances/page';
 import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
@@ -31,7 +30,7 @@ import { usePathname } from 'next/navigation';
 
 type CashAdvanceTableProps = {
   advances: EnrichedCashAdvance[];
-  onMotorcycleUpdate: (updatedItems: Motorcycle[]) => void;
+  onMotorcycleUpdate: (updatedItems: Motorcycle[], updatedCa?: Partial<CashAdvance>) => void;
   showStatusColumn?: boolean;
 };
 
@@ -40,7 +39,9 @@ const ITEMS_PER_PAGE = 10;
 export function CashAdvanceTable({ advances, onMotorcycleUpdate, showStatusColumn = true }: CashAdvanceTableProps) {
   const [previewingAdvance, setPreviewingAdvance] = React.useState<EnrichedCashAdvance | null>(null);
   const [confirmingCvReceiptAdvance, setConfirmingCvReceiptAdvance] = React.useState<EnrichedCashAdvance | null>(null);
+  const [issuingCvAdvance, setIssuingCvAdvance] = React.useState<EnrichedCashAdvance | null>(null);
   const [cvNumber, setCvNumber] = React.useState('');
+  const [receiptFile, setReceiptFile] = React.useState<File | null>(null);
   
   const { toast } = useToast();
   const documentRef = React.useRef(null);
@@ -54,35 +55,59 @@ export function CashAdvanceTable({ advances, onMotorcycleUpdate, showStatusColum
   
   const getDynamicCAStatus = (motorcycles: Motorcycle[]): MotorcycleStatus | 'N/A' => {
     if (!motorcycles || motorcycles.length === 0) return 'N/A';
-    // The status is determined by the status of the first motorcycle.
-    // This is a simplification based on the logic that all MCs in a CA move together.
     return motorcycles[0].status;
   };
   
   const handleUpdate = async (updatedMotorcycles: Motorcycle[], updatedCa?: Partial<CashAdvance>) => {
-    onMotorcycleUpdate(updatedMotorcycles);
-    if(updatedCa) {
-        await updateCashAdvances(updatedCa);
-    }
+    onMotorcycleUpdate(updatedMotorcycles, updatedCa);
   };
   
-  const handleConfirmCvReceiptSubmit = async () => {
-    if (!confirmingCvReceiptAdvance) return;
+  const handleIssueCvSubmit = async () => {
+    if (!issuingCvAdvance) return;
     if (!cvNumber) {
         toast({ title: 'CV Number Required', description: 'Please enter a Check Voucher number.', variant: 'destructive' });
         return;
     }
-    const updatedMotorcycles = confirmingCvReceiptAdvance.motorcycles.map(m => ({ ...m, status: 'Released CVs' as const }));
+    const updatedMotorcycles = issuingCvAdvance.motorcycles.map(m => ({ ...m, status: 'Released CVs' as const }));
     const updatedCa: Partial<CashAdvance> = {
-      id: confirmingCvReceiptAdvance.cashAdvance.id,
+      id: issuingCvAdvance.cashAdvance.id,
       checkVoucherNumber: cvNumber,
       checkVoucherReleaseDate: new Date(),
     };
 
     await handleUpdate(updatedMotorcycles, updatedCa);
-    toast({ title: 'Success', description: `Cash advance #${confirmingCvReceiptAdvance.cashAdvance.id} marked as "Released CVs".` });
-    setConfirmingCvReceiptAdvance(null);
+    toast({ title: 'Success', description: `CV Issued for #${issuingCvAdvance.cashAdvance.id}.` });
+    setIssuingCvAdvance(null);
     setCvNumber('');
+  };
+
+  const handleConfirmReceiptSubmit = async () => {
+    if (!confirmingCvReceiptAdvance) return;
+
+    // In a real app, you would upload the file and get a URL.
+    // For this demo, we'll just use a placeholder.
+    if (!receiptFile) {
+        toast({ title: "Receipt Image Required", description: "Please select an image file to upload.", variant: "destructive" });
+        return;
+    }
+
+    const updatedMotorcycles = confirmingCvReceiptAdvance.motorcycles.map(m => ({
+        ...m,
+        status: 'For Liquidation' as const
+    }));
+
+    const updatedCa: Partial<CashAdvance> = {
+        id: confirmingCvReceiptAdvance.cashAdvance.id,
+        cvReceiptUrl: `/uploads/receipt-${confirmingCvReceiptAdvance.cashAdvance.id}.jpg` // Placeholder URL
+    };
+
+    await handleUpdate(updatedMotorcycles, updatedCa);
+    toast({
+        title: "Receipt Confirmed",
+        description: `Liaison receipt for CV #${confirmingCvReceiptAdvance.cashAdvance.checkVoucherNumber} confirmed. Units are now for liquidation.`
+    });
+    setConfirmingCvReceiptAdvance(null);
+    setReceiptFile(null);
   };
 
   const getStatusClass = (status: MotorcycleStatus | 'N/A'): string => {
@@ -100,6 +125,7 @@ export function CashAdvanceTable({ advances, onMotorcycleUpdate, showStatusColum
   const isCashier = user?.role === 'Cashier';
   const isSupervisor = user?.role === 'Store Supervisor';
   const isLiaison = user?.role === 'Liaison';
+  const pageName = pathname.split('/').pop();
   
   const totalPages = Math.ceil(advances.length / ITEMS_PER_PAGE);
   const paginatedAdvances = advances.slice(
@@ -130,8 +156,6 @@ export function CashAdvanceTable({ advances, onMotorcycleUpdate, showStatusColum
     return advance.cashAdvance.purpose;
   }
   
-  const pageName = pathname.split('/').pop();
-  
   const getCardTitle = () => {
     if (pageName === 'for-cv-issuance') {
       return 'Cash Advances for CV Issuance';
@@ -151,6 +175,9 @@ export function CashAdvanceTable({ advances, onMotorcycleUpdate, showStatusColum
     return 'A comprehensive list of all cash advance requests.';
   }
 
+  const isForCvIssuancePage = pageName === 'for-cv-issuance';
+  const isReleasedCvPage = pageName === 'released-cv';
+
 
   return (
     <>
@@ -167,8 +194,12 @@ export function CashAdvanceTable({ advances, onMotorcycleUpdate, showStatusColum
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>{isLiaison ? 'Primary Customer' : 'Liaison'}</TableHead>
-              <TableHead>{isLiaison ? 'Primary Motorcycle' : 'Purpose'}</TableHead>
+              {isLiaison && <TableHead>Primary Customer</TableHead>}
+              {isLiaison && <TableHead>Primary Motorcycle</TableHead>}
+              {(isSupervisor || isCashier) && isReleasedCvPage && <TableHead>CV Number</TableHead>}
+              {(isSupervisor || isCashier) && isReleasedCvPage && <TableHead>Cash Advance Code</TableHead>}
+              {(isSupervisor || isCashier) && !isReleasedCvPage && <TableHead>Liaison</TableHead>}
+              {(isSupervisor || isCashier) && !isReleasedCvPage && <TableHead>Purpose</TableHead>}
               <TableHead className="text-right">Amount</TableHead>
               <TableHead>Date</TableHead>
               {showStatusColumn && <TableHead>Status</TableHead>}
@@ -180,17 +211,20 @@ export function CashAdvanceTable({ advances, onMotorcycleUpdate, showStatusColum
           <TableBody>
             {paginatedAdvances.map((advance) => {
               const status = getDynamicCAStatus(advance.motorcycles);
-              const isForCvIssuancePage = pageName === 'for-cv-issuance';
               const canIssueCv = (isCashier || isSupervisor) && status === 'For CV Issuance';
+              const canConfirmReceipt = (isCashier || isSupervisor) && status === 'Released CVs' && !advance.cashAdvance.cvReceiptUrl;
 
               return (
                 <TableRow key={advance.cashAdvance.id}>
-                  <TableCell className="font-medium">
-                    {isLiaison ? getPrimaryCustomer(advance) : advance.cashAdvance.personnel}
-                  </TableCell>
-                  <TableCell className="max-w-[300px] truncate">
-                    {isLiaison ? getPrimaryMotorcycle(advance) : advance.cashAdvance.purpose}
-                  </TableCell>
+                  {isLiaison && <TableCell className="font-medium">{getPrimaryCustomer(advance)}</TableCell>}
+                  {isLiaison && <TableCell className="max-w-[300px] truncate">{getPrimaryMotorcycle(advance)}</TableCell>}
+                  
+                  {(isSupervisor || isCashier) && isReleasedCvPage && <TableCell className="font-medium">{advance.cashAdvance.checkVoucherNumber}</TableCell>}
+                  {(isSupervisor || isCashier) && isReleasedCvPage && <TableCell>{advance.cashAdvance.id}</TableCell>}
+
+                  {(isSupervisor || isCashier) && !isReleasedCvPage && <TableCell className="font-medium">{advance.cashAdvance.personnel}</TableCell>}
+                  {(isSupervisor || isCashier) && !isReleasedCvPage && <TableCell className="max-w-[300px] truncate">{advance.cashAdvance.purpose}</TableCell>}
+                  
                   <TableCell className="text-right">₱{advance.cashAdvance.amount.toLocaleString()}</TableCell>
                   <TableCell>{format(new Date(advance.cashAdvance.date), 'MMM dd, yyyy')}</TableCell>
                   {showStatusColumn &&
@@ -202,9 +236,19 @@ export function CashAdvanceTable({ advances, onMotorcycleUpdate, showStatusColum
                   }
                   <TableCell className="flex items-center gap-2 justify-end">
                       {isForCvIssuancePage && canIssueCv && (
-                          <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => setConfirmingCvReceiptAdvance(advance)}>
+                          <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => setIssuingCvAdvance(advance)}>
                               Issue CV
                           </Button>
+                      )}
+                      {isReleasedCvPage && canConfirmReceipt && (
+                        <Button size="sm" onClick={() => setConfirmingCvReceiptAdvance(advance)}>
+                            Confirm Receipt
+                        </Button>
+                      )}
+                      {advance.cashAdvance.cvReceiptUrl && (
+                        <Button size="sm" variant="outline" onClick={() => window.open(advance.cashAdvance.cvReceiptUrl, '_blank')}>
+                            View Receipt
+                        </Button>
                       )}
                       <Button size="icon" variant="ghost" onClick={() => setPreviewingAdvance(advance)}>
                           <Eye className="h-4 w-4" />
@@ -272,10 +316,10 @@ export function CashAdvanceTable({ advances, onMotorcycleUpdate, showStatusColum
         </DialogContent>
     </Dialog>
     
-    <Dialog open={!!confirmingCvReceiptAdvance} onOpenChange={(open) => !open && setConfirmingCvReceiptAdvance(null)}>
+    <Dialog open={!!issuingCvAdvance} onOpenChange={(open) => !open && setIssuingCvAdvance(null)}>
         <DialogContent className="sm:max-w-md">
             <DialogHeader>
-                <DialogTitle>Confirm Budget Received for CA #{confirmingCvReceiptAdvance?.cashAdvance.id}</DialogTitle>
+                <DialogTitle>Issue Check Voucher for CA #{issuingCvAdvance?.cashAdvance.id}</DialogTitle>
                 <DialogDescription>
                     Enter the Check Voucher number to confirm budget has been received by the Cashier.
                 </DialogDescription>
@@ -295,8 +339,33 @@ export function CashAdvanceTable({ advances, onMotorcycleUpdate, showStatusColum
                 </div>
             </div>
             <DialogFooter>
+                <Button variant="outline" onClick={() => setIssuingCvAdvance(null)}>Cancel</Button>
+                <Button onClick={handleIssueCvSubmit}>Confirm and Issue CV</Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
+
+    <Dialog open={!!confirmingCvReceiptAdvance} onOpenChange={(open) => !open && setConfirmingCvReceiptAdvance(null)}>
+        <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+                <DialogTitle>Confirm CV Received by Liaison</DialogTitle>
+                <DialogDescription>
+                    Upload proof of receipt for CV #{confirmingCvReceiptAdvance?.cashAdvance.checkVoucherNumber} to move items to 'For Liquidation'.
+                </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+                <div className="grid w-full max-w-sm items-center gap-1.5">
+                    <Label htmlFor="receipt-upload">Signed Receipt</Label>
+                    <Input id="receipt-upload" type="file" accept="image/*" onChange={(e) => setReceiptFile(e.target.files?.[0] || null)} />
+                    {receiptFile && <p className="text-sm text-muted-foreground">Selected: {receiptFile.name}</p>}
+                </div>
+            </div>
+            <DialogFooter>
                 <Button variant="outline" onClick={() => setConfirmingCvReceiptAdvance(null)}>Cancel</Button>
-                <Button onClick={handleConfirmCvReceiptSubmit}>Confirm Receipt</Button>
+                <Button onClick={handleConfirmReceiptSubmit} disabled={!receiptFile}>
+                    <UploadCloud className="mr-2 h-4 w-4" />
+                    Confirm Receipt
+                </Button>
             </DialogFooter>
         </DialogContent>
     </Dialog>
