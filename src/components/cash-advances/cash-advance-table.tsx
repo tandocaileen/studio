@@ -50,11 +50,12 @@ import { updateCashAdvances } from '@/lib/data';
 type CashAdvanceTableProps = {
   advances: EnrichedCashAdvance[];
   onMotorcycleUpdate: (updatedItems: Motorcycle[]) => void;
+  showStatusColumn?: boolean;
 };
 
 const ITEMS_PER_PAGE = 10;
 
-export function CashAdvanceTable({ advances, onMotorcycleUpdate }: CashAdvanceTableProps) {
+export function CashAdvanceTable({ advances, onMotorcycleUpdate, showStatusColumn = true }: CashAdvanceTableProps) {
   const [selectedAdvances, setSelectedAdvances] = React.useState<EnrichedCashAdvance[]>([]);
   const [previewingAdvance, setPreviewingAdvance] = React.useState<EnrichedCashAdvance | null>(null);
   const [confirmingCvReceiptAdvance, setConfirmingCvReceiptAdvance] = React.useState<EnrichedCashAdvance | null>(null);
@@ -216,9 +217,9 @@ export function CashAdvanceTable({ advances, onMotorcycleUpdate }: CashAdvanceTa
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
-          <CardTitle>Cash Advances</CardTitle>
+          <CardTitle>All Cash Advances</CardTitle>
           <CardDescription>
-            Track and manage all cash advance requests and liquidations.
+            A comprehensive list of all cash advance requests.
           </CardDescription>
         </div>
         {selectedAdvances.length > 0 && isCashierOrSupervisor && (
@@ -264,7 +265,7 @@ export function CashAdvanceTable({ advances, onMotorcycleUpdate }: CashAdvanceTa
               <TableHead>{isLiaison ? 'Primary Motorcycle' : 'Purpose'}</TableHead>
               <TableHead className="text-right">Amount</TableHead>
               <TableHead>Date</TableHead>
-              <TableHead>Status</TableHead>
+              {showStatusColumn && <TableHead>Status</TableHead>}
               <TableHead>
                 <span className="sr-only">Actions</span>
               </TableHead>
@@ -299,11 +300,13 @@ export function CashAdvanceTable({ advances, onMotorcycleUpdate }: CashAdvanceTa
                   </TableCell>
                   <TableCell className="text-right">₱{advance.cashAdvance.amount.toLocaleString()}</TableCell>
                   <TableCell>{format(new Date(advance.cashAdvance.date), 'MMM dd, yyyy')}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className={cn("capitalize", getStatusClass(status))}>
-                      {status}
-                    </Badge>
-                  </TableCell>
+                  {showStatusColumn &&
+                    <TableCell>
+                        <Badge variant="outline" className={cn("capitalize", getStatusClass(status))}>
+                        {status}
+                        </Badge>
+                    </TableCell>
+                  }
                   <TableCell>
                     {totalActions === 1 ? (
                         <Button
@@ -471,3 +474,5 @@ export function CashAdvanceTable({ advances, onMotorcycleUpdate }: CashAdvanceTa
     </>
   );
 }
+
+    
