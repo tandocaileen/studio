@@ -9,7 +9,7 @@ import { getCashAdvances, getMotorcycles, updateCashAdvances, updateMotorcycles 
 import { CashAdvance, Motorcycle } from '@/types';
 import { AppLoader } from '@/components/layout/loader';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle, ArrowLeft, Check, Eye, FileCheck, FileText, ShieldCheck } from 'lucide-react';
+import { AlertCircle, ArrowLeft, Check, Download, Eye, FileCheck, FileText, ShieldCheck } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -34,6 +34,9 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useAuth } from '@/context/AuthContext';
 import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { LiquidationReport } from '@/components/reports/liquidation-report';
+import { generatePdf } from '@/lib/pdf';
 
 
 type ReportData = {
@@ -52,6 +55,8 @@ function VerificationContent() {
     const [loading, setLoading] = React.useState(true);
     const [isVerifying, setIsVerifying] = React.useState(false);
     const [remarks, setRemarks] = React.useState('');
+    const [isReportDialogOpen, setIsReportDialogOpen] = React.useState(false);
+    const reportRef = React.useRef(null);
 
     React.useEffect(() => {
         if (id) {
@@ -126,6 +131,7 @@ function VerificationContent() {
     const isVerified = motorcycles.every(mc => mc.status === 'Completed');
 
     return (
+        <>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
             {/* Main Content */}
             <div className="lg:col-span-2">
@@ -141,7 +147,7 @@ function VerificationContent() {
                                 Verified
                             </Badge>
                         ) : (
-                             <Button variant="outline" size="sm" onClick={() => router.push(`/reports/liquidation/${id}`)}>
+                             <Button variant="outline" size="sm" onClick={() => setIsReportDialogOpen(true)}>
                                 <Eye className="mr-2 h-4 w-4" />
                                 View Liquidation Report
                             </Button>
@@ -265,6 +271,28 @@ function VerificationContent() {
                 </Card>
             </div>
         </div>
+
+        <Dialog open={isReportDialogOpen} onOpenChange={setIsReportDialogOpen}>
+            <DialogContent className="max-w-6xl">
+                <DialogHeader>
+                    <DialogTitle>Liquidation Report</DialogTitle>
+                    <DialogDescription>
+                        This is a preview of the liquidation report for CA #{cashAdvance.id}.
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="max-h-[75vh] overflow-y-auto border rounded-md">
+                     <LiquidationReport ref={reportRef} reportData={reportData} />
+                </div>
+                <DialogFooter>
+                    <Button variant="outline" onClick={() => setIsReportDialogOpen(false)}>Close</Button>
+                    <Button onClick={() => reportRef.current && generatePdf(reportRef.current, `Liquidation-Report-${cashAdvance.id}.pdf`)}>
+                        <Download className="mr-2 h-4 w-4" />
+                        Download as PDF
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+        </>
     );
 }
 
