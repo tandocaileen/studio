@@ -237,6 +237,40 @@ const generateInitialData = () => {
     cashAdvances.push(ca5);
     mcsForCA5.forEach(mc => mc.status = 'For CV Issuance');
 
+    // Add 2 more CAs with 'For Liquidation' status
+    // CA for endorsement 6 -> Status: For Liquidation
+    const mcsForCA6 = endorsements[5].motorcycleIds.map(id => motorcycles.find(m => m.id === id)!);
+    const ca6: CashAdvance = {
+        id: 'ca-072424-012',
+        personnel: DEMO_LIAISON.name,
+        personnelBranch: DEMO_LIAISON.assignedBranch,
+        purpose: `Cash advance for registration of ${mcsForCA6.length} Yamaha units.`,
+        amount: mcsForCA6.reduce((sum) => sum + DEMO_LIAISON.processingFee + DEMO_LIAISON.orFee, 0),
+        date: addDays(today, -7),
+        checkVoucherNumber: 'CV-2024-07-015',
+        checkVoucherReleaseDate: addDays(today, -6),
+        motorcycleIds: mcsForCA6.map(m => m.id),
+    };
+    cashAdvances.push(ca6);
+    mcsForCA6.forEach(mc => mc.status = 'For Liquidation');
+
+    // CA for endorsement 7 -> Status: For Liquidation
+    const mcsForCA7 = endorsements[6].motorcycleIds.map(id => motorcycles.find(m => m.id === id)!);
+    const ca7: CashAdvance = {
+        id: 'ca-072324-013',
+        personnel: DEMO_LIAISON.name,
+        personnelBranch: DEMO_LIAISON.assignedBranch,
+        purpose: `CA for ${mcsForCA7.length} Suzuki motorcycles`,
+        amount: mcsForCA7.reduce((sum) => sum + DEMO_LIAISON.processingFee + DEMO_LIAISON.orFee, 0),
+        date: addDays(today, -9),
+        checkVoucherNumber: 'CV-2024-07-018',
+        checkVoucherReleaseDate: addDays(today, -8),
+        motorcycleIds: mcsForCA7.map(m => m.id),
+    };
+    cashAdvances.push(ca7);
+    mcsForCA7.forEach(mc => mc.status = 'For Liquidation');
+
+
     return { motorcycles, endorsements, cashAdvances };
 };
 
@@ -244,7 +278,7 @@ const generateInitialData = () => {
 const MC_KEY = 'lto_motorcycles';
 const CA_KEY = 'lto_cash_advances';
 const ENDO_KEY = 'lto_endorsements';
-const DATA_FLAG = 'data_generated_flag_v16'; // Increment version to force reset
+const DATA_FLAG = 'data_generated_flag_v17'; // Increment version to force reset
 
 const initializeData = () => {
     if (typeof window !== 'undefined') {
