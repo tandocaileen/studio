@@ -116,7 +116,7 @@ function ReleasedCvContentLiaison({ searchQuery }: { searchQuery: string }) {
         setOpenCvGroups(prev => prev.includes(cvNumber) ? prev.filter(cv => cv !== cvNumber) : [...prev, cvNumber]);
     };
 
-    const totalPages = Math.ceil(groupedArray.length / ITEMS_PER_LIAISON);
+    const totalPages = Math.ceil(groupedArray.length / ITEMS_PER_PAGE_LIAISON);
     const paginatedGroups = groupedArray.slice(
         (currentPage - 1) * ITEMS_PER_PAGE_LIAISON,
         currentPage * ITEMS_PER_PAGE_LIAISON
@@ -126,9 +126,9 @@ function ReleasedCvContentLiaison({ searchQuery }: { searchQuery: string }) {
         <>
         <Card>
             <CardHeader>
-                <CardTitle>CVs Released to Me</CardTitle>
+                <CardTitle>My Released CVs</CardTitle>
                  <CardDescription>
-                    These are the check vouchers released to you. Expand each CV to view the associated cash advances.
+                    These are the check vouchers released to you. Expand each CV to view and act on the associated cash advances.
                  </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4">
@@ -153,7 +153,7 @@ function ReleasedCvContentLiaison({ searchQuery }: { searchQuery: string }) {
                                     </div>
                                 </div>
                                     <Badge variant="outline">
-                                        Released: {releaseDate ? format(new Date(releaseDate), 'MMM dd, yyyy') : 'N/A'}
+                                        CV Released: {releaseDate ? format(new Date(releaseDate), 'MMM dd, yyyy') : 'N/A'}
                                     </Badge>
                                 </div>
                             </CollapsibleTrigger>

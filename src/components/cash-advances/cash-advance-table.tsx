@@ -211,15 +211,37 @@ export function CashAdvanceTable({ advances, onMotorcycleUpdate, showStatusColum
   const canBulkApprove = selectedAdvances.length > 0 && selectedAdvances.every(a => getDynamicCAStatus(a.motorcycles) === 'For CA Approval');
   const canBulkReceive = selectedAdvances.length > 0 && selectedAdvances.every(a => getDynamicCAStatus(a.motorcycles) === 'For CV Issuance');
 
+  const page = usePathname();
+  const pageName = page.split('/').pop();
+  
+  const getCardTitle = () => {
+    if (pageName === 'for-cv-issuance') {
+      return 'Cash Advances for CV Issuance';
+    }
+    if (pageName === 'released-cv' && (isSupervisor || isCashier)) {
+      return 'All CAs with Released Check Vouchers';
+    }
+    return 'All Cash Advances'
+  }
+  const getCardDescription = () => {
+    if (pageName === 'for-cv-issuance') {
+      return 'These CAs have been approved and are awaiting check voucher creation by a Cashier.';
+    }
+     if (pageName === 'released-cv' && (isSupervisor || isCashier)) {
+      return 'A list of all cash advances with released check vouchers.';
+    }
+    return 'A comprehensive list of all cash advance requests.';
+  }
+
 
   return (
     <>
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
-          <CardTitle>All Cash Advances</CardTitle>
+          <CardTitle>{getCardTitle()}</CardTitle>
           <CardDescription>
-            A comprehensive list of all cash advance requests.
+            {getCardDescription()}
           </CardDescription>
         </div>
         {selectedAdvances.length > 0 && isCashierOrSupervisor && (

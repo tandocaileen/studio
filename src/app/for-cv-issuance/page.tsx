@@ -92,7 +92,7 @@ export default function ForCvIssuancePage() {
     return (
         <ProtectedPage allowedRoles={['Cashier', 'Store Supervisor']}>
              <div className="w-full">
-                <Header title="For CV Issuance" onSearch={setSearchQuery} />
+                <Header title="Approved for CV Issuance" onSearch={setSearchQuery} />
                 <main className="flex-1 items-start gap-4 p-4 sm:px-6 sm:py-6 md:gap-8">
                     <ForCvIssuanceContent searchQuery={searchQuery} />
                 </main>
