@@ -32,7 +32,6 @@ import { CashAdvanceRequestDocument } from './cash-advance-request-document';
 import { generatePdf } from '@/lib/pdf';
 import type { EnrichedCashAdvance } from '@/app/cash-advances/page';
 import { useAuth } from '@/context/AuthContext';
-import { Checkbox } from '../ui/checkbox';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -57,7 +56,6 @@ type CashAdvanceTableProps = {
 const ITEMS_PER_PAGE = 10;
 
 export function CashAdvanceTable({ advances, onMotorcycleUpdate, showStatusColumn = true }: CashAdvanceTableProps) {
-  const [selectedAdvances, setSelectedAdvances] = React.useState<EnrichedCashAdvance[]>([]);
   const [previewingAdvance, setPreviewingAdvance] = React.useState<EnrichedCashAdvance | null>(null);
   const [confirmingCvReceiptAdvance, setConfirmingCvReceiptAdvance] = React.useState<EnrichedCashAdvance | null>(null);
   const [cvNumber, setCvNumber] = React.useState('');
@@ -69,7 +67,6 @@ export function CashAdvanceTable({ advances, onMotorcycleUpdate, showStatusColum
   const pathname = usePathname();
 
   React.useEffect(() => {
-    setSelectedAdvances([]);
     setCurrentPage(1);
   }, [advances]);
   
@@ -85,12 +82,6 @@ export function CashAdvanceTable({ advances, onMotorcycleUpdate, showStatusColum
     if(updatedCa) {
         await updateCashAdvances(updatedCa);
     }
-  };
-  
-  const handleBulkUpdate = (updatedMotorcycles: Motorcycle[], updatedCas: Partial<CashAdvance>[]) => {
-      onMotorcycleUpdate(updatedMotorcycles);
-      updateCashAdvances(updatedCas);
-      setSelectedAdvances([]);
   };
   
   const handleConfirmCvReceiptSubmit = async () => {
@@ -112,17 +103,6 @@ export function CashAdvanceTable({ advances, onMotorcycleUpdate, showStatusColum
     setCvNumber('');
   };
 
-  const handleBulkApproveForCv = () => {
-    const updatedMotorcycles = selectedAdvances.flatMap(item => item.motorcycles.map(m => ({
-        ...m,
-        status: 'For CV Issuance' as const
-    })));
-
-    handleBulkUpdate(updatedMotorcycles, []);
-    toast({ title: 'Success', description: `${selectedAdvances.length} cash advances moved to "For CV Issuance".` });
-  };
-  
-
   const getStatusClass = (status: MotorcycleStatus | 'N/A'): string => {
     switch (status) {
       case 'For CA Approval': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
@@ -138,31 +118,12 @@ export function CashAdvanceTable({ advances, onMotorcycleUpdate, showStatusColum
   const isCashier = user?.role === 'Cashier';
   const isSupervisor = user?.role === 'Store Supervisor';
   const isLiaison = user?.role === 'Liaison';
-  const isCashierOrSupervisor = isCashier || isSupervisor;
   
-  const handleSelectAll = (checked: boolean | 'indeterminate') => {
-    if (checked === true) {
-        setSelectedAdvances(paginatedAdvances);
-    } else {
-        setSelectedAdvances([]);
-    }
-  };
-
-  const handleSelectRow = (item: EnrichedCashAdvance, checked: boolean | 'indeterminate') => {
-    if (checked === true) {
-        setSelectedAdvances(prev => [...prev, item]);
-    } else {
-        setSelectedAdvances(prev => prev.filter(sa => sa.cashAdvance.id !== item.cashAdvance.id));
-    }
-  };
-
   const totalPages = Math.ceil(advances.length / ITEMS_PER_PAGE);
   const paginatedAdvances = advances.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
-
-  const isAllOnPageSelected = paginatedAdvances.length > 0 && selectedAdvances.length === paginatedAdvances.length;
 
   const getPrimaryCustomer = (advance: EnrichedCashAdvance) => {
     if (advance.motorcycles && advance.motorcycles.length > 0) {
@@ -186,8 +147,6 @@ export function CashAdvanceTable({ advances, onMotorcycleUpdate, showStatusColum
     }
     return advance.cashAdvance.purpose;
   }
-
-  const canBulkApprove = selectedAdvances.length > 0 && selectedAdvances.every(a => getDynamicCAStatus(a.motorcycles) === 'For CA Approval');
   
   const pageName = pathname.split('/').pop();
   
@@ -221,39 +180,11 @@ export function CashAdvanceTable({ advances, onMotorcycleUpdate, showStatusColum
             {getCardDescription()}
           </CardDescription>
         </div>
-        {selectedAdvances.length > 0 && isCashierOrSupervisor && (
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="outline">
-                        Bulk Actions ({selectedAdvances.length})
-                        <MoreHorizontal className="ml-2 h-4 w-4" />
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    {isCashier && (
-                        <DropdownMenuItem disabled={!canBulkApprove} onSelect={() => handleBulkApproveForCv()}>
-                            <Banknote className="mr-2 h-4 w-4" />
-                            Approve for CV Issuance
-                        </DropdownMenuItem>
-                    )}
-                </DropdownMenuContent>
-            </DropdownMenu>
-        )}
       </CardHeader>
       <CardContent>
         <Table>
           <TableHeader>
             <TableRow>
-              {isCashierOrSupervisor && (
-                <TableHead className="w-[40px]">
-                    <Checkbox
-                        checked={isAllOnPageSelected}
-                        onCheckedChange={handleSelectAll}
-                        aria-label="Select all on page"
-                    />
-                </TableHead>
-              )}
               <TableHead>{isLiaison ? 'Primary Customer' : 'Liaison'}</TableHead>
               <TableHead>{isLiaison ? 'Primary Motorcycle' : 'Purpose'}</TableHead>
               <TableHead className="text-right">Amount</TableHead>
@@ -272,19 +203,7 @@ export function CashAdvanceTable({ advances, onMotorcycleUpdate, showStatusColum
               const totalActions = 1 + (approveActionAvailable ? 1 : 0) + (confirmActionAvailable ? 1 : 0);
 
               return (
-                <TableRow 
-                  key={advance.cashAdvance.id}
-                  data-state={selectedAdvances.some(sa => sa.cashAdvance.id === advance.cashAdvance.id) ? "selected" : undefined}
-                  >
-                  {isCashierOrSupervisor && (
-                      <TableCell>
-                          <Checkbox
-                              checked={selectedAdvances.some(sa => sa.cashAdvance.id === advance.cashAdvance.id)}
-                              onCheckedChange={(checked) => handleSelectRow(advance, checked)}
-                              aria-label={`Select CA ${advance.cashAdvance.id}`}
-                          />
-                      </TableCell>
-                  )}
+                <TableRow key={advance.cashAdvance.id}>
                   <TableCell className="font-medium">
                     {isLiaison ? getPrimaryCustomer(advance) : advance.cashAdvance.personnel}
                   </TableCell>
