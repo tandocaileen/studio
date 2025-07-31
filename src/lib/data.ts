@@ -49,10 +49,35 @@ const generateInitialData = () => {
         'Rajah Sulayman', 'Panday Pira', 'Graciano López Jaena'
     ];
     const branches = [...new Set(initialLiaisonUsers.map(l => l.assignedBranch))];
+    const statuses: MotorcycleStatus[] = [
+        'Lacking Requirements',
+        'Endorsed',
+        'For CA Approval',
+        'For CV Issuance',
+        'Released CVs',
+        'For Liquidation',
+        'For Verification',
+        'Completed'
+    ];
 
-    // Create a pool of 50 motorcycles to support more CAs
-    for (let i = 1; i <= 50; i++) {
-        const purchaseDate = addDays(today, -(i * 5 + 10)); // Push dates further back
+    const fillOutDetails = (mc: Motorcycle) => {
+        mc.cocNumber = `COC-${Math.floor(Math.random() * 9000) + 1000}`;
+        mc.policyNumber = `POL-${Math.floor(Math.random() * 9000) + 1000}`;
+        mc.insuranceType = 'TPL';
+        mc.insuranceEffectiveDate = mc.purchaseDate;
+        mc.insuranceExpirationDate = addDays(mc.purchaseDate, 365);
+        mc.hpgControlNumber = `HPG-${Math.floor(Math.random() * 9000) + 1000}`;
+        mc.sarCode = `SAR-${Math.floor(Math.random() * 9000) + 1000}`;
+        mc.csrNumber = `CSR-${Math.floor(Math.random() * 9000) + 1000}`;
+        mc.crNumber = `CR-${Math.floor(Math.random() * 9000) + 1000}`;
+        return mc;
+    }
+
+    let endorsementCounter = 1;
+    let caCounter = 1;
+
+    for (let i = 1; i <= 80; i++) {
+        const purchaseDate = addDays(today, -(i * 2 + 10));
         const mc: Motorcycle = {
             id: `mc-${i.toString().padStart(4, '0')}`,
             make: makes[i % makes.length],
@@ -66,210 +91,206 @@ const generateInitialData = () => {
             purchaseDate: purchaseDate,
             supplier: 'Prestige Honda',
             documents: [],
-            status: 'Lacking Requirements', // Default status
+            status: 'Lacking Requirements',
             customerName: customers[i % customers.length],
             salesInvoiceNo: `SI-${Math.floor(Math.random() * 90000) + 10000}`,
             accountCode: `AC-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
         };
         motorcycles.push(mc);
     }
-    
-    const fillOutDetails = (mc: Motorcycle) => {
-        mc.cocNumber = `COC-${Math.floor(Math.random() * 9000) + 1000}`;
-        mc.policyNumber = `POL-${Math.floor(Math.random() * 9000) + 1000}`;
-        mc.insuranceType = 'TPL';
-        mc.insuranceEffectiveDate = mc.purchaseDate;
-        mc.insuranceExpirationDate = addDays(mc.purchaseDate, 365);
-        mc.hpgControlNumber = `HPG-${Math.floor(Math.random() * 9000) + 1000}`;
-        mc.sarCode = `SAR-${Math.floor(Math.random() * 9000) + 1000}`;
-        mc.csrNumber = `CSR-${Math.floor(Math.random() * 9000) + 1000}`;
-        mc.crNumber = `CR-${Math.floor(Math.random() * 9000) + 1000}`;
-        return mc;
-    }
-    
-    // Status: Lacking Requirements (5 units) - N/A, they start this way
-    
-    // Make 5 units complete and ready for endorsement, but not yet endorsed.
-    motorcycles.slice(5, 10).forEach(mc => {
-        fillOutDetails(mc);
-        mc.status = 'Lacking Requirements'; // They are complete in data, but status is just before endorsement.
-    });
 
-    // Endorse 20 motorcycles to Bryle Hamili across 10 endorsements
-    // Here we will also create CAs and progress them through the new statuses
-    const mcsForEndorsement = motorcycles.slice(10); 
-    for (let i = 0; i < 10; i++) {
-        const mc1 = mcsForEndorsement[i * 2];
-        const mc2 = mcsForEndorsement[i * 2 + 1];
+    const processMotorcyclesForStatus = (startIndex: number, count: number, status: MotorcycleStatus) => {
+        const mcsForStatus = motorcycles.slice(startIndex, startIndex + count);
         
-        fillOutDetails(mc1);
-        fillOutDetails(mc2);
+        switch (status) {
+            case 'Lacking Requirements':
+                mcsForStatus.forEach(mc => mc.status = 'Lacking Requirements');
+                break;
+            
+            case 'Endorsed':
+                 for (let i = 0; i < mcsForStatus.length; i += 2) {
+                    const group = mcsForStatus.slice(i, i + 2);
+                    group.forEach(mc => {
+                        fillOutDetails(mc);
+                        mc.status = 'Endorsed';
+                        mc.assignedLiaison = DEMO_LIAISON.name;
+                    });
+                    const endorsement: Endorsement = {
+                        id: `ENDO-2408-${(endorsementCounter++).toString().padStart(3, '0')}`,
+                        transactionDate: addDays(today, -30),
+                        liaisonId: DEMO_LIAISON.id,
+                        liaisonName: DEMO_LIAISON.name,
+                        motorcycleIds: group.map(mc => mc.id),
+                        createdBy: SUPERVISOR_NAME,
+                        remarks: "Generated for mock data"
+                    };
+                    endorsements.push(endorsement);
+                    group.forEach(mc => mc.endorsementCode = endorsement.id);
+                }
+                break;
+                
+            case 'For CA Approval':
+                for (let i = 0; i < mcsForStatus.length; i += 2) {
+                    const group = mcsForStatus.slice(i, i + 2);
+                    group.forEach(mc => {
+                        fillOutDetails(mc);
+                        mc.status = 'For CA Approval';
+                        mc.assignedLiaison = DEMO_LIAISON.name;
+                    });
+                    const ca: CashAdvance = {
+                        id: `ca-0824-${(caCounter++).toString().padStart(3, '0')}`,
+                        personnel: DEMO_LIAISON.name,
+                        purpose: `Cash advance for ${group.length} units.`,
+                        amount: group.reduce((s) => s + DEMO_LIAISON.processingFee + DEMO_LIAISON.orFee, 0),
+                        date: addDays(today, -20),
+                        motorcycleIds: group.map(m => m.id),
+                    };
+                    cashAdvances.push(ca);
+                }
+                break;
 
-        let daysAgo = 15 + (i * 2);
-        if (i < 3) {
-            daysAgo = [1, 3, 5][i];
+            case 'For CV Issuance':
+                 for (let i = 0; i < mcsForStatus.length; i += 2) {
+                    const group = mcsForStatus.slice(i, i + 2);
+                    group.forEach(mc => {
+                        fillOutDetails(mc);
+                        mc.status = 'For CV Issuance';
+                        mc.assignedLiaison = DEMO_LIAISON.name;
+                    });
+                    const ca: CashAdvance = {
+                        id: `ca-0824-${(caCounter++).toString().padStart(3, '0')}`,
+                        personnel: DEMO_LIAISON.name,
+                        purpose: `Cash advance for ${group.length} units.`,
+                        amount: group.reduce((s) => s + DEMO_LIAISON.processingFee + DEMO_LIAISON.orFee, 0),
+                        date: addDays(today, -18),
+                        motorcycleIds: group.map(m => m.id),
+                    };
+                    cashAdvances.push(ca);
+                }
+                break;
+            
+            case 'Released CVs':
+                 for (let i = 0; i < mcsForStatus.length; i += 2) {
+                    const group = mcsForStatus.slice(i, i + 2);
+                    group.forEach(mc => {
+                        fillOutDetails(mc);
+                        mc.status = 'Released CVs';
+                        mc.assignedLiaison = DEMO_LIAISON.name;
+                    });
+                    const ca: CashAdvance = {
+                        id: `ca-0824-${(caCounter++).toString().padStart(3, '0')}`,
+                        personnel: DEMO_LIAISON.name,
+                        purpose: `Cash advance for ${group.length} units.`,
+                        amount: group.reduce((s) => s + DEMO_LIAISON.processingFee + DEMO_LIAISON.orFee, 0),
+                        date: addDays(today, -15),
+                        checkVoucherNumber: `CV-2024-08-${caCounter}`,
+                        checkVoucherReleaseDate: addDays(today, -14),
+                        motorcycleIds: group.map(m => m.id),
+                    };
+                    cashAdvances.push(ca);
+                }
+                break;
+            
+             case 'For Liquidation':
+                 for (let i = 0; i < mcsForStatus.length; i += 2) {
+                    const group = mcsForStatus.slice(i, i + 2);
+                    group.forEach(mc => {
+                        fillOutDetails(mc);
+                        mc.status = 'For Liquidation';
+                        mc.assignedLiaison = DEMO_LIAISON.name;
+                    });
+                    const ca: CashAdvance = {
+                        id: `ca-0824-${(caCounter++).toString().padStart(3, '0')}`,
+                        personnel: DEMO_LIAISON.name,
+                        purpose: `Cash advance for ${group.length} units.`,
+                        amount: group.reduce((s) => s + DEMO_LIAISON.processingFee + DEMO_LIAISON.orFee, 0),
+                        date: addDays(today, -12),
+                        checkVoucherNumber: `CV-2024-08-${caCounter}`,
+                        checkVoucherReleaseDate: addDays(today, -11),
+                        motorcycleIds: group.map(m => m.id),
+                    };
+                    cashAdvances.push(ca);
+                }
+                break;
+
+            case 'For Verification':
+                for (let i = 0; i < mcsForStatus.length; i += 2) {
+                    const group = mcsForStatus.slice(i, i + 2);
+                    const ca: CashAdvance = {
+                        id: `ca-0824-${(caCounter++).toString().padStart(3, '0')}`,
+                        personnel: DEMO_LIAISON.name,
+                        purpose: `Cash advance for ${group.length} units.`,
+                        amount: group.reduce((s) => s + DEMO_LIAISON.processingFee + DEMO_LIAISON.orFee, 0),
+                        date: addDays(today, -10),
+                        checkVoucherNumber: `CV-2024-08-${caCounter}`,
+                        checkVoucherReleaseDate: addDays(today, -9),
+                        motorcycleIds: group.map(m => m.id),
+                    };
+                    cashAdvances.push(ca);
+                    group.forEach(mc => {
+                        fillOutDetails(mc);
+                        mc.status = 'For Verification';
+                        mc.assignedLiaison = DEMO_LIAISON.name;
+                        mc.liquidationDetails = {
+                            parentCaId: ca.id,
+                            ltoOrNumber: `LTO-OR-${Math.floor(Math.random() * 90000)}`,
+                            ltoOrAmount: DEMO_LIAISON.orFee,
+                            ltoProcessFee: DEMO_LIAISON.processingFee,
+                            totalLiquidation: DEMO_LIAISON.orFee + DEMO_LIAISON.processingFee,
+                            shortageOverage: 0,
+                            remarks: 'Full Liquidation Complete',
+                            liquidatedBy: DEMO_LIAISON.name,
+                            liquidationDate: addDays(today, -5)
+                        };
+                    });
+                }
+                break;
+
+            case 'Completed':
+                for (let i = 0; i < mcsForStatus.length; i += 2) {
+                    const group = mcsForStatus.slice(i, i + 2);
+                    const ca: CashAdvance = {
+                        id: `ca-0824-${(caCounter++).toString().padStart(3, '0')}`,
+                        personnel: DEMO_LIAISON.name,
+                        purpose: `Cash advance for ${group.length} units.`,
+                        amount: group.reduce((s) => s + DEMO_LIAISON.processingFee + DEMO_LIAISON.orFee, 0),
+                        date: addDays(today, -8),
+                        checkVoucherNumber: `CV-2024-08-${caCounter}`,
+                        checkVoucherReleaseDate: addDays(today, -7),
+                        motorcycleIds: group.map(m => m.id),
+                        verifiedBy: ACCOUNTING_NAME,
+                        verificationRemarks: 'All in order.'
+                    };
+                    cashAdvances.push(ca);
+                    group.forEach(mc => {
+                        fillOutDetails(mc);
+                        mc.status = 'Completed';
+                        mc.assignedLiaison = DEMO_LIAISON.name;
+                        mc.liquidationDetails = {
+                            parentCaId: ca.id,
+                            ltoOrNumber: `LTO-OR-${Math.floor(Math.random() * 90000)}`,
+                            ltoOrAmount: DEMO_LIAISON.orFee,
+                            ltoProcessFee: DEMO_LIAISON.processingFee,
+                            totalLiquidation: DEMO_LIAISON.orFee + DEMO_LIAISON.processingFee,
+                            shortageOverage: 0,
+                            remarks: 'Full Liquidation Complete',
+                            liquidatedBy: DEMO_LIAISON.name,
+                            liquidationDate: addDays(today, -3)
+                        };
+                    });
+                }
+                break;
         }
-
-        const endorsement: Endorsement = {
-            id: `ENDO-2407-${(i+1).toString().padStart(3, '0')}`,
-            transactionDate: addDays(today, -daysAgo),
-            liaisonId: DEMO_LIAISON.id,
-            liaisonName: DEMO_LIAISON.name,
-            motorcycleIds: [mc1.id, mc2.id],
-            createdBy: i % 2 === 0 ? SUPERVISOR_NAME : CASHIER_NAME,
-            remarks: "Generated for mock data"
-        };
-        endorsements.push(endorsement);
-        
-        [mc1, mc2].forEach(mc => {
-            mc.status = 'Endorsed';
-            mc.assignedLiaison = DEMO_LIAISON.name;
-            mc.endorsementCode = endorsement.id;
-        });
-    }
-
-    // -- Existing CAs with new status flow --
-
-    // CA for endorsement 1 -> Status: Released CVs -> For Liquidation
-    const mcsForCA1 = endorsements[0].motorcycleIds.map(id => motorcycles.find(m => m.id === id)!);
-    const ca1: CashAdvance = {
-        id: 'ca-072024-001',
-        personnel: DEMO_LIAISON.name,
-        personnelBranch: DEMO_LIAISON.assignedBranch,
-        purpose: `Cash advance for registration of ${mcsForCA1.length} unit(s).`,
-        amount: mcsForCA1.reduce((sum) => sum + DEMO_LIAISON.processingFee + DEMO_LIAISON.orFee, 0),
-        date: addDays(today, -4),
-        checkVoucherNumber: 'CV-2024-07-011',
-        checkVoucherReleaseDate: addDays(today, -3),
-        motorcycleIds: mcsForCA1.map(m => m.id),
     };
-    cashAdvances.push(ca1);
-    mcsForCA1.forEach(mc => mc.status = 'For Liquidation');
-
-    // CA for endorsement 2 -> Status: For Verification (Fully Liquidated)
-    const mcsForCA2 = endorsements[1].motorcycleIds.map(id => motorcycles.find(m => m.id === id)!);
-    const ca2: CashAdvance = {
-        id: 'ca-071524-002',
-        personnel: DEMO_LIAISON.name,
-        personnelBranch: DEMO_LIAISON.assignedBranch,
-        purpose: `Cash advance for registration of ${mcsForCA2.length} units.`,
-        amount: mcsForCA2.reduce((sum) => sum + DEMO_LIAISON.processingFee + DEMO_LIAISON.orFee, 0),
-        date: addDays(today, -15),
-        checkVoucherNumber: 'CV-2024-07-005',
-        checkVoucherReleaseDate: addDays(today, -14),
-        motorcycleIds: mcsForCA2.map(m => m.id),
-    };
-    cashAdvances.push(ca2);
-    mcsForCA2.forEach(mc => {
-        mc.status = 'For Verification';
-        mc.liquidationDetails = {
-            parentCaId: ca2.id,
-            ltoOrNumber: `LTO-OR-${Math.floor(Math.random() * 90000)}`,
-            ltoOrAmount: DEMO_LIAISON.orFee,
-            ltoProcessFee: DEMO_LIAISON.processingFee,
-            totalLiquidation: DEMO_LIAISON.orFee + DEMO_LIAISON.processingFee,
-            shortageOverage: 0,
-            remarks: 'Full Liquidation Complete',
-            liquidatedBy: DEMO_LIAISON.name,
-            liquidationDate: addDays(today, -12)
-        };
-    });
-
-    // CA for endorsement 3 -> Status: Completed
-     const mcsForCA3 = endorsements[2].motorcycleIds.map(id => motorcycles.find(m => m.id === id)!);
-     const ca3: CashAdvance = {
-        id: 'ca-071024-008',
-        personnel: DEMO_LIAISON.name,
-        personnelBranch: DEMO_LIAISON.assignedBranch,
-        purpose: 'CA from last week',
-        amount: mcsForCA3.reduce((sum) => sum + DEMO_LIAISON.processingFee + DEMO_LIAISON.orFee, 0),
-        date: addDays(today, -20),
-        checkVoucherNumber: 'CV-2024-07-001',
-        checkVoucherReleaseDate: addDays(today, -19),
-        motorcycleIds: mcsForCA3.map(m=>m.id),
-        arNumber: 'AR-12345',
-        arDate: addDays(today, -10),
-        arAmount: mcsForCA3.reduce((sum) => sum + DEMO_LIAISON.processingFee + DEMO_LIAISON.orFee, 0),
-        verifiedBy: ACCOUNTING_NAME,
-        verificationRemarks: 'All documents are in order. Shortage/Overage is within acceptable limits. Cleared for closing.',
-    };
-    cashAdvances.push(ca3);
-    mcsForCA3.forEach(mc => {
-        mc.status = 'Completed';
-        mc.liquidationDetails = {
-            parentCaId: ca3.id,
-            ltoOrNumber: `LTO-OR-${Math.floor(Math.random() * 90000)}`,
-            ltoOrAmount: DEMO_LIAISON.orFee,
-            ltoProcessFee: DEMO_LIAISON.processingFee,
-            totalLiquidation: DEMO_LIAISON.orFee + DEMO_LIAISON.processingFee,
-            shortageOverage: 0,
-            remarks: 'Sample liquidation',
-            liquidatedBy: DEMO_LIAISON.name,
-            liquidationDate: addDays(today, -15)
-        };
-    });
-
-    // CA for endorsement 4 -> Status: For CA Approval
-    const mcsForCA4 = endorsements[3].motorcycleIds.map(id => motorcycles.find(m => m.id === id)!);
-    const ca4: CashAdvance = {
-        id: 'ca-072624-009',
-        personnel: DEMO_LIAISON.name,
-        personnelBranch: DEMO_LIAISON.assignedBranch,
-        purpose: 'CA for new batch',
-        amount: mcsForCA4.reduce((sum) => sum + DEMO_LIAISON.processingFee + DEMO_LIAISON.orFee, 0),
-        date: addDays(today, -1),
-        motorcycleIds: mcsForCA4.map(m => m.id),
-    };
-    cashAdvances.push(ca4);
-    mcsForCA4.forEach(mc => mc.status = 'For CA Approval');
-
-    // CA for endorsement 5 -> Status: For CV Issuance
-    const mcsForCA5 = endorsements[4].motorcycleIds.map(id => motorcycles.find(m => m.id === id)!);
-    const ca5: CashAdvance = {
-        id: 'ca-072524-003',
-        personnel: DEMO_LIAISON.name,
-        personnelBranch: DEMO_LIAISON.assignedBranch,
-        purpose: 'CA for Honda Click',
-        amount: mcsForCA5.reduce((sum) => sum + DEMO_LIAISON.processingFee + DEMO_LIAISON.orFee, 0),
-        date: addDays(today, -2),
-        motorcycleIds: mcsForCA5.map(m => m.id),
-    };
-    cashAdvances.push(ca5);
-    mcsForCA5.forEach(mc => mc.status = 'For CV Issuance');
-
-    // Add 2 more CAs with 'For Liquidation' status
-    // CA for endorsement 6 -> Status: For Liquidation
-    const mcsForCA6 = endorsements[5].motorcycleIds.map(id => motorcycles.find(m => m.id === id)!);
-    const ca6: CashAdvance = {
-        id: 'ca-072424-012',
-        personnel: DEMO_LIAISON.name,
-        personnelBranch: DEMO_LIAISON.assignedBranch,
-        purpose: `Cash advance for registration of ${mcsForCA6.length} Yamaha units.`,
-        amount: mcsForCA6.reduce((sum) => sum + DEMO_LIAISON.processingFee + DEMO_LIAISON.orFee, 0),
-        date: addDays(today, -7),
-        checkVoucherNumber: 'CV-2024-07-015',
-        checkVoucherReleaseDate: addDays(today, -6),
-        motorcycleIds: mcsForCA6.map(m => m.id),
-    };
-    cashAdvances.push(ca6);
-    mcsForCA6.forEach(mc => mc.status = 'For Liquidation');
-
-    // CA for endorsement 7 -> Status: For Liquidation
-    const mcsForCA7 = endorsements[6].motorcycleIds.map(id => motorcycles.find(m => m.id === id)!);
-    const ca7: CashAdvance = {
-        id: 'ca-072324-013',
-        personnel: DEMO_LIAISON.name,
-        personnelBranch: DEMO_LIAISON.assignedBranch,
-        purpose: `CA for ${mcsForCA7.length} Suzuki motorcycles`,
-        amount: mcsForCA7.reduce((sum) => sum + DEMO_LIAISON.processingFee + DEMO_LIAISON.orFee, 0),
-        date: addDays(today, -9),
-        checkVoucherNumber: 'CV-2024-07-018',
-        checkVoucherReleaseDate: addDays(today, -8),
-        motorcycleIds: mcsForCA7.map(m => m.id),
-    };
-    cashAdvances.push(ca7);
-    mcsForCA7.forEach(mc => mc.status = 'For Liquidation');
-
+    
+    processMotorcyclesForStatus(0, 10, 'Lacking Requirements');
+    processMotorcyclesForStatus(10, 10, 'Endorsed');
+    processMotorcyclesForStatus(20, 10, 'For CA Approval');
+    processMotorcyclesForStatus(30, 10, 'For CV Issuance');
+    processMotorcyclesForStatus(40, 10, 'Released CVs');
+    processMotorcyclesForStatus(50, 10, 'For Liquidation');
+    processMotorcyclesForStatus(60, 10, 'For Verification');
+    processMotorcyclesForStatus(70, 10, 'Completed');
 
     return { motorcycles, endorsements, cashAdvances };
 };
@@ -278,7 +299,7 @@ const generateInitialData = () => {
 const MC_KEY = 'lto_motorcycles';
 const CA_KEY = 'lto_cash_advances';
 const ENDO_KEY = 'lto_endorsements';
-const DATA_FLAG = 'data_generated_flag_v17'; // Increment version to force reset
+const DATA_FLAG = 'data_generated_flag_v18'; // Increment version to force reset
 
 const initializeData = () => {
     if (typeof window !== 'undefined') {
