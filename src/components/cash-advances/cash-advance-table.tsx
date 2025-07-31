@@ -350,7 +350,7 @@ export function CashAdvanceTable({ advances, onMotorcycleUpdate, showStatusColum
             <DialogHeader>
                 <DialogTitle>Confirm CV Received by Liaison</DialogTitle>
                 <DialogDescription>
-                    Please upload proof of receipt for CV #{confirmingCvReceiptAdvance?.cashAdvance.checkVoucherNumber}. This will move the associated items to 'For Liquidation'.
+                    Attach a scanned copy of the signed acknowledgement form by the liaison for CV #{confirmingCvReceiptAdvance?.cashAdvance.checkVoucherNumber}. This will move the associated items to 'For Liquidation'.
                 </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
