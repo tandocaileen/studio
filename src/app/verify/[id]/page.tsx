@@ -5,11 +5,10 @@ import { getCashAdvances, getMotorcycles, updateCashAdvances, updateMotorcycles 
 import { CashAdvance, Motorcycle } from '@/types';
 import { AppLoader } from '@/components/layout/loader';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle, ArrowLeft, Check, Download, Eye, FileCheck, FileText, ShieldCheck } from 'lucide-react';
+import { AlertCircle, Check, Eye, FileText, ShieldCheck } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { format } from 'date-fns';
@@ -18,21 +17,19 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useAuth } from '@/context/AuthContext';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { LiquidationReport } from '@/components/reports/liquidation-report';
-import { generatePdf } from '@/lib/pdf';
 
 
 type ReportData = {
@@ -46,13 +43,14 @@ function VerificationContent() {
     const { toast } = useToast();
     const { user } = useAuth();
     const id = params.id as string;
-    
+
     const [reportData, setReportData] = React.useState<ReportData | null>(null);
     const [loading, setLoading] = React.useState(true);
     const [isVerifying, setIsVerifying] = React.useState(false);
     const [remarks, setRemarks] = React.useState('');
     const [isReportDialogOpen, setIsReportDialogOpen] = React.useState(false);
-    const reportRef = React.useRef(null);
+    const reportRef = React.useRef<HTMLDivElement>(null);
+
 
     React.useEffect(() => {
         if (id) {
@@ -62,7 +60,7 @@ function VerificationContent() {
                     const associatedMotorcycles = (mainCA.motorcycleIds || [])
                         .map(mcId => mcs.find(m => m.id === mcId))
                         .filter((m): m is Motorcycle => !!m);
-                    
+
                     setReportData({
                         cashAdvance: mainCA,
                         motorcycles: associatedMotorcycles,
@@ -78,11 +76,11 @@ function VerificationContent() {
 
         setIsVerifying(true);
 
-        const updatedMotorcycles = reportData.motorcycles.map(mc => ({...mc, status: 'Completed' as const}));
+        const updatedMotorcycles = reportData.motorcycles.map(mc => ({ ...mc, status: 'Completed' as const }));
 
         try {
             await updateMotorcycles(updatedMotorcycles);
-            
+
             const updatedCA: Partial<CashAdvance> = {
                 id: reportData.cashAdvance.id,
                 verifiedBy: user.name,
@@ -106,7 +104,7 @@ function VerificationContent() {
             setIsVerifying(false);
         }
     };
-    
+
     if (loading) return <AppLoader />;
 
     if (!reportData) {
@@ -118,9 +116,9 @@ function VerificationContent() {
             </Alert>
         );
     }
-    
+
     const { cashAdvance, motorcycles } = reportData;
-    
+
     const totalLiquidation = motorcycles.reduce((sum, mc) => sum + (mc.liquidationDetails?.totalLiquidation || 0), 0);
     const shortageOverage = cashAdvance.amount - totalLiquidation;
 
@@ -128,21 +126,23 @@ function VerificationContent() {
 
     return (
         <>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-            {/* Main Content */}
-            <div className="lg:col-span-2">
-                <Card>
-                    <CardHeader className="flex-row items-start justify-between">
-                        <div>
-                            <CardTitle>Verification Details</CardTitle>
-                            <CardDescription>Review all details and documents for CA #{cashAdvance.id}.</CardDescription>
-                        </div>
-                        {isVerified ? (
-                            <Badge variant="default" className="bg-green-600 hover:bg-green-700">
-                                <Check className="mr-2 h-4 w-4"/>
-                                Verified
-                            </Badge>
-                        ) : (
+            <>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                    {/* Main Content */}
+                    <div className="lg:col-span-2">
+                        <Card>
+                            <CardHeader className="flex-row items-start justify-between">
+                                <div>
+                                    <CardTitle>Verification Details</CardTitle>
+                                    <CardDescription>Review all details and documents for CA #{cashAdvance.id}.</CardDescription>
+                                </div>
+                                {isVerified ? (
+                                    <Badge variant="default" className="bg-green-600 hover:bg-green-700">
+                                        <Check className="mr-2 h-4 w-4" />
+                                        Verified
+                                    </Badge>
+                                ) : (
+                             <Button variant="outline" size="sm" onClick={() => setIsReportDialogOpen(true)}>
                              <Button variant="outline" size="sm" onClick={() => setIsReportDialogOpen(true)}>
                                 <Eye className="mr-2 h-4 w-4" />
                                 View Liquidation Report
@@ -206,101 +206,98 @@ function VerificationContent() {
 
                     </CardContent>
                     {!isVerified && (
-                        <CardFooter className="flex-col items-start gap-4">
-                            <div className="w-full grid gap-2">
-                                <Label htmlFor="verification-remarks">Verification Remarks (Optional)</Label>
-                                <Textarea 
-                                    id="verification-remarks" 
-                                    placeholder="Add any notes regarding this transaction..."
-                                    value={remarks}
-                                    onChange={(e) => setRemarks(e.target.value)}
-                                />
-                            </div>
-                             <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                    <Button className="w-full" loading={isVerifying}>
-                                        <ShieldCheck className="mr-2 h-4 w-4" />
-                                        Verify Transaction
-                                    </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                        This action will mark the cash advance as verified and update all associated motorcycles to 'Completed'. This cannot be undone.
-                                    </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={handleVerify}>
-                                        Yes, verify transaction
-                                    </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                </AlertDialogContent>
-                            </AlertDialog>
-                        </CardFooter>
-                    )}
-                </Card>
-            </div>
+                                    <CardFooter className="flex-col items-start gap-4">
+                                        <div className="w-full grid gap-2">
+                                            <Label htmlFor="verification-remarks">Verification Remarks (Optional)</Label>
+                                            <Textarea
+                                                id="verification-remarks"
+                                                placeholder="Add any notes regarding this transaction..."
+                                                value={remarks}
+                                                onChange={(e) => setRemarks(e.target.value)}
+                                            />
+                                        </div>
+                                        <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                                <Button className="w-full" loading={isVerifying}>
+                                                    <ShieldCheck className="mr-2 h-4 w-4" />
+                                                    Verify Transaction
+                                                </Button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                        This action will mark the cash advance as verified and update all associated motorcycles to 'Completed'. This cannot be undone.
+                                                    </AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                    <AlertDialogAction onClick={handleVerify}>
+                                                        Yes, verify transaction
+                                                    </AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
+                                    </CardFooter>
+                                )}
+                        </Card>
+                    </div>
 
-            {/* Side Column */}
-            <div className="lg:col-span-1 flex flex-col gap-6 sticky top-20">
-                 <Card>
-                    <CardHeader>
-                        <CardTitle>Summary</CardTitle>
-                    </CardHeader>
-                    <CardContent className="grid gap-3 text-sm">
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Total Cash Advance</span>
-                            <span className="font-semibold">₱{cashAdvance.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Total Liquidation</span>
-                            <span className="font-semibold">₱{totalLiquidation.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
-                        </div>
-                        <Separator />
-                        <div className={cn("flex justify-between font-bold", shortageOverage < 0 ? 'text-destructive' : 'text-green-600')}>
-                            <span>{shortageOverage < 0 ? 'Shortage' : 'Overage'}</span>
-                            <span>₱{Math.abs(shortageOverage).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-        </div>
-
-        <Dialog open={isReportDialogOpen} onOpenChange={setIsReportDialogOpen}>
-            <DialogContent className="max-w-6xl">
-                <DialogHeader>
-                    <DialogTitle>Liquidation Report</DialogTitle>
-                    <DialogDescription>
-                        This is a preview of the liquidation report for CA #{cashAdvance.id}.
-                    </DialogDescription>
-                </DialogHeader>
-                <div className="max-h-[75vh] overflow-y-auto border rounded-md">
-                     <LiquidationReport ref={reportRef} reportData={reportData} />
+                    {/* Side Column */}
+                    <div className="lg:col-span-1 flex flex-col gap-6 sticky top-20">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Summary</CardTitle>
+                            </CardHeader>
+                            <CardContent className="grid gap-3 text-sm">
+                                <div className="flex justify-between">
+                                    <span className="text-muted-foreground">Total Cash Advance</span>
+                                    <span className="font-semibold">₱{cashAdvance.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-muted-foreground">Total Liquidation</span>
+                                    <span className="font-semibold">₱{totalLiquidation.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                                </div>
+                                <Separator />
+                                <div className={cn("flex justify-between font-bold", shortageOverage < 0 ? 'text-destructive' : 'text-green-600')}>
+                                    <span>{shortageOverage < 0 ? 'Shortage' : 'Overage'}</span>
+                                    <span>₱{Math.abs(shortageOverage).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
                 </div>
-                <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsReportDialogOpen(false)}>Close</Button>
-                    <Button onClick={() => reportRef.current && generatePdf(reportRef.current, `Liquidation-Report-${cashAdvance.id}.pdf`)}>
-                        <Download className="mr-2 h-4 w-4" />
-                        Download as PDF
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
-        </>
-    );
+
+                <Dialog open={isReportDialogOpen} onOpenChange={setIsReportDialogOpen}>
+                    <DialogContent className="max-w-4xl">
+                        <DialogHeader>
+                            <DialogTitle>Liquidation Report</DialogTitle>
+                            <DialogDescription>
+                                Full liquidation report for Cash Advance #{reportData.cashAdvance.id}.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="mt-4 max-h-[70vh] overflow-y-auto p-2">
+                            <LiquidationReport ref={reportRef} reportData={reportData} />
+                        </div>
+                        <DialogFooter>
+                            <Button variant="ghost" onClick={() => setIsReportDialogOpen(false)}>Close</Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+            </>
+            );
 }
 
-export default function VerificationPage() {
+
+            export default function VerificationPage() {
     return (
-        <ProtectedPage allowedRoles={['Accounting']}>
-            <div className="flex flex-col sm:gap-4 sm:py-4 w-full">
-                <Header title="Verify Liquidation" showBack={true} />
-                <main className="flex-1 items-start gap-4 p-4 sm:px-6 sm:py-6 md:gap-8">
-                    <VerificationClientPage />
-                </main>
-            </div>
-        </ProtectedPage>
-    );
+            <ProtectedPage allowedRoles={['Accounting']}>
+                <div className="flex flex-col sm:gap-4 sm:py-4 w-full">
+                    <Header title="Verify Liquidation" showBack={true} />
+                    <main className="flex-1 items-start gap-4 p-4 sm:px-6 sm:py-6 md:gap-8">
+                        <VerificationClientPage />
+                    </main>
+                </div>
+            </ProtectedPage>
+            );
 }
