@@ -1,14 +1,17 @@
 
-import { getCashAdvances } from '@/lib/data';
-import { ProtectedPage } from '@/components/auth/protected-page';
+'use client';
+
+import * as React from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import { getCashAdvances, getMotorcycles, updateCashAdvances, updateMotorcycles } from '@/lib/data';
 import { CashAdvance, Motorcycle } from '@/types';
 import { AppLoader } from '@/components/layout/loader';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle, Check, Eye, FileText, ShieldCheck } from 'lucide-react';
+import { AlertCircle, ArrowLeft, Check, Eye, FileCheck, FileText, ShieldCheck } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { format } from 'date-fns';
@@ -25,11 +28,10 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { useAuth } from '@/context/AuthContext';
 import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { LiquidationReport } from '@/components/reports/liquidation-report';
 
 
 type ReportData = {
@@ -37,7 +39,7 @@ type ReportData = {
     motorcycles: Motorcycle[];
 }
 
-function VerificationContent() {
+export default function VerificationClientPage() {
     const params = useParams();
     const router = useRouter();
     const { toast } = useToast();
@@ -48,9 +50,6 @@ function VerificationContent() {
     const [loading, setLoading] = React.useState(true);
     const [isVerifying, setIsVerifying] = React.useState(false);
     const [remarks, setRemarks] = React.useState('');
-    const [isReportDialogOpen, setIsReportDialogOpen] = React.useState(false);
-    const reportRef = React.useRef<HTMLDivElement>(null);
-
 
     React.useEffect(() => {
         if (id) {
@@ -70,7 +69,7 @@ function VerificationContent() {
             });
         }
     }, [id]);
-    
+
     const handleVerify = async () => {
         if (!reportData || !user) return;
 
@@ -125,8 +124,6 @@ function VerificationContent() {
     const isVerified = motorcycles.every(mc => mc.status === 'Completed');
 
     return (
-        <>
-        <>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
             {/* Main Content */}
             <div className="lg:col-span-2">
@@ -142,8 +139,7 @@ function VerificationContent() {
                                 Verified
                             </Badge>
                         ) : (
-                             <Button variant="outline" size="sm" onClick={() => setIsReportDialogOpen(true)}>
-                             <Button variant="outline" size="sm" onClick={() => setIsReportDialogOpen(true)}>
+                             <Button variant="outline" size="sm" onClick={() => router.push(`/reports/liquidation/${id}`)}>
                                 <Eye className="mr-2 h-4 w-4" />
                                 View Liquidation Report
                             </Button>
@@ -267,37 +263,5 @@ function VerificationContent() {
                 </Card>
             </div>
         </div>
-        
-        <Dialog open={isReportDialogOpen} onOpenChange={setIsReportDialogOpen}>
-            <DialogContent className="max-w-4xl">
-                <DialogHeader>
-                    <DialogTitle>Liquidation Report</DialogTitle>
-                    <DialogDescription>
-                        Full liquidation report for Cash Advance #{reportData.cashAdvance.id}.
-                    </DialogDescription>
-                </DialogHeader>
-                <div className="mt-4 max-h-[70vh] overflow-y-auto p-2">
-                    <LiquidationReport ref={reportRef} reportData={reportData} />
-                </div>
-                <DialogFooter>
-                    <Button variant="ghost" onClick={() => setIsReportDialogOpen(false)}>Close</Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
-        </>
-    );
-}
-
-
-export default function VerificationPage() {
-    return (
-        <ProtectedPage allowedRoles={['Accounting']}>
-            <div className="flex flex-col sm:gap-4 sm:py-4 w-full">
-                <Header title="Verify Liquidation" showBack={true} />
-                <main className="flex-1 items-start gap-4 p-4 sm:px-6 sm:py-6 md:gap-8">
-                    <VerificationClientPage />
-                </main>
-            </div>
-        </ProtectedPage>
     );
 }

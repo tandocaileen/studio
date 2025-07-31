@@ -355,6 +355,4 @@ export default function ReleasedCvPage() {
             </div>
         </ProtectedPage>
     );
-
-    
-
+}

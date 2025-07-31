@@ -1,15 +1,12 @@
-
-'use client';
+"use client";
 
 import * as React from 'react';
-import { useParams } from 'next/navigation';
-import { Header } from '@/components/layout/header';
-import { ProtectedPage } from '@/components/auth/protected-page';
+import { useParams, useRouter } from 'next/navigation';
 import { getCashAdvances, getMotorcycles } from '@/lib/data';
 import { CashAdvance, Motorcycle } from '@/types';
 import { AppLoader } from '@/components/layout/loader';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle, Check, DollarSign, Eye, FileText, User } from 'lucide-react';
+import { AlertCircle, Check, DollarSign, Eye, FileText, ShieldCheck, User } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -19,22 +16,20 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { LiquidationReport } from '@/components/reports/liquidation-report';
-
+import { CashAdvanceRequestDocument } from '@/components/cash-advances/cash-advance-request-document';
 
 type ReportDataType = {
   cashAdvance: CashAdvance;
   motorcycles: Motorcycle[];
 };
 
-function CompletedReportContent() {
+export default function LiquidationReportClient() {
   const params = useParams();
   const id = params.id as string;
   const [reportData, setReportData] = React.useState<ReportDataType | null>(null);
   const [loading, setLoading] = React.useState(true);
-  const [isReportDialogOpen, setIsReportDialogOpen] = React.useState(false);
-  const reportRef = React.useRef<HTMLDivElement>(null);
-
+  const [isCaDialogOpen, setIsCaDialogOpen] = React.useState(false);
+  const router = useRouter();
 
   React.useEffect(() => {
     if (id) {
@@ -90,9 +85,8 @@ function CompletedReportContent() {
                             <Check className="mr-2 h-4 w-4"/>
                             Verified
                         </Badge>
-                        <Button variant="secondary" onClick={() => setIsReportDialogOpen(true)}>
-                            <FileText className="mr-2 h-4 w-4" /> 
-                            View Liquidation Report
+                        <Button variant="secondary" onClick={() => setIsCaDialogOpen(true)}>
+                            <DollarSign className="mr-2 h-4 w-4" /> View Full Report
                         </Button>
                     </div>
                 </CardHeader>
@@ -203,34 +197,25 @@ function CompletedReportContent() {
         </div>
     </div>
     
-    <Dialog open={isReportDialogOpen} onOpenChange={setIsReportDialogOpen}>
+    <Dialog open={isCaDialogOpen} onOpenChange={setIsCaDialogOpen}>
         <DialogContent className="max-w-4xl">
             <DialogHeader>
-                <DialogTitle>Liquidation Report</DialogTitle>
-                <DialogTitle>Liquidation Report</DialogTitle>
+                <DialogTitle>Cash Advance Request</DialogTitle>
                 <DialogDescription>
-                    Full liquidation report for Cash Advance #{reportData.cashAdvance.id}.
+                    Original cash advance request for CA #{cashAdvance.id}.
                 </DialogDescription>
             </DialogHeader>
             <div className="mt-4 max-h-[70vh] overflow-y-auto p-2">
-                <LiquidationReport ref={reportRef} reportData={reportData} />
+                <CashAdvanceRequestDocument 
+                    advance={cashAdvance} 
+                    motorcycles={motorcycles} 
+                />
             </div>
             <DialogFooter>
-                <Button variant="ghost" onClick={() => setIsReportDialogOpen(false)}>Close</Button>
+                <Button variant="outline" onClick={() => setIsCaDialogOpen(false)}>Close</Button>
             </DialogFooter>
         </DialogContent>
     </Dialog>
     </>
-  );
-}
-
-export default function LiquidationReportPage() {
-  return (
-    <ProtectedPage allowedRoles={['Store Supervisor', 'Liaison', 'Cashier', 'Accounting']}>
-        <Header title="Completed Transaction Report" showBack={true} />
-        <main className="flex-1 items-start gap-4 p-4 sm:px-6 sm:py-6 md:gap-8">
-            <LiquidationReportClient />
-        </main>
-    </ProtectedPage>
   );
 }
