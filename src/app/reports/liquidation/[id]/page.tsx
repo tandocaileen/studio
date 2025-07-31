@@ -89,7 +89,7 @@ function CompletedReportContent() {
                             Verified
                         </Badge>
                         <Button variant="secondary" onClick={() => setIsCaDialogOpen(true)}>
-                            <DollarSign className="mr-2 h-4 w-4" /> View Full Report
+                            <DollarSign className="mr-2 h-4 w-4" /> View Liquidation Report
                         </Button>
                     </div>
                 </CardHeader>
