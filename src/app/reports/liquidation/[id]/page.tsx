@@ -21,6 +21,13 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { CashAdvanceRequestDocument } from '@/components/cash-advances/cash-advance-request-document';
 
+export async function generateStaticParams() {
+    const cashAdvances = await getCashAdvances();
+    return cashAdvances.map(ca => ({
+        id: ca.id,
+    }));
+}
+
 type ReportDataType = {
   cashAdvance: CashAdvance;
   motorcycles: Motorcycle[];
