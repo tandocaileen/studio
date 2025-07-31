@@ -6,7 +6,7 @@ LTO Portal is a specialized web application designed to streamline and manage th
 ## 2. Core Features
 
 ### User Roles & Authentication
-- **Four distinct user roles**: Store Supervisor, Liaison, Cashier, and Accounting.
+- **Five distinct user roles**: Store Supervisor, Liaison, Cashier, Accounting, and Admin.
 - A login page allows users to select their role for a simulated sign-in experience.
 - **Role-Based Access Control (RBAC)**: The application uses a `ProtectedPage` component to restrict access to pages and features based on the logged-in user's role. The sidebar navigation is also dynamically generated based on user permissions.
 
@@ -65,6 +65,14 @@ This role is responsible for the final financial verification and approval stage
   - After review, they can mark the transaction as `Completed`, which is the final step in the workflow.
 - **Reporting (`/completed`)**: Accesses and can generate final, verified liquidation reports for archival and auditing purposes.
 - **Settings & Support**: Has access to the application's settings and support pages.
+
+### Admin
+This role has universal read-only access to the entire application. It is designed for high-level oversight and monitoring of all ongoing transactions and data without the ability to modify any information, ensuring data integrity while providing a complete overview of the system's operations.
+
+**Actions & Features:**
+- **Global View**: Can access and view all pages and data available to every other role.
+- **Read-Only**: The Admin role cannot create, edit, or delete any data. All actions are restricted to viewing.
+- **Reporting**: Can view all generated reports across the system.
 
 ## 4. End-to-End Workflow Example
 
