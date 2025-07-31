@@ -45,7 +45,7 @@ export default function SupportPage() {
     }
 
     return (
-        <ProtectedPage allowedRoles={['Store Supervisor', 'Liaison', 'Cashier']}>
+        <ProtectedPage allowedRoles={['Store Supervisor', 'Liaison', 'Cashier', 'Accounting']}>
             <div className='w-full'>
                 <Header title="Support" />
                 <main className="flex-1 items-start gap-4 p-4 sm:px-6 sm:py-6 md:gap-8">

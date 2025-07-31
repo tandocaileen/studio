@@ -156,6 +156,8 @@ export function AppSidebar() {
   let accessibleCommonItems = commonNavItems;
   if(user.role === 'Store Supervisor' || user.role === 'Cashier') {
       accessibleCommonItems = [...supervisorAndCashierCommonItems, ...commonNavItems];
+  } else if (user.role === 'Accounting') {
+      accessibleCommonItems = commonNavItems;
   }
 
   const homeRoute = homeRoutes[user.role] || '/';
