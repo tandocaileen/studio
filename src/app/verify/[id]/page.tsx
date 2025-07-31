@@ -1,4 +1,9 @@
 
+'use client';
+
+import * as React from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { Header } from "@/components/layout/header";
 import { ProtectedPage } from '@/components/auth/protected-page';
 import { getCashAdvances, getMotorcycles, updateCashAdvances, updateMotorcycles } from '@/lib/data';
 import { CashAdvance, Motorcycle } from '@/types';
@@ -51,7 +56,8 @@ function VerificationContent() {
     const [isVerifying, setIsVerifying] = React.useState(false);
     const [remarks, setRemarks] = React.useState('');
     const [isReportDialogOpen, setIsReportDialogOpen] = React.useState(false);
-    const reportRef = React.useRef(null);
+    const reportRef = React.useRef<HTMLDivElement>(null);
+
 
     React.useEffect(() => {
         if (id) {
@@ -71,6 +77,12 @@ function VerificationContent() {
             });
         }
     }, [id]);
+
+    const handleDownloadPdf = () => {
+        if (reportRef.current && reportData) {
+            generatePdf(reportRef.current, `liquidation-report-${reportData.cashAdvance.id}.pdf`);
+        }
+    };
 
     const handleVerify = async () => {
         if (!reportData || !user) return;
@@ -268,19 +280,19 @@ function VerificationContent() {
             </div>
 
             <Dialog open={isReportDialogOpen} onOpenChange={setIsReportDialogOpen}>
-                <DialogContent className="max-w-6xl">
+                <DialogContent className="max-w-4xl">
                     <DialogHeader>
                         <DialogTitle>Liquidation Report</DialogTitle>
                         <DialogDescription>
-                            This is a preview of the liquidation report for CA #{cashAdvance.id}.
+                            Full liquidation report for Cash Advance #{reportData.cashAdvance.id}.
                         </DialogDescription>
                     </DialogHeader>
-                    <div className="max-h-[75vh] overflow-y-auto border rounded-md">
+                    <div className="mt-4 max-h-[70vh] overflow-y-auto p-2">
                         <LiquidationReport ref={reportRef} reportData={reportData} />
                     </div>
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setIsReportDialogOpen(false)}>Close</Button>
-                        <Button onClick={() => reportRef.current && generatePdf(reportRef.current, `Liquidation-Report-${cashAdvance.id}.pdf`)}>
+                        <Button variant="ghost" onClick={() => setIsReportDialogOpen(false)}>Close</Button>
+                        <Button onClick={handleDownloadPdf}>
                             <Download className="mr-2 h-4 w-4" />
                             Download as PDF
                         </Button>
@@ -291,13 +303,14 @@ function VerificationContent() {
     );
 }
 
+
 export default function VerificationPage() {
     return (
         <ProtectedPage allowedRoles={['Accounting']}>
             <div className="flex flex-col sm:gap-4 sm:py-4 w-full">
                 <Header title="Verify Liquidation" showBack={true} />
                 <main className="flex-1 items-start gap-4 p-4 sm:px-6 sm:py-6 md:gap-8">
-                    <VerificationClientPage />
+                    <VerificationContent />
                 </main>
             </div>
         </ProtectedPage>

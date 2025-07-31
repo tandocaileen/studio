@@ -49,7 +49,7 @@ export function ForVerificationContent({ searchQuery }: { searchQuery: string })
       const motorcycles = (ca.motorcycleIds || [])
         .map(id => allMotorcycles.find(m => m.id === id))
         .filter((m): m is Motorcycle => !!m);
-      
+
       const totalCount = motorcycles.length;
       const liquidatedCount = motorcycles.filter(m => m.status === 'For Verification').length;
 
@@ -65,93 +65,86 @@ export function ForVerificationContent({ searchQuery }: { searchQuery: string })
       return { cashAdvance: ca, motorcycles, liquidationStatus };
     })
     .filter(group => {
-       if (group.liquidationStatus === 'Pending') return false; 
+      if (group.liquidationStatus === 'Pending') return false;
 
-        if (searchQuery) {
-            const query = searchQuery.toLowerCase();
-            if (group.cashAdvance.id.toLowerCase().includes(query)) return true;
-            if (group.cashAdvance.personnel.toLowerCase().includes(query)) return true;
-            if (group.motorcycles.some(m => m.customerName?.toLowerCase().includes(query))) return true;
-            return false;
-        }
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        if (group.cashAdvance.id.toLowerCase().includes(query)) return true;
+        if (group.cashAdvance.personnel.toLowerCase().includes(query)) return true;
+        if (group.motorcycles.some(m => m.customerName?.toLowerCase().includes(query))) return true;
+        return false;
+      }
 
-        return true;
+      return true;
     });
 
   return (
     <Card>
-        <CardHeader>
-            <CardTitle>Cash Advance Verification</CardTitle>
-            <CardDescription>Review and verify fully liquidated cash advances.</CardDescription>
-        </CardHeader>
-        <CardContent>
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>CA Number</TableHead>
-                        <TableHead>Liaison</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Amount</TableHead>
-                        <TableHead>Units</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Action</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {groupedCAs.map(({ cashAdvance, liquidationStatus }) => (
-                        <TableRow key={cashAdvance.id}>
-                            <TableCell className="font-medium">{cashAdvance.id}</TableCell>
-                            <TableCell>{cashAdvance.personnel}</TableCell>
-                            <TableCell>{format(new Date(cashAdvance.date), 'MMM dd, yyyy')}</TableCell>
-                            <TableCell>₱{cashAdvance.amount.toLocaleString()}</TableCell>
-                            <TableCell>{cashAdvance.motorcycleIds?.length || 0}</TableCell>
-                            <TableCell>
-                                <Badge variant={liquidationStatus === 'Fully Liquidated' ? 'default' : 'outline'}>
-                                    {liquidationStatus}
-                                </Badge>
-                            </TableCell>
-                            <TableCell className="flex items-center gap-2">
-                                <Button 
-                                    size="sm"
-                                    onClick={() => router.push(`/reports/liquidation/${cashAdvance.id}`)}
-                                >
-                                    <Eye className="mr-2 h-4 w-4" />
-                                    Report
-                                </Button>
-                                <Button 
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => router.push(`/verify/${cashAdvance.id}`)}
-                                    disabled={liquidationStatus !== 'Fully Liquidated'}
-                                >
-                                    <ShieldCheck className="mr-2 h-4 w-4" />
-                                    Verify
-                                </Button>
-                            </TableCell>
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
-            {groupedCAs.length === 0 && (
-                <div className="text-center py-12 text-muted-foreground">
-                    <p>No cash advances match the current filters.</p>
-                </div>
-            )}
-        </CardContent>
+      <CardHeader>
+        <CardTitle>Cash Advance Verification</CardTitle>
+        <CardDescription>Review and verify fully liquidated cash advances.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>CA Number</TableHead>
+              <TableHead>Liaison</TableHead>
+              <TableHead>Date</TableHead>
+              <TableHead>Amount</TableHead>
+              <TableHead>Units</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Action</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {groupedCAs.map(({ cashAdvance, liquidationStatus }) => (
+              <TableRow key={cashAdvance.id}>
+                <TableCell className="font-medium">{cashAdvance.id}</TableCell>
+                <TableCell>{cashAdvance.personnel}</TableCell>
+                <TableCell>{format(new Date(cashAdvance.date), 'MMM dd, yyyy')}</TableCell>
+                <TableCell>₱{cashAdvance.amount.toLocaleString()}</TableCell>
+                <TableCell>{cashAdvance.motorcycleIds?.length || 0}</TableCell>
+                <TableCell>
+                  <Badge variant={liquidationStatus === 'Fully Liquidated' ? 'default' : 'outline'}>
+                    {liquidationStatus}
+                  </Badge>
+                </TableCell>
+                <TableCell className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => router.push(`/verify/${cashAdvance.id}`)}
+                    disabled={liquidationStatus !== 'Fully Liquidated'}
+                  >
+                    <ShieldCheck className="mr-2 h-4 w-4" />
+                    Verify
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+        {groupedCAs.length === 0 && (
+          <div className="text-center py-12 text-muted-foreground">
+            <p>No cash advances match the current filters.</p>
+          </div>
+        )}
+      </CardContent>
     </Card>
   );
 }
 
 export default function ForVerificationPage() {
-    const [searchQuery, setSearchQuery] = React.useState('');
-    return (
-        <ProtectedPage allowedRoles={['Accounting']}>
-             <div className="w-full">
-                <Header title="For Verification" onSearch={setSearchQuery}/>
-                <main className="flex-1 items-start gap-4 p-4 sm:px-6 sm:py-6 md:gap-8">
-                    <ForVerificationContent searchQuery={searchQuery} />
-                </main>
-            </div>
-        </ProtectedPage>
-    )
+  const [searchQuery, setSearchQuery] = React.useState('');
+  return (
+    <ProtectedPage allowedRoles={['Accounting']}>
+      <div className="w-full">
+        <Header title="For Verification" onSearch={setSearchQuery} />
+        <main className="flex-1 items-start gap-4 p-4 sm:px-6 sm:py-6 md:gap-8">
+          <ForVerificationContent searchQuery={searchQuery} />
+        </main>
+      </div>
+    </ProtectedPage>
+  )
 }
