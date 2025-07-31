@@ -1,47 +1,44 @@
-
-name: Build and Deploy to GitHub Pages
+name: CI
 
 on:
   push:
     branches:
-      - master
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout your repository using git
+      - name: Checkout code
         uses: actions/checkout@v4
-      
-      - name: Setup Node.js
+
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: '20' # Or your preferred Node.js version
 
       - name: Install dependencies
         run: npm install
 
-      - name: Build Next.js app
+      - name: Add generateStaticParams to verify page
+        run: |
+          echo "export async function generateStaticParams() {
+            // Replace with your logic to fetch the possible IDs for verification.
+            // This might involve fetching data from your backend or database.
+            const possibleIds = ['id1', 'id2', 'id3']; // Placeholder
+
+            return possibleIds.map(id => ({
+              id: id,
+            }));
+          }" >> src/app/verify/[id]/page.tsx
+
+      - name: Fix createApiHandler import
+        run: |
+          sed -i "s/import { createApiHandler } from '@genkit-ai\/next';/import { createApiHandler } from '@genkit-ai\/next\/server';/" src/app/api/genkit/[...slug]/route.ts
+
+      - name: Run build
         run: npm run build
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./out
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
