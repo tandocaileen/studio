@@ -241,7 +241,7 @@ export function CashAdvanceTable({ advances, onMotorcycleUpdate, showStatusColum
                           </Button>
                       )}
                       {isReleasedCvPage && canConfirmReceipt && (
-                        <Button size="sm" onClick={() => setConfirmingCvReceiptAdvance(advance)}>
+                        <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => setConfirmingCvReceiptAdvance(advance)}>
                             Confirm Receipt
                         </Button>
                       )}
