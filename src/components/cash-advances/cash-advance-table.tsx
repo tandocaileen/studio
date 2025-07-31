@@ -45,6 +45,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { cn } from '@/lib/utils';
 import { updateCashAdvances } from '@/lib/data';
+import { usePathname } from 'next/navigation';
 
 
 type CashAdvanceTableProps = {
