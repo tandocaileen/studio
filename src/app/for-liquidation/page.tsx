@@ -224,8 +224,8 @@ function ForLiquidationContent({ searchQuery }: { searchQuery: string }) {
                     </Button>
                 </CardHeader>
                 <CardContent>
-                    <Alert className="mb-4">
-                        <AlertCircle className="h-4 w-4" />
+                     <Alert className="bg-yellow-100 dark:bg-yellow-900/30 border-yellow-400 dark:border-yellow-700 text-yellow-800 dark:text-yellow-300 mb-4">
+                        <AlertCircle className="h-4 w-4 !text-yellow-600 dark:!text-yellow-400" />
                         <AlertDescription className="text-xs">
                             You can only bulk-liquidate units where all required details (OR No., OR Amount, Processing Fee) have been filled in via the 'View/Edit' button.
                         </AlertDescription>
