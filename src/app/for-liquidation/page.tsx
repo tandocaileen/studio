@@ -148,8 +148,8 @@ function ForLiquidationContent({ searchQuery }: { searchQuery: string }) {
         return <AppLoader />;
     }
     
-    // Get all CAs for the current liaison with a CV
-    const casForLiquidation = cashAdvances.filter(ca => ca.checkVoucherNumber && ca.personnel === user.name);
+    // Get all CAs with a CV
+    const casForLiquidation = cashAdvances.filter(ca => ca.checkVoucherNumber);
 
     console.log("[For Liquidation] CAs for Liquidation:", casForLiquidation);
     
@@ -301,5 +301,3 @@ export default function ForLiquidationPage() {
         </ProtectedPage>
     );
 }
-
-    
