@@ -81,13 +81,6 @@ export function LiquidationFormDialog({
     }));
   };
 
-  const handleLiquidate = async () => {
-    setIsSubmitting(true);
-    await onLiquidate(editedData);
-    setIsSubmitting(false);
-    onClose();
-  };
-
   const handleSaveDetails = async () => {
     await onSaveDetails(editedData);
   }
@@ -97,11 +90,6 @@ export function LiquidationFormDialog({
   const advanceAmount = getMcAdvanceAmount(motorcycle);
   const totalLiquidation = (editedData.liquidationDetails?.ltoOrAmount || 0) + (editedData.liquidationDetails?.ltoProcessFee || 0);
   const shortageOverage = advanceAmount - totalLiquidation;
-
-  const canLiquidate = motorcycle.status === 'For Liquidation' &&
-                       editedData.liquidationDetails?.ltoOrNumber &&
-                       editedData.liquidationDetails?.ltoOrAmount > 0 &&
-                       editedData.liquidationDetails?.ltoProcessFee > 0;
 
   const isForReview = motorcycle.status === 'For Verification' || motorcycle.status === 'Completed';
 
@@ -116,26 +104,11 @@ export function LiquidationFormDialog({
                 </DialogDescription>
             </div>
              <div className='flex items-center gap-4'>
-                 {isForReview ? (
+                 {isForReview && (
                     <Button onClick={() => router.push(`/reports/liquidation/${cashAdvance.id}`)}>
                         <Eye className="mr-2 h-4 w-4" />
                         View Full Report
                     </Button>
-                 ) : (
-                    <>
-                        {!canLiquidate && (
-                            <Alert variant="destructive" className="py-2 px-3 text-xs border-dashed bg-destructive/10">
-                                <AlertCircle className="h-4 w-4" />
-                                <AlertDescription>
-                                    Please fill in all required fields (*) to enable liquidation.
-                                </AlertDescription>
-                            </Alert>
-                        )}
-                        <Button onClick={handleLiquidate} loading={isSubmitting} disabled={!canLiquidate}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Submit for Verification
-                        </Button>
-                    </>
                  )}
             </div>
         </DialogHeader>

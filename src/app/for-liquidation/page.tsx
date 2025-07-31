@@ -11,31 +11,30 @@ import { useAuth } from '@/context/AuthContext';
 import { AppLoader } from '@/components/layout/loader';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Edit, Eye } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { AlertCircle, ChevronDown, Edit, Eye } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { LiquidationFormDialog } from '@/components/liquidations/liquidation-form-dialog';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { format } from 'date-fns';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Checkbox } from '@/components/ui/checkbox';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Alert } from '@/components/ui/alert';
+import { cn } from '@/lib/utils';
 
-type EnrichedCA = {
-    cashAdvance: CashAdvance;
-    motorcycles: Motorcycle[];
-};
 
 function ForLiquidationContent({ searchQuery }: { searchQuery: string }) {
     const { user } = useAuth();
     const [motorcycles, setMotorcycles] = React.useState<Motorcycle[] | null>(null);
     const [cashAdvances, setCashAdvances] = React.useState<CashAdvance[] | null>(null);
-    const [selectedMcForLiquidation, setSelectedMcForLiquidation] = React.useState<Motorcycle | null>(null);
-    const [viewingCa, setViewingCa] = React.useState<EnrichedCA | null>(null);
+    const [editingMotorcycle, setEditingMotorcycle] = React.useState<Motorcycle | null>(null);
+    const [selectedMotorcycles, setSelectedMotorcycles] = React.useState<Record<string, Motorcycle[]>>({});
+    const [openConfirmDialog, setOpenConfirmDialog] = React.useState(false);
+    const [caToBulkLiquidate, setCaToBulkLiquidate] = React.useState<string | null>(null);
     const { toast } = useToast();
     
     React.useEffect(() => {
         const fetchData = async () => {
             const [mcs, cas] = await Promise.all([getMotorcycles(), getCashAdvances()]);
-            console.log('[For Liquidation] Fetched Motorcycles:', mcs);
-            console.log('[For Liquidation] Fetched Cash Advances:', cas);
             setMotorcycles(mcs);
             setCashAdvances(cas);
         };
@@ -78,9 +77,11 @@ function ForLiquidationContent({ searchQuery }: { searchQuery: string }) {
     const { caMapByMcId, getMcAdvanceAmount } = precomputedData;
 
     const handleFinalSubmit = async (updatedMotorcycleData: Partial<Motorcycle>) => {
-        if (!selectedMcForLiquidation || !motorcycles || !user || !viewingCa) return;
+        if (!editingMotorcycle || !motorcycles || !user) return;
+        const caForMc = caMapByMcId.get(editingMotorcycle.id);
+        if (!caForMc) return;
 
-        const mcToUpdate = motorcycles.find(m => m.id === selectedMcForLiquidation.id);
+        const mcToUpdate = motorcycles.find(m => m.id === editingMotorcycle.id);
         if (!mcToUpdate) return;
         
         const mcAdvance = getMcAdvanceAmount(mcToUpdate);
@@ -97,51 +98,37 @@ function ForLiquidationContent({ searchQuery }: { searchQuery: string }) {
                 shortageOverage: mcAdvance - totalLiquidation,
                 liquidatedBy: user.name,
                 liquidationDate: new Date(),
-                parentCaId: caMapByMcId.get(mcToUpdate.id)!.id,
+                parentCaId: caForMc.id,
             }
         };
         
         await updateMotorcycles(updatedMotorcycle);
         
-        // Refresh all data
         await refreshData();
-        
-        // Find the updated CA and motorcycles to refresh the dialog view
-        const updatedViewingCa = {
-            ...viewingCa,
-            motorcycles: viewingCa.motorcycles.map(m => m.id === updatedMotorcycle.id ? updatedMotorcycle : m)
-        };
-        setViewingCa(updatedViewingCa);
 
         toast({
             title: 'Liquidation Submitted',
             description: `Liquidation for selected motorcycle has been submitted for review.`
         });
-        setSelectedMcForLiquidation(null);
+        setEditingMotorcycle(null);
     }
 
     const handleSaveDetails = async (updatedMotorcycleData: Partial<Motorcycle>) => {
-        if (!selectedMcForLiquidation || !motorcycles || !viewingCa) return;
+        if (!editingMotorcycle || !motorcycles) return;
 
-        const mcToUpdate = motorcycles.find(m => m.id === selectedMcForLiquidation.id);
+        const mcToUpdate = motorcycles.find(m => m.id === editingMotorcycle.id);
         if (!mcToUpdate) return;
         
         const updatedMotorcycle: Motorcycle = { ...mcToUpdate, ...updatedMotorcycleData };
         
         await updateMotorcycles(updatedMotorcycle);
-        const updatedMotorcyclesData = await getMotorcycles();
-        setMotorcycles(updatedMotorcyclesData);
-        
-        const updatedViewingCa = {
-            ...viewingCa,
-            motorcycles: viewingCa.motorcycles.map(m => m.id === updatedMotorcycle.id ? updatedMotorcycle : m)
-        };
-        setViewingCa(updatedViewingCa);
+        await refreshData();
 
         toast({
             title: 'Details Saved',
             description: 'Your changes have been saved successfully.'
         });
+        setEditingMotorcycle(null);
     }
 
     if (!user || !motorcycles || !cashAdvances) {
@@ -150,10 +137,8 @@ function ForLiquidationContent({ searchQuery }: { searchQuery: string }) {
     
     // Get all CAs with a CV
     const casForLiquidation = cashAdvances.filter(ca => ca.checkVoucherNumber);
-
-    console.log("[For Liquidation] CAs for Liquidation:", casForLiquidation);
     
-    const enrichedCAs: EnrichedCA[] = casForLiquidation
+    const enrichedCAs = casForLiquidation
         .map(ca => {
             const associatedMotorcycles = (ca.motorcycleIds || [])
                 .map(id => motorcycles.find(m => m.id === id))
@@ -168,11 +153,63 @@ function ForLiquidationContent({ searchQuery }: { searchQuery: string }) {
             if (item.motorcycles.some(m => m.customerName?.toLowerCase().includes(query))) return true;
             return false;
         });
-    
-    console.log("[For Liquidation] Enriched CAs to show:", enrichedCAs);
 
-    const handleViewAndLiquidate = (enrichedCa: EnrichedCA) => {
-        setViewingCa(enrichedCa);
+    const isEligibleForLiquidation = (mc: Motorcycle) => {
+        return mc.liquidationDetails?.ltoOrNumber &&
+               mc.liquidationDetails?.ltoOrAmount > 0 &&
+               mc.liquidationDetails?.ltoProcessFee > 0;
+    };
+
+    const handleSelectMotorcycle = (caId: string, mc: Motorcycle) => {
+        setSelectedMotorcycles(prev => {
+            const currentSelection = prev[caId] || [];
+            const isSelected = currentSelection.some(m => m.id === mc.id);
+            const newSelection = isSelected 
+                ? currentSelection.filter(m => m.id !== mc.id)
+                : [...currentSelection, mc];
+            return { ...prev, [caId]: newSelection };
+        });
+    };
+
+    const handleBulkLiquidate = async () => {
+        if (!caToBulkLiquidate) return;
+        const mcsToLiquidate = selectedMotorcycles[caToBulkLiquidate];
+        if (!mcsToLiquidate || mcsToLiquidate.length === 0 || !user) return;
+        
+        const updatedMotorcycles = mcsToLiquidate.map(mc => {
+             const mcAdvance = getMcAdvanceAmount(mc);
+             const totalLiquidation = (mc.liquidationDetails?.ltoOrAmount || 0) + (mc.liquidationDetails?.ltoProcessFee || 0);
+
+            return {
+                ...mc,
+                status: 'For Verification' as const,
+                liquidationDetails: {
+                    ...mc.liquidationDetails!,
+                    totalLiquidation: totalLiquidation,
+                    shortageOverage: mcAdvance - totalLiquidation,
+                    liquidatedBy: user.name,
+                    liquidationDate: new Date(),
+                    parentCaId: caToBulkLiquidate,
+                }
+            };
+        });
+        
+        await updateMotorcycles(updatedMotorcycles);
+        
+        toast({
+            title: "Bulk Liquidation Submitted",
+            description: `${updatedMotorcycles.length} motorcycles have been submitted for verification.`
+        });
+        
+        setSelectedMotorcycles(prev => ({...prev, [caToBulkLiquidate]: []}));
+        setOpenConfirmDialog(false);
+        setCaToBulkLiquidate(null);
+        await refreshData();
+    };
+
+    const confirmBulkLiquidate = (caId: string) => {
+        setCaToBulkLiquidate(caId);
+        setOpenConfirmDialog(true);
     };
 
     return (
@@ -181,13 +218,14 @@ function ForLiquidationContent({ searchQuery }: { searchQuery: string }) {
                 <CardHeader>
                     <CardTitle>Cash Advances for Liquidation</CardTitle>
                     <CardDescription>
-                        Select a cash advance to view its motorcycles and perform liquidation.
+                        Expand a cash advance to view its motorcycles and perform liquidation.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <Table>
                         <TableHeader>
                             <TableRow>
+                                <TableHead className="w-[50px]"></TableHead>
                                 <TableHead>CA Code</TableHead>
                                 <TableHead>CV Number</TableHead>
                                 <TableHead>CV Transaction Date</TableHead>
@@ -196,26 +234,96 @@ function ForLiquidationContent({ searchQuery }: { searchQuery: string }) {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {enrichedCAs.map(item => (
-                                <TableRow key={item.cashAdvance.id}>
-                                    <TableCell>{item.cashAdvance.id}</TableCell>
-                                    <TableCell>{item.cashAdvance.checkVoucherNumber}</TableCell>
-                                    <TableCell>
-                                        {item.cashAdvance.checkVoucherReleaseDate
-                                            ? format(new Date(item.cashAdvance.checkVoucherReleaseDate), 'MMMM dd, yyyy')
-                                            : 'N/A'}
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        ₱{item.cashAdvance.amount.toLocaleString()}
-                                    </TableCell>
-                                    <TableCell>
-                                        <Button size="sm" onClick={() => handleViewAndLiquidate(item)}>
-                                            <Eye className="mr-2 h-4 w-4" />
-                                            View & Liquidate
-                                        </Button>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
+                            {enrichedCAs.map(item => {
+                                const selectedInGroup = selectedMotorcycles[item.cashAdvance.id] || [];
+                                const eligibleInGroup = item.motorcycles.filter(isEligibleForLiquidation);
+                                const selectedAndEligibleCount = selectedInGroup.filter(isEligibleForLiquidation).length;
+
+                                return (
+                                    <Collapsible asChild key={item.cashAdvance.id}>
+                                        <>
+                                            <TableRow>
+                                                <TableCell>
+                                                    <CollapsibleTrigger asChild>
+                                                        <Button variant="ghost" size="icon">
+                                                            <ChevronDown className="h-4 w-4 transition-transform data-[state=open]:rotate-180" />
+                                                        </Button>
+                                                    </CollapsibleTrigger>
+                                                </TableCell>
+                                                <TableCell>{item.cashAdvance.id}</TableCell>
+                                                <TableCell>{item.cashAdvance.checkVoucherNumber}</TableCell>
+                                                <TableCell>
+                                                    {item.cashAdvance.checkVoucherReleaseDate
+                                                        ? format(new Date(item.cashAdvance.checkVoucherReleaseDate), 'MMMM dd, yyyy')
+                                                        : 'N/A'}
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    ₱{item.cashAdvance.amount.toLocaleString()}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Button size="sm" onClick={() => confirmBulkLiquidate(item.cashAdvance.id)} disabled={selectedAndEligibleCount === 0}>
+                                                        <Edit className="mr-2 h-4 w-4" />
+                                                        Bulk Liquidate ({selectedAndEligibleCount})
+                                                    </Button>
+                                                </TableCell>
+                                            </TableRow>
+                                            <CollapsibleContent asChild>
+                                                <tr className="bg-muted/50">
+                                                    <TableCell colSpan={6} className="p-0">
+                                                        <div className="p-4">
+                                                            <Alert className="mb-4">
+                                                                <AlertCircle className="h-4 w-4" />
+                                                                <AlertDescription className="text-xs">
+                                                                    You can only bulk-liquidate units where all required details (OR No., OR Amount, Processing Fee) have been filled in via the 'View/Edit' button.
+                                                                </AlertDescription>
+                                                            </Alert>
+                                                            <Table>
+                                                                <TableHeader>
+                                                                    <TableRow>
+                                                                        <TableHead className="w-12"></TableHead>
+                                                                        <TableHead>Customer</TableHead>
+                                                                        <TableHead>Plate No.</TableHead>
+                                                                        <TableHead>Status</TableHead>
+                                                                        <TableHead className="text-right">Amount</TableHead>
+                                                                        <TableHead>Action</TableHead>
+                                                                    </TableRow>
+                                                                </TableHeader>
+                                                                <TableBody>
+                                                                    {item.motorcycles.map(mc => (
+                                                                        <TableRow key={mc.id}>
+                                                                            <TableCell>
+                                                                                <Checkbox
+                                                                                    disabled={mc.status === 'For Verification' || mc.status === 'Completed'}
+                                                                                    checked={selectedMotorcycles[item.cashAdvance.id]?.some(m => m.id === mc.id)}
+                                                                                    onCheckedChange={() => handleSelectMotorcycle(item.cashAdvance.id, mc)}
+                                                                                />
+                                                                            </TableCell>
+                                                                            <TableCell>{mc.customerName}</TableCell>
+                                                                            <TableCell>{mc.plateNumber}</TableCell>
+                                                                            <TableCell>
+                                                                                <span className={cn(!isEligibleForLiquidation(mc) && "text-destructive font-semibold")}>
+                                                                                    {mc.status}
+                                                                                </span>
+                                                                            </TableCell>
+                                                                            <TableCell className="text-right">₱{getMcAdvanceAmount(mc).toLocaleString()}</TableCell>
+                                                                            <TableCell>
+                                                                                <Button size="sm" variant="outline" onClick={() => setEditingMotorcycle(mc)}>
+                                                                                    <Eye className="mr-2 h-4 w-4" />
+                                                                                    View/Edit
+                                                                                </Button>
+                                                                            </TableCell>
+                                                                        </TableRow>
+                                                                    ))}
+                                                                </TableBody>
+                                                            </Table>
+                                                        </div>
+                                                    </TableCell>
+                                                </tr>
+                                            </CollapsibleContent>
+                                        </>
+                                    </Collapsible>
+                                )
+                            })}
                         </TableBody>
                     </Table>
                     {enrichedCAs.length === 0 && (
@@ -225,65 +333,34 @@ function ForLiquidationContent({ searchQuery }: { searchQuery: string }) {
                     )}
                 </CardContent>
             </Card>
-
-            <Dialog open={!!viewingCa} onOpenChange={(open) => !open && setViewingCa(null)}>
-                <DialogContent className="max-w-4xl">
-                    <DialogHeader>
-                        <DialogTitle>Liquidate Cash Advance: {viewingCa?.cashAdvance.id}</DialogTitle>
-                        <DialogDescription>
-                            Select a motorcycle to enter its liquidation details.
-                        </DialogDescription>
-                    </DialogHeader>
-                    {viewingCa && (
-                        <ScrollArea className="max-h-[60vh] -mx-6 px-6">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Customer</TableHead>
-                                    <TableHead>Plate No.</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead className="text-right">Amount</TableHead>
-                                    <TableHead>Action</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {viewingCa.motorcycles.map(mc => {
-                                    return (
-                                        <TableRow key={mc.id}>
-                                            <TableCell>{mc.customerName}</TableCell>
-                                            <TableCell>{mc.plateNumber}</TableCell>
-                                            <TableCell>{mc.status}</TableCell>
-                                            <TableCell className="text-right">₱{getMcAdvanceAmount(mc).toLocaleString()}</TableCell>
-                                            <TableCell>
-                                                <Button size="sm" onClick={() => setSelectedMcForLiquidation(mc)}>
-                                                    <Edit className="mr-2 h-4 w-4" />
-                                                    {mc.status === 'For Liquidation' ? 'Edit/Liquidate' : 'View Details'}
-                                                </Button>
-                                            </TableCell>
-                                        </TableRow>
-                                    )
-                                })}
-                            </TableBody>
-                        </Table>
-                        </ScrollArea>
-                    )}
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setViewingCa(null)}>Close</Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
             
-            {selectedMcForLiquidation && caMapByMcId.get(selectedMcForLiquidation.id) && (
+            {editingMotorcycle && caMapByMcId.get(editingMotorcycle.id) && (
              <LiquidationFormDialog 
-                motorcycle={selectedMcForLiquidation}
-                cashAdvance={caMapByMcId.get(selectedMcForLiquidation.id)!}
-                isOpen={!!selectedMcForLiquidation}
-                onClose={() => setSelectedMcForLiquidation(null)}
+                motorcycle={editingMotorcycle}
+                cashAdvance={caMapByMcId.get(editingMotorcycle.id)!}
+                isOpen={!!editingMotorcycle}
+                onClose={() => setEditingMotorcycle(null)}
                 onLiquidate={handleFinalSubmit}
                 onSaveDetails={handleSaveDetails}
                 getMcAdvanceAmount={getMcAdvanceAmount}
              />
            )}
+
+           <AlertDialog open={openConfirmDialog} onOpenChange={setOpenConfirmDialog}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Confirm Bulk Liquidation</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            You are about to submit {selectedMotorcycles[caToBulkLiquidate!]?.filter(isEligibleForLiquidation).length || 0} motorcycle(s) for verification. 
+                            This action cannot be undone. Are you sure you want to proceed?
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleBulkLiquidate}>Yes, Liquidate Selected</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+           </AlertDialog>
         </>
     );
 }
