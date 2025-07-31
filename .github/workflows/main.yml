@@ -3,10 +3,10 @@ name: CI
 on:
   push:
     branches:
-      - master
+      - sample
   pull_request:
     branches:
-      - master
+      - sample
 
 jobs:
   build:
