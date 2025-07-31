@@ -9,11 +9,10 @@ import { getCashAdvances, getMotorcycles, updateCashAdvances, updateMotorcycles 
 import { CashAdvance, Motorcycle } from '@/types';
 import { AppLoader } from '@/components/layout/loader';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle, ArrowLeft, Check, Download, Eye, FileCheck, FileText, ShieldCheck } from 'lucide-react';
+import { AlertCircle, Check, Eye, FileText, ShieldCheck } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { format } from 'date-fns';
@@ -30,13 +29,11 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { useAuth } from '@/context/AuthContext';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { LiquidationReport } from '@/components/reports/liquidation-report';
-import { generatePdf } from '@/lib/pdf';
 
 
 type ReportData = {
@@ -78,12 +75,6 @@ function VerificationContent() {
         }
     }, [id]);
     
-    const handleDownloadPdf = () => {
-        if (reportRef.current && reportData) {
-            generatePdf(reportRef.current, `liquidation-report-${reportData.cashAdvance.id}.pdf`);
-        }
-    };
-
     const handleVerify = async () => {
         if (!reportData || !user) return;
 
@@ -292,10 +283,6 @@ function VerificationContent() {
                 </div>
                 <DialogFooter>
                     <Button variant="ghost" onClick={() => setIsReportDialogOpen(false)}>Close</Button>
-                    <Button onClick={handleDownloadPdf}>
-                        <Download className="mr-2 h-4 w-4" />
-                        Download as PDF
-                    </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
@@ -316,4 +303,3 @@ export default function VerificationPage() {
         </ProtectedPage>
     );
 }
-

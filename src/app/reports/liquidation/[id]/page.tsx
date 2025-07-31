@@ -2,14 +2,14 @@
 'use client';
 
 import * as React from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { Header } from '@/components/layout/header';
 import { ProtectedPage } from '@/components/auth/protected-page';
 import { getCashAdvances, getMotorcycles } from '@/lib/data';
 import { CashAdvance, Motorcycle } from '@/types';
 import { AppLoader } from '@/components/layout/loader';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle, Check, DollarSign, Download, Eye, FileText, ShieldCheck, User } from 'lucide-react';
+import { AlertCircle, Check, DollarSign, Eye, FileText, User } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -20,7 +20,6 @@ import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { LiquidationReport } from '@/components/reports/liquidation-report';
-import { generatePdf } from '@/lib/pdf';
 
 
 type ReportDataType = {
@@ -34,7 +33,6 @@ function CompletedReportContent() {
   const [reportData, setReportData] = React.useState<ReportDataType | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [isReportDialogOpen, setIsReportDialogOpen] = React.useState(false);
-  const router = useRouter();
   const reportRef = React.useRef<HTMLDivElement>(null);
 
 
@@ -56,13 +54,6 @@ function CompletedReportContent() {
       });
     }
   }, [id]);
-  
-  const handleDownloadPdf = () => {
-    if (reportRef.current && reportData) {
-        generatePdf(reportRef.current, `liquidation-report-${reportData.cashAdvance.id}.pdf`);
-    }
-  };
-
 
   if (loading) {
     return <AppLoader />;
@@ -225,10 +216,6 @@ function CompletedReportContent() {
             </div>
             <DialogFooter>
                 <Button variant="ghost" onClick={() => setIsReportDialogOpen(false)}>Close</Button>
-                <Button onClick={handleDownloadPdf}>
-                    <Download className="mr-2 h-4 w-4" />
-                    Download as PDF
-                </Button>
             </DialogFooter>
         </DialogContent>
     </Dialog>
