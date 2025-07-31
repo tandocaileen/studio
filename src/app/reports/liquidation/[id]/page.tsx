@@ -207,7 +207,6 @@ function CompletedReportContent() {
                 <DialogContent className="max-w-4xl">
                     <DialogHeader>
                         <DialogTitle>Liquidation Report</DialogTitle>
-                        <DialogTitle>Liquidation Report</DialogTitle>
                         <DialogDescription>
                             Full liquidation report for Cash Advance #{reportData.cashAdvance.id}.
                         </DialogDescription>
@@ -229,7 +228,7 @@ export default function LiquidationReportPage() {
         <ProtectedPage allowedRoles={['Store Supervisor', 'Liaison', 'Cashier', 'Accounting']}>
             <Header title="Completed Transaction Report" showBack={true} />
             <main className="flex-1 items-start gap-4 p-4 sm:px-6 sm:py-6 md:gap-8">
-                <LiquidationReportClient />
+                <CompletedReportContent />
             </main>
         </ProtectedPage>
     );

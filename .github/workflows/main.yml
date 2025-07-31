@@ -3,10 +3,10 @@ name: CI
 on:
   push:
     branches:
-      - sample
+      - master
   pull_request:
     branches:
-      - sample
+      - master
 
 jobs:
   build:
@@ -22,18 +22,13 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: npm install
-
-      - name: Auto-detect correct import path for createApiHandler
         run: |
-          PKG_JSON="node_modules/@genkit-ai/next/package.json"
-          if grep -q '"\\.\\/server"' "$PKG_JSON"; then
-            echo "Using @genkit-ai/next/server import"
-            sed -i "s|import { createApiHandler } from '@genkit-ai/next';|import { createApiHandler } from '@genkit-ai/next/server';|" src/app/api/genkit/[...slug]/route.ts
-          else
-            echo "Using @genkit-ai/next import (default)"
-            sed -i "s|import { createApiHandler } from '@genkit-ai/next/server';|import { createApiHandler } from '@genkit-ai/next';|" src/app/api/genkit/[...slug]/route.ts
-          fi
+          npm install
+          npm install @genkit-ai/firebase
+
+      - name: Fix createApiHandler import (force to node package)
+        run: |
+          sed -i "s|import { createApiHandler } from '@genkit-ai/next.*';|import { createApiHandler } from '@genkit-ai/node';|" src/app/api/genkit/\[...slug\]/route.ts
 
       - name: Run build
         run: npm run build
