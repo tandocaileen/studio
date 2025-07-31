@@ -1,3 +1,4 @@
+
 name: CI
 
 on:
@@ -23,21 +24,9 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Add generateStaticParams to verify page
-        run: |
-          echo "export async function generateStaticParams() {
-            // Replace with your logic to fetch the possible IDs for verification.
-            // This might involve fetching data from your backend or database.
-            const possibleIds = ['id1', 'id2', 'id3']; // Placeholder
-
-            return possibleIds.map(id => ({
-              id: id,
-            }));
-          }" >> src/app/verify/[id]/page.tsx
-
       - name: Fix createApiHandler import
         run: |
-          sed -i "s/import { createApiHandler } from '@genkit-ai\/next';/import { createApiHandler } from '@genkit-ai\/next\/server';/" src/app/api/genkit/[...slug]/route.ts
+          sed -i "s/import { createApiHandler } from '@genkit-ai\\/next';/import { createApiHandler } from '@genkit-ai\\/next\\/server';/" src/app/api/genkit/[...slug]/route.ts
 
       - name: Run build
         run: npm run build
