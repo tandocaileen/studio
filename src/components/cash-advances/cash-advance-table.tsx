@@ -10,19 +10,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CashAdvance, Motorcycle, MotorcycleStatus } from '@/types';
-import { MoreHorizontal, Download, Eye, Banknote, PackageCheck, CheckCircle, CircleDashed, Hourglass } from 'lucide-react';
+import { Download, Eye, Banknote, PackageCheck } from 'lucide-react';
 import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Label } from '../ui/label';
@@ -32,16 +24,6 @@ import { CashAdvanceRequestDocument } from './cash-advance-request-document';
 import { generatePdf } from '@/lib/pdf';
 import type { EnrichedCashAdvance } from '@/app/cash-advances/page';
 import { useAuth } from '@/context/AuthContext';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 import { cn } from '@/lib/utils';
 import { updateCashAdvances } from '@/lib/data';
 import { usePathname } from 'next/navigation';
@@ -198,9 +180,8 @@ export function CashAdvanceTable({ advances, onMotorcycleUpdate, showStatusColum
           <TableBody>
             {paginatedAdvances.map((advance) => {
               const status = getDynamicCAStatus(advance.motorcycles);
-              const approveActionAvailable = isCashier && status === 'For CA Approval';
-              const confirmActionAvailable = isSupervisor && status === 'For CV Issuance';
-              const totalActions = 1 + (approveActionAvailable ? 1 : 0) + (confirmActionAvailable ? 1 : 0);
+              const isForCvIssuancePage = pageName === 'for-cv-issuance';
+              const canIssueCv = (isCashier || isSupervisor) && status === 'For CV Issuance';
 
               return (
                 <TableRow key={advance.cashAdvance.id}>
@@ -219,50 +200,17 @@ export function CashAdvanceTable({ advances, onMotorcycleUpdate, showStatusColum
                         </Badge>
                     </TableCell>
                   }
-                  <TableCell>
-                    {totalActions === 1 ? (
-                        <Button
-                            aria-haspopup="false"
-                            size="icon"
-                            variant="ghost"
-                            onClick={() => setPreviewingAdvance(advance)}
-                        >
-                            <Eye className="h-4 w-4" />
-                            <span className="sr-only">Preview</span>
-                        </Button>
-                    ) : (
-                        <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button aria-haspopup="true" size="icon" variant="ghost">
-                            <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">Toggle menu</span>
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => setPreviewingAdvance(advance)}>
-                                <Eye className="mr-2 h-4 w-4" />
-                                <span>Preview</span>
-                            </DropdownMenuItem>
-                            {approveActionAvailable && (
-                                <DropdownMenuItem 
-                                    onSelect={() => handleUpdate(advance.motorcycles.map(m => ({ ...m, status: 'For CV Issuance' as const })))}
-                                >
-                                    <Banknote className="mr-2 h-4 w-4" />
-                                    Approve for CV Issuance
-                                </DropdownMenuItem>
-                            )}
-                            {confirmActionAvailable && (
-                                <DropdownMenuItem
-                                    onSelect={() => setConfirmingCvReceiptAdvance(advance)}
-                                >
-                                    <PackageCheck className="mr-2 h-4 w-4" />
-                                    Confirm Budget Received
-                                </DropdownMenuItem>
-                            )}
-                        </DropdownMenuContent>
-                        </DropdownMenu>
-                    )}
+                  <TableCell className="flex items-center gap-2 justify-end">
+                      {isForCvIssuancePage && canIssueCv && (
+                          <Button size="icon" variant="outline" onClick={() => setConfirmingCvReceiptAdvance(advance)}>
+                              <Banknote className="h-4 w-4" />
+                              <span className="sr-only">Issue CV</span>
+                          </Button>
+                      )}
+                      <Button size="icon" variant="ghost" onClick={() => setPreviewingAdvance(advance)}>
+                          <Eye className="h-4 w-4" />
+                          <span className="sr-only">Preview</span>
+                      </Button>
                   </TableCell>
                 </TableRow>
               )})}
@@ -357,5 +305,3 @@ export function CashAdvanceTable({ advances, onMotorcycleUpdate, showStatusColum
     </>
   );
 }
-
-    

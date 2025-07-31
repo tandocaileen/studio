@@ -82,6 +82,7 @@ function ForCvIssuanceContent({ searchQuery }: { searchQuery: string }) {
         <CashAdvanceTable 
             advances={filteredBySearch} 
             onMotorcycleUpdate={handleUpdateMotorcycles}
+            showStatusColumn={false}
         />
     );
 }
