@@ -113,13 +113,6 @@ export function ForVerificationContent({ searchQuery }: { searchQuery: string })
                             <TableCell className="flex items-center gap-2">
                                 <Button 
                                     size="sm"
-                                    onClick={() => router.push(`/reports/liquidation/${cashAdvance.id}`)}
-                                >
-                                    <Eye className="mr-2 h-4 w-4" />
-                                    Report
-                                </Button>
-                                <Button 
-                                    size="sm"
                                     variant="outline"
                                     onClick={() => router.push(`/verify/${cashAdvance.id}`)}
                                     disabled={liquidationStatus !== 'Fully Liquidated'}
