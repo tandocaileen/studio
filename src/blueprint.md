@@ -6,108 +6,99 @@ LTO Portal is a specialized web application designed to streamline and manage th
 ## 2. Core Features
 
 ### User Roles & Authentication
-- **Three distinct user roles**: Store Supervisor, Liaison, and Cashier.
+- **Four distinct user roles**: Store Supervisor, Liaison, Cashier, and Accounting.
 - A login page allows users to select their role for a simulated sign-in experience.
 - **Role-Based Access Control (RBAC)**: The application uses a `ProtectedPage` component to restrict access to pages and features based on the logged-in user's role. The sidebar navigation is also dynamically generated based on user permissions.
 
 ### Automated Status Workflow
 The application follows a strict, automated status progression for each motorcycle, ensuring data integrity and clear tracking at every stage:
-1.  **`Incomplete`**: The default status for a new motorcycle that requires more details (like insurance, COC, etc.).
-2.  **`Ready to Register`**: Automatically set when a Store Supervisor/Cashier saves all the required "Insurance & Control" information. These units are now ready for endorsement.
-3.  **`Endorsed - Ready`**: Automatically set when a `Ready to Register` unit is endorsed to a liaison. **Only units with this status are eligible for Cash Advance generation.**
-4.  **`Processing`**: Automatically set as soon as a Cash Advance (CA) is generated for the unit by a liaison.
-5.  **`For Review`**: Automatically set when the liaison submits the liquidation details for the unit. This signifies that the registration process is complete from the liaison's perspective and is pending final review.
+1.  **`Lacking Requirements`**: The default status for a new motorcycle that requires more details (like insurance, COC, etc.). A Supervisor or Cashier must complete these details.
+2.  **`Endorsed`**: Automatically set when a unit with complete details is endorsed to a liaison. **Only units with this status are eligible for Cash Advance generation.**
+3.  **`For CA Approval`**: Automatically set as soon as a Cash Advance (CA) is generated for the unit by a liaison. The request is now pending approval from the Accounting role.
+4.  **`For CV Issuance`**: Set when Accounting approves the CA. The request is now waiting for a Cashier to issue a Check Voucher (CV).
+5.  **`Released CVs`**: Set when the Cashier issues the CV and a Supervisor/Cashier confirms the liaison has received it.
+6.  **`For Liquidation`**: The status of the motorcycle once the CV has been released to the liaison, making it ready for the registration and liquidation process.
+7.  **`For Verification`**: Automatically set when the liaison submits the liquidation details for the unit. This signifies that the registration process is complete from the liaison's perspective and is pending final review by Accounting.
+8.  **`Completed`**: The final status, set by Accounting after verifying the liquidation report. The transaction is now closed.
 
 ### Motorcycle, Document, and Financial Management
 - **Motorcycle Registry**: Add and store comprehensive motorcycle details (make, model, plate number, customer name, etc.).
-- **Document Management**: Upload and track essential documents (OR/CR, COC, Insurance, etc.) with the ability to set expiration dates.
-- **Automated Endorsements**: The system automatically endorses motorcycles with a `Ready to Register` status to their assigned liaison every end of day. This removes the need for manual endorsement creation.
-- **Cash Advance (CA) Generation**: Liaisons can request cash advances for one or more motorcycles that are `Endorsed - Ready`. The system uses Genkit AI to generate a consolidated CA request with a unique ID and summarized purpose. It is assumed that a single Check Voucher (CV) can cover multiple CA requests.
+- **Document Management**: Upload and track essential documents (OR/CR, COC, Insurance, etc.).
+- **Automated Endorsements**: The system automatically endorses motorcycles with complete details to their assigned liaison.
+- **Cash Advance (CA) Generation**: Liaisons can request cash advances for one or more endorsed motorcycles. The system uses Genkit AI to generate a consolidated CA request.
 - **Liquidation**: Liaisons can submit liquidation reports for their processed CAs by uploading receipts and detailing expenses.
 - **Reporting**: The system can generate detailed, printable PDF reports for Cash Advances and Liquidations.
 
 ## 3. Roles and Responsibilities
 
 ### Store Supervisor / Cashier
-This role is responsible for the initial data entry, financial oversight, and approval processes.
+This group is responsible for initial data entry, financial oversight, and parts of the approval process.
+- **`Store Supervisor`**: Can view and edit motorcycle details to make them ready for endorsement. Can confirm receipt of Check Vouchers. Manages liaison user information.
+- **`Cashier`**: Has the same permissions as a Supervisor but is also responsible for issuing the Check Vouchers for approved Cash Advances.
 
 **Actions & Features:**
-- **Dashboard**:
-  - View a high-level financial overview with key metrics.
-  - **Motorcycle Fleet Tab**: A comprehensive table of all motorcycles in the system. The view defaults to "Unendorsed" units (`Incomplete` or `Ready to Register`) to help prioritize units for the next step. A filter panel allows for viewing units of any status.
-- **Motorcycle Management**:
-  - View and edit the "Insurance & Control" section for any motorcycle. Saving these details is the key step to change a unit's status from `Incomplete` to `Ready to Register`.
-- **Endorsements**:
-  - View all past and present automated endorsements. Manual creation is disabled.
-- **Cash Advances**:
-  - View all cash advance requests from all liaisons, with a powerful filter panel to narrow down results. The view is pre-filtered based on the next action required for their role (e.g., 'Processing for CV' for Cashiers).
-  - **Cashier**: Can bulk-release Check Vouchers for multiple CA requests at once.
-  - **Supervisor/Cashier**: Can bulk-confirm the receipt of Check Vouchers.
-- **Liquidations & Reporting**:
-  - View all liquidation submissions and generate reports.
-  - Can view reports by individual motorcycle or by cash advance.
-  - Generate and print detailed PDF Liquidation Reports for any cash advance.
-  - Generate a master report of all liquidated items.
-- **User Management**:
-  - View a list of all liaison users and their assigned branches.
+- **Dashboard (`/pending`)**: View and manage all motorcycles, with a default view for units needing details (`Lacking Requirements`).
+- **Endorsements (`/endorsements`)**: View all past and present automated endorsements.
+- **Cash Advances**: View all cash advance requests.
+  - **Cashier**: Can issue Check Vouchers for CAs with status `For CV Issuance`.
+  - **Supervisor/Cashier**: Can confirm receipt of CVs, changing the status to `Released CVs`.
+- **User Management (`/liaisons`)**: View a list of all liaison users and their assigned branches.
+- **View Reports**: Can view completed liquidation reports.
 
 ### Liaison
 This role is the "on-the-ground" agent responsible for processing vehicle registrations and managing the associated funds.
 
 **Actions & Features:**
-- **Home Page**:
-  - A personalized dashboard showing all endorsements assigned to them, grouped by endorsement code.
-  - Can expand each endorsement to see the individual motorcycle units. Since only complete units are endorsed, they will all be in `Endorsed - Ready` status.
-  - A filter panel allows them to narrow down endorsements by date or by the endorsing supervisor/cashier.
-- **Cash Advance Generation**:
-  - Select one or more motorcycles with the `Endorsed - Ready` status from their endorsements to request funds.
-  - The system uses AI to generate a consolidated cash advance request.
-  - Submitting the request automatically changes the motorcycles' status to `Processing`.
-- **Cash Advances Page**:
-  - View and track the status of all cash advances, including their own and those of others. A comprehensive filter panel allows them to easily find specific requests.
-- **Liquidations Page**:
-  - This is the only role that can perform the liquidation action.
-  - On the "Liquidations" page, they see a list of their individual motorcycles tied to a received cash advance, ready for liquidation.
-  - They can liquidate each motorcycle one by one, submitting details like the LTO OR number, amounts, and uploading a copy of the receipt.
-  - Submitting the liquidation changes the motorcycle's status to `For Review`.
-- **Reporting**:
-  - View and print their own Cash Advance requests and Liquidation Reports.
+- **Home Page (`/endorsed-to-liaison`)**: A personalized dashboard showing all endorsements assigned to them.
+- **Cash Advance Generation**: Select one or more endorsed motorcycles to request funds. Submitting the request changes the motorcycle's status to `For CA Approval`.
+- **Track Cash Advances**: Monitor the status of their CAs from `For CA Approval` through to `Released CVs`.
+- **Liquidations Page (`/for-liquidation`)**: This is the only role that can perform the liquidation action. They submit LTO OR details, amounts, and receipts for motorcycles linked to a released CV. Submitting changes the motorcycle's status to `For Verification`.
+- **View Reports**: Can view and print their own Cash Advance requests and Liquidation Reports.
 
+### Accounting
+This role is responsible for the final financial verification and approval stages of the workflow.
+
+**Actions & Features:**
+- **Cash Advance Approval (`/for-ca-approval`)**: Reviews CA requests from liaisons. Approving a request changes its status to `For CV Issuance`.
+- **Verification (`/for-verification`)**: The core responsibility. Reviews submitted liquidation reports from liaisons.
+  - Can view a detailed breakdown of expenses vs. the advanced amount.
+  - After review, they can mark the transaction as `Completed`, which is the final step in the workflow.
+- **Reporting (`/completed`)**: Accesses and can generate final, verified liquidation reports for archival and auditing purposes.
+- **Settings & Support**: Has access to the application's settings and support pages.
 
 ## 4. End-to-End Workflow Example
 
 Here is a step-by-step flow of a motorcycle through the system:
 
 1.  **Complete Motorcycle Details (Store Supervisor/Cashier)**
-    - The system automatically receives motorcycle data from the company's POS and D365 systems.
-    - The Supervisor sees these new units on their dashboard, which defaults to showing `Incomplete` motorcycles.
-    - They click the **"Edit"** action for one of the `Incomplete` motorcycles.
-    - They fill in the required "Insurance & Control" details.
-    - Upon clicking **"Save Changes"**, the motorcycle's status automatically changes to **`Ready to Register`**.
+    - A Supervisor sees a new `Lacking Requirements` unit on their dashboard.
+    - They edit the unit, fill in the required "Insurance & Control" details, and save. The motorcycle is now ready for endorsement.
 
 2.  **Automated Endorsement (System)**
-    - At the end of the day, the system automatically gathers all motorcycles with the `Ready to Register` status.
-    - It creates an endorsement for each respective liaison based on the motorcycle's branch.
-    - The status of the endorsed motorcycles automatically becomes **`Endorsed - Ready`**.
+    - The system automatically gathers all complete units and creates an endorsement for the appropriate liaison. The motorcycle status changes to **`Endorsed`**.
 
 3.  **Generate Cash Advance (Liaison)**
-    - The **Liaison** logs in and sees the newly assigned motorcycles on their **Home** page, grouped by the automated endorsement.
-    - They select one or more units that are `Endorsed - Ready`.
-    - They click the **"Generate CA"** button. An AI-powered flow generates a single cash advance request.
-    - The motorcycles' status automatically updates to **`Processing`**.
+    - The **Liaison** sees the newly assigned motorcycles on their **Home** page.
+    - They select one or more units and click **"Generate CA"**.
+    - The motorcycles' status automatically updates to **`For CA Approval`**.
 
-4.  **Process Check Voucher (Cashier & Supervisor)**
-    - The **Cashier** sees the new request on the **Cash Advances** page (pre-filtered to 'Processing for CV').
-    - They select one or more requests, click **"Bulk Actions"**, and enter a single Check Voucher number to release the funds. The status for all selected requests changes to **`CV Released`**.
-    - The **Supervisor** or **Cashier** sees these on the Cash Advances page (pre-filtered to 'CV Released'). They select the requests and use the **"Bulk Actions"** menu to confirm the liaison has received the funds. The status changes to **`CV Received`**. The Liaison can also see these status changes on their Cash Advances page.
+4.  **Approve CA (Accounting)**
+    - **Accounting** sees the new request on the **For CA Approval** page.
+    - They review and approve it. The status changes to **`For CV Issuance`**.
 
-5.  **Liquidate Expenses (Liaison)**
-    - After completing the registration, the Liaison navigates to the **Liquidations** page.
-    - They see a list of their motorcycles that are linked to a received cash advance (`CV Received` status).
-    - They click **"Edit/Liquidate"** for a specific unit, fill in the LTO OR details, amounts, and upload the receipt.
-    - Upon submission, the motorcycle's status automatically changes to **`For Review`**.
+5.  **Process Check Voucher (Cashier & Supervisor)**
+    - The **Cashier** sees the request on the **For CV Issuance** page, and issues a Check Voucher number. The status changes to **`Released CVs`**.
+    - The **Supervisor** or **Cashier** then confirms the liaison has received the funds. The motorcycle status becomes **`For Liquidation`**.
 
-6.  **View Liquidation Report (All Roles)**
-    - Any user can navigate to the **Liquidations** page, switch to the "By Cash Advance" view, and find the relevant Cash Advance.
-    - They can click **"View Full Report"**.
-    - A detailed, printable PDF document is displayed, showing the breakdown of the cash advance and liquidated expenses.
+6.  **Liquidate Expenses (Liaison)**
+    - The Liaison navigates to the **For Liquidation** page.
+    - They click **"View/Edit"** for a specific unit, fill in the LTO OR details, amounts, and upload the receipt.
+    - Upon submission, the motorcycle's status changes to **`For Verification`**.
+
+7.  **Final Verification (Accounting)**
+    - **Accounting** sees the fully liquidated CA on their **For Verification** page.
+    - They review the complete report, add remarks, and click **"Verify Transaction"**.
+    - The motorcycle and CA statuses are updated to **`Completed`**. The process is finished.
+
+8.  **View Completed Report (All Roles)**
+    - Any user with permissions can now view the final, read-only `Completed Report` for the transaction.
