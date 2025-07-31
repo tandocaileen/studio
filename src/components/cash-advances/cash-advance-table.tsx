@@ -202,9 +202,8 @@ export function CashAdvanceTable({ advances, onMotorcycleUpdate, showStatusColum
                   }
                   <TableCell className="flex items-center gap-2 justify-end">
                       {isForCvIssuancePage && canIssueCv && (
-                          <Button size="icon" variant="outline" onClick={() => setConfirmingCvReceiptAdvance(advance)}>
-                              <Banknote className="h-4 w-4" />
-                              <span className="sr-only">Issue CV</span>
+                          <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => setConfirmingCvReceiptAdvance(advance)}>
+                              Issue CV
                           </Button>
                       )}
                       <Button size="icon" variant="ghost" onClick={() => setPreviewingAdvance(advance)}>
