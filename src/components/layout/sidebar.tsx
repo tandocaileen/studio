@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -76,7 +75,7 @@ const commonNavItems: NavItem[] = [
 ];
 
 const supervisorAndCashierCommonItems: NavItem[] = [
-    { href: '/users', icon: Users, label: 'Users' },
+    { href: '/users', icon: Users, label: 'Liaisons' },
 ]
 
 const roleNavItems: Record<UserRole, NavItem[]> = {
@@ -156,6 +155,8 @@ export function AppSidebar() {
   let accessibleCommonItems = commonNavItems;
   if(user.role === 'Store Supervisor' || user.role === 'Cashier') {
       accessibleCommonItems = [...supervisorAndCashierCommonItems, ...commonNavItems];
+  } else if (user.role === 'Accounting') {
+      accessibleCommonItems = commonNavItems;
   }
 
   const homeRoute = homeRoutes[user.role] || '/';

@@ -16,10 +16,14 @@ import { Button } from "@/components/ui/button";
 import { AlertCircle, Check, ChevronDown, Eye } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
+import { format, subDays } from "date-fns";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CashAdvanceRequestDocument } from "@/components/cash-advances/cash-advance-request-document";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+
+type DateRange = '7d' | '30d' | 'all';
 
 type GroupedByCV = {
     cvNumber: string;
@@ -122,17 +126,15 @@ function ReleasedCvContentLiaison({ searchQuery }: { searchQuery: string }) {
         <>
         <Card>
             <CardHeader>
-                <CardTitle>My Released Check Vouchers</CardTitle>
-                 <Alert className="bg-yellow-100 dark:bg-yellow-900/30 border-yellow-400 dark:border-yellow-700 text-yellow-800 dark:text-yellow-300 mt-2">
-                    <AlertCircle className="h-4 w-4 !text-yellow-600 dark:!text-yellow-400" />
-                    <AlertDescription className="text-sm">
-                        Only Check Vouchers that have been released to you as the logged-in Liaison will be displayed here.
-                    </AlertDescription>
-                </Alert>
+                <CardTitle>My Released CVs</CardTitle>
+                 <CardDescription>
+                    These are the check vouchers released to you. Expand each CV to view and act on the associated cash advances.
+                 </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4">
                 {paginatedGroups.map(group => {
                     const totalMotorcycles = group.advances.reduce((sum, item) => sum + item.motorcycles.length, 0);
+                    const releaseDate = group.advances[0]?.cashAdvance.checkVoucherReleaseDate;
 
                     return (
                         <Collapsible 
@@ -150,9 +152,8 @@ function ReleasedCvContentLiaison({ searchQuery }: { searchQuery: string }) {
                                         <p className="text-sm text-muted-foreground">{totalMotorcycles} Motorcycle(s) included</p>
                                     </div>
                                 </div>
-                                    <Badge variant="default" className="bg-green-600 hover:bg-green-700">
-                                        <Check className="mr-2 h-4 w-4"/>
-                                        Released
+                                    <Badge variant="outline">
+                                        CV Released: {releaseDate ? format(new Date(releaseDate), 'MMM dd, yyyy') : 'N/A'}
                                     </Badge>
                                 </div>
                             </CollapsibleTrigger>
@@ -255,6 +256,7 @@ function ReleasedCvContentLiaison({ searchQuery }: { searchQuery: string }) {
 function ReleasedCvContentSupervisor({ searchQuery }: { searchQuery: string }) {
     const [allCAs, setAllCAs] = useState<CashAdvance[] | null>(null);
     const [allMotorcycles, setAllMotorcycles] = useState<Motorcycle[] | null>(null);
+    const [dateRange, setDateRange] = useState<DateRange>('all');
     
     useEffect(() => {
         const fetchData = async () => {
@@ -305,8 +307,17 @@ function ReleasedCvContentSupervisor({ searchQuery }: { searchQuery: string }) {
     });
      console.log('[Supervisor View] Filtered by Status (Released CVs):', filteredByStatus);
 
+    const filteredByDate = filteredByStatus.filter(item => {
+        if (dateRange === 'all') return true;
+        const releaseDate = item.cashAdvance.checkVoucherReleaseDate;
+        if (!releaseDate) return false;
 
-    const filteredBySearch = filteredByStatus.filter(item => {
+        const days = dateRange === '7d' ? 7 : 30;
+        const cutoff = subDays(new Date(), days);
+        return new Date(releaseDate) >= cutoff;
+    });
+
+    const filteredBySearch = filteredByDate.filter(item => {
         const { cashAdvance, motorcycles } = item;
         const query = searchQuery.toLowerCase();
 
@@ -325,10 +336,25 @@ function ReleasedCvContentSupervisor({ searchQuery }: { searchQuery: string }) {
     console.log('[Supervisor View] Filtered by Search:', filteredBySearch);
 
     return (
-        <CashAdvanceTable 
-            advances={filteredBySearch} 
-            onMotorcycleUpdate={handleUpdateMotorcycles}
-        />
+        <div className="grid gap-4">
+            <div className="flex justify-end">
+                 <Select value={dateRange} onValueChange={(value) => setDateRange(value as DateRange)}>
+                    <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Filter by date" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="7d">Last 7 days</SelectItem>
+                        <SelectItem value="30d">Last 30 days</SelectItem>
+                        <SelectItem value="all">All time</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
+            <CashAdvanceTable 
+                advances={filteredBySearch} 
+                onMotorcycleUpdate={handleUpdateMotorcycles}
+                showStatusColumn={false}
+            />
+        </div>
     );
 }
 
@@ -348,7 +374,7 @@ export default function ReleasedCvPage() {
     return (
         <ProtectedPage allowedRoles={['Cashier', 'Store Supervisor', 'Liaison', 'Accounting']}>
             <div className="w-full">
-                <Header title="Released CVs" onSearch={setSearchQuery} />
+                <Header title="Released Check Vouchers" onSearch={setSearchQuery} />
                 <main className="flex-1 items-start gap-4 p-4 sm:px-6 sm:py-6 md:gap-8">
                     {renderContent()}
                 </main>
@@ -356,3 +382,5 @@ export default function ReleasedCvPage() {
         </ProtectedPage>
     );
 }
+
+    
