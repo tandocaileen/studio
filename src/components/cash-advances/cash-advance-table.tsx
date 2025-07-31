@@ -21,7 +21,7 @@ import { Label } from '../ui/label';
 import { Input } from '../ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { CashAdvanceRequestDocument } from './cash-advance-request-document';
-import type { EnrichedCashAdvance } from '@/app/cash-advances/page';
+import type { EnrichedCashAdvance } from '@/app/for-ca-approval/page';
 import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
 import { updateCashAdvances } from '@/lib/data';
@@ -31,12 +31,22 @@ import { usePathname } from 'next/navigation';
 type CashAdvanceTableProps = {
   advances: EnrichedCashAdvance[];
   onMotorcycleUpdate: (updatedItems: Motorcycle[], updatedCa?: Partial<CashAdvance>) => void;
+  onSelectionChange?: (selected: string[]) => void;
   showStatusColumn?: boolean;
+  showCheckboxes?: boolean;
+  selection?: string[];
 };
 
 const ITEMS_PER_PAGE = 10;
 
-export function CashAdvanceTable({ advances, onMotorcycleUpdate, showStatusColumn = true }: CashAdvanceTableProps) {
+export function CashAdvanceTable({ 
+  advances, 
+  onMotorcycleUpdate,
+  showStatusColumn = true, 
+  showCheckboxes = false, 
+  selection = [],
+  onSelectionChange 
+}: CashAdvanceTableProps) {
   const [previewingAdvance, setPreviewingAdvance] = React.useState<EnrichedCashAdvance | null>(null);
   const [confirmingCvReceiptAdvance, setConfirmingCvReceiptAdvance] = React.useState<EnrichedCashAdvance | null>(null);
   const [issuingCvAdvance, setIssuingCvAdvance] = React.useState<EnrichedCashAdvance | null>(null);
@@ -52,6 +62,12 @@ export function CashAdvanceTable({ advances, onMotorcycleUpdate, showStatusColum
   React.useEffect(() => {
     setCurrentPage(1);
   }, [advances]);
+
+   React.useEffect(() => {
+    if (onSelectionChange) {
+      onSelectionChange(selection);
+    }
+  }, [selection, onSelectionChange]);
   
   const getDynamicCAStatus = (motorcycles: Motorcycle[]): MotorcycleStatus | 'N/A' => {
     if (!motorcycles || motorcycles.length === 0) return 'N/A';
@@ -125,6 +141,7 @@ export function CashAdvanceTable({ advances, onMotorcycleUpdate, showStatusColum
   const isCashier = user?.role === 'Cashier';
   const isSupervisor = user?.role === 'Store Supervisor';
   const isLiaison = user?.role === 'Liaison';
+  const isAccounting = user?.role === 'Accounting';
   const pageName = pathname.split('/').pop();
   
   const totalPages = Math.ceil(advances.length / ITEMS_PER_PAGE);
@@ -157,19 +174,25 @@ export function CashAdvanceTable({ advances, onMotorcycleUpdate, showStatusColum
   }
   
   const getCardTitle = () => {
+    if (pageName === 'for-ca-approval' && isAccounting) {
+      return 'Cash Advances for Approval';
+    }
     if (pageName === 'for-cv-issuance') {
       return 'Cash Advances for CV Issuance';
     }
-    if (pageName === 'released-cv' && (isSupervisor || isCashier)) {
+    if (pageName === 'released-cv' && (isSupervisor || isCashier || isAccounting)) {
       return 'All CAs with Released Check Vouchers';
     }
     return 'All Cash Advances'
   }
   const getCardDescription = () => {
+    if (pageName === 'for-ca-approval' && isAccounting) {
+      return "Review and approve these cash advance requests to move them to 'For CV Issuance'.";
+    }
     if (pageName === 'for-cv-issuance') {
       return 'These CAs have been approved and are awaiting check voucher creation by a Cashier.';
     }
-     if (pageName === 'released-cv' && (isSupervisor || isCashier)) {
+     if (pageName === 'released-cv' && (isSupervisor || isCashier || isAccounting)) {
       return 'A list of all cash advances with released check vouchers.';
     }
     return 'A comprehensive list of all cash advance requests.';
@@ -177,6 +200,7 @@ export function CashAdvanceTable({ advances, onMotorcycleUpdate, showStatusColum
 
   const isForCvIssuancePage = pageName === 'for-cv-issuance';
   const isReleasedCvPage = pageName === 'released-cv';
+  const isForCaApprovalPage = pageName === 'for-ca-approval';
 
 
   return (
@@ -196,10 +220,14 @@ export function CashAdvanceTable({ advances, onMotorcycleUpdate, showStatusColum
             <TableRow>
               {isLiaison && <TableHead>Primary Customer</TableHead>}
               {isLiaison && <TableHead>Primary Motorcycle</TableHead>}
-              {(isSupervisor || isCashier) && isReleasedCvPage && <TableHead>CV Number</TableHead>}
-              {(isSupervisor || isCashier) && isReleasedCvPage && <TableHead>Cash Advance Code</TableHead>}
-              {(isSupervisor || isCashier) && !isReleasedCvPage && <TableHead>Liaison</TableHead>}
-              {(isSupervisor || isCashier) && !isReleasedCvPage && <TableHead>Purpose</TableHead>}
+              {(isSupervisor || isCashier || (isAccounting && isReleasedCvPage)) && isReleasedCvPage && <TableHead>CV Number</TableHead>}
+              {(isSupervisor || isCashier || (isAccounting && isReleasedCvPage)) && isReleasedCvPage && <TableHead>Cash Advance Code</TableHead>}
+              
+              {isAccounting && isForCaApprovalPage && <TableHead>CA Number</TableHead>}
+              
+              {((isSupervisor || isCashier) && !isReleasedCvPage) && <TableHead>Liaison</TableHead>}
+              {((isSupervisor || isCashier) && !isReleasedCvPage) && <TableHead>Purpose</TableHead>}
+
               <TableHead className="text-right">Amount</TableHead>
               <TableHead>Date</TableHead>
               {showStatusColumn && <TableHead>Status</TableHead>}
@@ -219,8 +247,10 @@ export function CashAdvanceTable({ advances, onMotorcycleUpdate, showStatusColum
                   {isLiaison && <TableCell className="font-medium">{getPrimaryCustomer(advance)}</TableCell>}
                   {isLiaison && <TableCell className="max-w-[300px] truncate">{getPrimaryMotorcycle(advance)}</TableCell>}
                   
-                  {(isSupervisor || isCashier) && isReleasedCvPage && <TableCell className="font-medium">{advance.cashAdvance.checkVoucherNumber}</TableCell>}
-                  {(isSupervisor || isCashier) && isReleasedCvPage && <TableCell>{advance.cashAdvance.id}</TableCell>}
+                  {(isSupervisor || isCashier || (isAccounting && isReleasedCvPage)) && isReleasedCvPage && <TableCell className="font-medium">{advance.cashAdvance.checkVoucherNumber}</TableCell>}
+                  {(isSupervisor || isCashier || (isAccounting && isReleasedCvPage)) && isReleasedCvPage && <TableCell>{advance.cashAdvance.id}</TableCell>}
+
+                  {isAccounting && isForCaApprovalPage && <TableCell>{advance.cashAdvance.id}</TableCell>}
 
                   {(isSupervisor || isCashier) && !isReleasedCvPage && <TableCell className="font-medium">{advance.cashAdvance.personnel}</TableCell>}
                   {(isSupervisor || isCashier) && !isReleasedCvPage && <TableCell className="max-w-[300px] truncate">{advance.cashAdvance.purpose}</TableCell>}
