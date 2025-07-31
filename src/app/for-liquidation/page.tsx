@@ -27,9 +27,8 @@ function ForLiquidationContent({ searchQuery }: { searchQuery: string }) {
     const [motorcycles, setMotorcycles] = React.useState<Motorcycle[] | null>(null);
     const [cashAdvances, setCashAdvances] = React.useState<CashAdvance[] | null>(null);
     const [editingMotorcycle, setEditingMotorcycle] = React.useState<Motorcycle | null>(null);
-    const [selectedMotorcycles, setSelectedMotorcycles] = React.useState<Record<string, Motorcycle[]>>({});
+    const [selectedMotorcycles, setSelectedMotorcycles] = React.useState<Motorcycle[]>([]);
     const [openConfirmDialog, setOpenConfirmDialog] = React.useState(false);
-    const [caToBulkLiquidate, setCaToBulkLiquidate] = React.useState<string | null>(null);
     const { toast } = useToast();
     
     React.useEffect(() => {
@@ -160,25 +159,25 @@ function ForLiquidationContent({ searchQuery }: { searchQuery: string }) {
                mc.liquidationDetails?.ltoProcessFee > 0;
     };
 
-    const handleSelectMotorcycle = (caId: string, mc: Motorcycle) => {
+    const handleSelectMotorcycle = (mc: Motorcycle) => {
         setSelectedMotorcycles(prev => {
-            const currentSelection = prev[caId] || [];
-            const isSelected = currentSelection.some(m => m.id === mc.id);
-            const newSelection = isSelected 
-                ? currentSelection.filter(m => m.id !== mc.id)
-                : [...currentSelection, mc];
-            return { ...prev, [caId]: newSelection };
+            const isSelected = prev.some(m => m.id === mc.id);
+            if (isSelected) {
+                return prev.filter(m => m.id !== mc.id);
+            } else {
+                return [...prev, mc];
+            }
         });
     };
-
+    
     const handleBulkLiquidate = async () => {
-        if (!caToBulkLiquidate) return;
-        const mcsToLiquidate = selectedMotorcycles[caToBulkLiquidate];
-        if (!mcsToLiquidate || mcsToLiquidate.length === 0 || !user) return;
+        const mcsToLiquidate = selectedMotorcycles.filter(isEligibleForLiquidation);
+        if (mcsToLiquidate.length === 0 || !user) return;
         
         const updatedMotorcycles = mcsToLiquidate.map(mc => {
              const mcAdvance = getMcAdvanceAmount(mc);
              const totalLiquidation = (mc.liquidationDetails?.ltoOrAmount || 0) + (mc.liquidationDetails?.ltoProcessFee || 0);
+             const caForMc = caMapByMcId.get(mc.id);
 
             return {
                 ...mc,
@@ -189,7 +188,7 @@ function ForLiquidationContent({ searchQuery }: { searchQuery: string }) {
                     shortageOverage: mcAdvance - totalLiquidation,
                     liquidatedBy: user.name,
                     liquidationDate: new Date(),
-                    parentCaId: caToBulkLiquidate,
+                    parentCaId: caForMc!.id,
                 }
             };
         });
@@ -201,25 +200,27 @@ function ForLiquidationContent({ searchQuery }: { searchQuery: string }) {
             description: `${updatedMotorcycles.length} motorcycles have been submitted for verification.`
         });
         
-        setSelectedMotorcycles(prev => ({...prev, [caToBulkLiquidate]: []}));
+        setSelectedMotorcycles([]);
         setOpenConfirmDialog(false);
-        setCaToBulkLiquidate(null);
         await refreshData();
     };
-
-    const confirmBulkLiquidate = (caId: string) => {
-        setCaToBulkLiquidate(caId);
-        setOpenConfirmDialog(true);
-    };
+    
+    const selectedAndEligibleCount = selectedMotorcycles.filter(isEligibleForLiquidation).length;
 
     return (
         <>
             <Card>
-                <CardHeader>
-                    <CardTitle>Cash Advances for Liquidation</CardTitle>
-                    <CardDescription>
-                        Expand a cash advance to view its motorcycles and perform liquidation.
-                    </CardDescription>
+                <CardHeader className='flex-row items-center justify-between'>
+                    <div>
+                        <CardTitle>Cash Advances for Liquidation</CardTitle>
+                        <CardDescription>
+                            Expand a cash advance to view its motorcycles and perform liquidation.
+                        </CardDescription>
+                    </div>
+                    <Button size="sm" onClick={() => setOpenConfirmDialog(true)} disabled={selectedAndEligibleCount === 0}>
+                        <Edit className="mr-2 h-4 w-4" />
+                        Bulk Liquidate ({selectedAndEligibleCount})
+                    </Button>
                 </CardHeader>
                 <CardContent>
                     <Table>
@@ -230,100 +231,87 @@ function ForLiquidationContent({ searchQuery }: { searchQuery: string }) {
                                 <TableHead>CV Number</TableHead>
                                 <TableHead>CV Transaction Date</TableHead>
                                 <TableHead className="text-right">Amount</TableHead>
-                                <TableHead>Action</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {enrichedCAs.map(item => {
-                                const selectedInGroup = selectedMotorcycles[item.cashAdvance.id] || [];
-                                const eligibleInGroup = item.motorcycles.filter(isEligibleForLiquidation);
-                                const selectedAndEligibleCount = selectedInGroup.filter(isEligibleForLiquidation).length;
-
-                                return (
-                                    <Collapsible asChild key={item.cashAdvance.id}>
-                                        <>
-                                            <TableRow>
-                                                <TableCell>
-                                                    <CollapsibleTrigger asChild>
-                                                        <Button variant="ghost" size="icon">
-                                                            <ChevronDown className="h-4 w-4 transition-transform data-[state=open]:rotate-180" />
-                                                        </Button>
-                                                    </CollapsibleTrigger>
-                                                </TableCell>
-                                                <TableCell>{item.cashAdvance.id}</TableCell>
-                                                <TableCell>{item.cashAdvance.checkVoucherNumber}</TableCell>
-                                                <TableCell>
-                                                    {item.cashAdvance.checkVoucherReleaseDate
-                                                        ? format(new Date(item.cashAdvance.checkVoucherReleaseDate), 'MMMM dd, yyyy')
-                                                        : 'N/A'}
-                                                </TableCell>
-                                                <TableCell className="text-right">
-                                                    ₱{item.cashAdvance.amount.toLocaleString()}
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Button size="sm" onClick={() => confirmBulkLiquidate(item.cashAdvance.id)} disabled={selectedAndEligibleCount === 0}>
-                                                        <Edit className="mr-2 h-4 w-4" />
-                                                        Bulk Liquidate ({selectedAndEligibleCount})
+                            {enrichedCAs.map(item => (
+                                <Collapsible asChild key={item.cashAdvance.id}>
+                                    <>
+                                        <TableRow>
+                                            <TableCell>
+                                                <CollapsibleTrigger asChild>
+                                                    <Button variant="ghost" size="icon">
+                                                        <ChevronDown className="h-4 w-4 transition-transform data-[state=open]:rotate-180" />
                                                     </Button>
-                                                </TableCell>
-                                            </TableRow>
-                                            <CollapsibleContent asChild>
-                                                <tr className="bg-muted/50">
-                                                    <TableCell colSpan={6} className="p-0">
-                                                        <div className="p-4">
-                                                            <Alert className="mb-4">
-                                                                <AlertCircle className="h-4 w-4" />
-                                                                <AlertDescription className="text-xs">
-                                                                    You can only bulk-liquidate units where all required details (OR No., OR Amount, Processing Fee) have been filled in via the 'View/Edit' button.
-                                                                </AlertDescription>
-                                                            </Alert>
-                                                            <Table>
-                                                                <TableHeader>
-                                                                    <TableRow>
-                                                                        <TableHead className="w-12"></TableHead>
-                                                                        <TableHead>Customer</TableHead>
-                                                                        <TableHead>Plate No.</TableHead>
-                                                                        <TableHead>Status</TableHead>
-                                                                        <TableHead className="text-right">Amount</TableHead>
-                                                                        <TableHead>Action</TableHead>
+                                                </CollapsibleTrigger>
+                                            </TableCell>
+                                            <TableCell>{item.cashAdvance.id}</TableCell>
+                                            <TableCell>{item.cashAdvance.checkVoucherNumber}</TableCell>
+                                            <TableCell>
+                                                {item.cashAdvance.checkVoucherReleaseDate
+                                                    ? format(new Date(item.cashAdvance.checkVoucherReleaseDate), 'MMMM dd, yyyy')
+                                                    : 'N/A'}
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                ₱{item.cashAdvance.amount.toLocaleString()}
+                                            </TableCell>
+                                        </TableRow>
+                                        <CollapsibleContent asChild>
+                                            <tr className="bg-muted/50">
+                                                <TableCell colSpan={5} className="p-0">
+                                                    <div className="p-4">
+                                                        <Alert className="mb-4">
+                                                            <AlertCircle className="h-4 w-4" />
+                                                            <AlertDescription className="text-xs">
+                                                                You can only bulk-liquidate units where all required details (OR No., OR Amount, Processing Fee) have been filled in via the 'View/Edit' button.
+                                                            </AlertDescription>
+                                                        </Alert>
+                                                        <Table>
+                                                            <TableHeader>
+                                                                <TableRow>
+                                                                    <TableHead className="w-12"></TableHead>
+                                                                    <TableHead>Customer</TableHead>
+                                                                    <TableHead>Plate No.</TableHead>
+                                                                    <TableHead>Status</TableHead>
+                                                                    <TableHead className="text-right">Amount</TableHead>
+                                                                    <TableHead>Action</TableHead>
+                                                                </TableRow>
+                                                            </TableHeader>
+                                                            <TableBody>
+                                                                {item.motorcycles.map(mc => (
+                                                                    <TableRow key={mc.id}>
+                                                                        <TableCell>
+                                                                            <Checkbox
+                                                                                disabled={mc.status === 'For Verification' || mc.status === 'Completed'}
+                                                                                checked={selectedMotorcycles.some(m => m.id === mc.id)}
+                                                                                onCheckedChange={() => handleSelectMotorcycle(mc)}
+                                                                            />
+                                                                        </TableCell>
+                                                                        <TableCell>{mc.customerName}</TableCell>
+                                                                        <TableCell>{mc.plateNumber}</TableCell>
+                                                                        <TableCell>
+                                                                            <span className={cn(!isEligibleForLiquidation(mc) && "text-destructive font-semibold")}>
+                                                                                {mc.status}
+                                                                            </span>
+                                                                        </TableCell>
+                                                                        <TableCell className="text-right">₱{getMcAdvanceAmount(mc).toLocaleString()}</TableCell>
+                                                                        <TableCell>
+                                                                            <Button size="sm" variant="outline" onClick={() => setEditingMotorcycle(mc)}>
+                                                                                <Eye className="mr-2 h-4 w-4" />
+                                                                                View/Edit
+                                                                            </Button>
+                                                                        </TableCell>
                                                                     </TableRow>
-                                                                </TableHeader>
-                                                                <TableBody>
-                                                                    {item.motorcycles.map(mc => (
-                                                                        <TableRow key={mc.id}>
-                                                                            <TableCell>
-                                                                                <Checkbox
-                                                                                    disabled={mc.status === 'For Verification' || mc.status === 'Completed'}
-                                                                                    checked={selectedMotorcycles[item.cashAdvance.id]?.some(m => m.id === mc.id)}
-                                                                                    onCheckedChange={() => handleSelectMotorcycle(item.cashAdvance.id, mc)}
-                                                                                />
-                                                                            </TableCell>
-                                                                            <TableCell>{mc.customerName}</TableCell>
-                                                                            <TableCell>{mc.plateNumber}</TableCell>
-                                                                            <TableCell>
-                                                                                <span className={cn(!isEligibleForLiquidation(mc) && "text-destructive font-semibold")}>
-                                                                                    {mc.status}
-                                                                                </span>
-                                                                            </TableCell>
-                                                                            <TableCell className="text-right">₱{getMcAdvanceAmount(mc).toLocaleString()}</TableCell>
-                                                                            <TableCell>
-                                                                                <Button size="sm" variant="outline" onClick={() => setEditingMotorcycle(mc)}>
-                                                                                    <Eye className="mr-2 h-4 w-4" />
-                                                                                    View/Edit
-                                                                                </Button>
-                                                                            </TableCell>
-                                                                        </TableRow>
-                                                                    ))}
-                                                                </TableBody>
-                                                            </Table>
-                                                        </div>
-                                                    </TableCell>
-                                                </tr>
-                                            </CollapsibleContent>
-                                        </>
-                                    </Collapsible>
-                                )
-                            })}
+                                                                ))}
+                                                            </TableBody>
+                                                        </Table>
+                                                    </div>
+                                                </TableCell>
+                                            </tr>
+                                        </CollapsibleContent>
+                                    </>
+                                </Collapsible>
+                            ))}
                         </TableBody>
                     </Table>
                     {enrichedCAs.length === 0 && (
@@ -351,7 +339,7 @@ function ForLiquidationContent({ searchQuery }: { searchQuery: string }) {
                     <AlertDialogHeader>
                         <AlertDialogTitle>Confirm Bulk Liquidation</AlertDialogTitle>
                         <AlertDialogDescription>
-                            You are about to submit {selectedMotorcycles[caToBulkLiquidate!]?.filter(isEligibleForLiquidation).length || 0} motorcycle(s) for verification. 
+                            You are about to submit {selectedAndEligibleCount} motorcycle(s) for verification. 
                             This action cannot be undone. Are you sure you want to proceed?
                         </AlertDialogDescription>
                     </AlertDialogHeader>
