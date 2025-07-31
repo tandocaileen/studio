@@ -330,7 +330,7 @@ export function CashAdvanceTable({ advances, onMotorcycleUpdate, showStatusColum
             <DialogHeader>
                 <DialogTitle>Confirm Budget Received for CA #{confirmingCvReceiptAdvance?.cashAdvance.id}</DialogTitle>
                 <DialogDescription>
-                    Enter the Check Voucher number to confirm budget has been received by the liaison.
+                    Enter the Check Voucher number to confirm budget has been received by the Cashier.
                 </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
