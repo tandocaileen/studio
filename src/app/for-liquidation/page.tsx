@@ -141,9 +141,10 @@ function ForLiquidationContent({ searchQuery }: { searchQuery: string }) {
         .map(ca => {
             const associatedMotorcycles = (ca.motorcycleIds || [])
                 .map(id => motorcycles.find(m => m.id === id))
-                .filter((m): m is Motorcycle => !!m);
+                .filter((m): m is Motorcycle => !!m && m.status === 'For Liquidation');
             return { cashAdvance: ca, motorcycles: associatedMotorcycles };
         })
+        .filter(item => item.motorcycles.length > 0)
         .filter(item => {
             if (!searchQuery) return true;
             const query = searchQuery.toLowerCase();
